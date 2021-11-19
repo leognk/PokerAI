@@ -172,6 +172,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Optimus\Constants.h" />
     <ClInclude Include="Action.h" />
     <ClInclude Include="Hand.h" />
     <ClInclude Include="GameState.h" />

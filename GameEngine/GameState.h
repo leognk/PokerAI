@@ -3,7 +3,7 @@
 
 #include "Hand.h"
 #include "../OMPEval/omp/Random.h"
-#include <vector>
+#include "../Optimus/Constants.h"
 #include <list>
 
 namespace egn {
@@ -16,7 +16,7 @@ public:
 		uint16_t ante,
 		uint16_t smallBlind,
 		uint16_t bigBlind,
-		const std::vector<uint32_t>& stakes // Each player's cash.
+		const std::array<uint32_t, opt::MAX_PLAYERS>& stakes // Each player's cash.
 	);
 
 	// bet is the action made by the current acting player.
@@ -28,57 +28,47 @@ private:
 	typedef omp::XoroShiro128Plus Rng;
 	typedef omp::FastUniformIntDistribution<unsigned, 16> CardDist;
 
-	struct Player
-	{
-		bool active = true;
-		uint32_t stake = 0;
-		omp::Hand hand = omp::Hand::empty();
-		bool alive = true;
-		uint32_t bet = 0;
-		int64_t gain = 0;
-	};
-
-	struct Board
-	{
-		omp::Hand cards = omp::Hand::empty();
-		// Main pot at index 0, followed by side pots.
-		std::vector<uint32_t> pots = std::vector<uint32_t>(1);
-	};
-
 	enum class Round { preflop, flop, turn, river };
 	friend Round& operator++(Round& r);
 
 	void startNewHand();
 	void resetPlayers();
-	void resetAlivePlayers();
+	void resetBoard();
 	void chargeAnte();
 	void chargeBlinds();
 	void dealHoleCards(uint64_t& usedCardsMask);
 	void dealBoardCards(uint64_t& usedCardsMask);
 	void dealCards(omp::Hand& hand, unsigned nCards, uint64_t& usedCardsMask);
+	void goNextPlayer();
 
-	uint16_t mAnte;
-	uint16_t mSmallBlind;
-	uint16_t mBigBlind;
+	uint16_t mAnte, mSB, mBB;
 
 	Rng mRng;
 	CardDist mCardDist;
 
-	// Maximum number of players.
-	uint8_t mNPlayers;
-	std::vector<Player> mPlayers;
-	Board mBoard;
+	// Players
+	// Set a player's stake to 0 if he is not active.
+	std::array<uint32_t, opt::MAX_PLAYERS> mStakes;
+	std::array<omp::Hand, opt::MAX_PLAYERS> mPlayersHands;
+	std::array<uint32_t, opt::MAX_PLAYERS> mBets;
+
+	// Board
+	omp::Hand mBoardCards;
+	// Main pot at index 0, followed by side pots.
+	std::array<uint32_t, opt::MAX_PLAYERS - 1> mPots;
 
 	Round mCurrentRound;
 
-	uint8_t mNAlivePlayers;
+	// Number of players still alive
+	uint8_t mNPlayers;
+	// Indices of players still alive
 	// Alive players are ordered starting from the player following the dealer.
-	std::list<uint8_t> mAlivePlayersIds;
+	std::list<uint8_t> mPlayers;
 	// Player making the action passed to nextState.
-	std::list<uint8_t>::iterator mCurrentPlayerIdx;
-	uint8_t mDealerIdx;
+	std::list<uint8_t>::iterator mCurrentPlayer;
+	uint8_t mDealer;
 	// First acting player of the round or last player who bet.
-	uint8_t mOpeningPlayerIdx;
+	uint8_t mOpeningPlayer;
 	uint32_t mLastBet;
 
 	// DO NOT FORGET TO ROTATE THE DEALER!
