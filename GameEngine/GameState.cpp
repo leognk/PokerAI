@@ -4,43 +4,41 @@
 namespace egn
 {
 
-GameState::GameState(
-	uint16_t ante,
-	uint16_t smallBlind,
-	uint16_t bigBlind,
-	const std::array<uint32_t, opt::MAX_PLAYERS>& stakes
-) :
-	mAnte(ante),
-    mSB(smallBlind),
-    mBB(bigBlind),
-
-    mRng{ std::random_device{}() },
-    mCardDist(0, omp::CARD_COUNT - 1),
-
-    mStakes(stakes),
-    mPlayersHands(),
-    mBets(),
-
-    mBoardCards(),
-    mPots(),
-
-    mCurrentRound(),
-
-    mNPlayers(),
-    mPlayers(),
-    mCurrentPlayer(),
-    mDealer(),
-    mOpeningPlayer(),
-    mLastBet()
+#pragma warning(suppress: 26495)
+GameState::GameState(unsigned rngSeed) :
+    mRng{ (rngSeed == 0) ? std::random_device{}() : rngSeed },
+    mCardDist(0, omp::CARD_COUNT - 1)
 {
-    startNewHand();
 }
 
-void GameState::startNewHand()
+void GameState::setAnte(uint16_t ante)
 {
+    mAnte = ante;
+}
+
+void GameState::setBigBlind(uint16_t bigBlind)
+{
+    mBB = bigBlind;
+    mSB = mBB / 2;
+}
+
+void GameState::setStakes(std::array<uint32_t, opt::MAX_PLAYERS> stakes)
+{
+    mStakes = stakes;
+}
+
+void GameState::setStake(uint8_t playerIdx, uint32_t stake)
+{
+    mStakes[playerIdx] = stake;
+}
+
+void GameState::startNewHand(uint8_t dealerIdx)
+{
+    mDealer = dealerIdx;
+    mRound = Round::preflop;
+
     resetPlayers();
     resetBoard();
-    mCurrentRound = Round::preflop;
 
     chargeAnte();
     chargeBlinds();
@@ -61,7 +59,7 @@ void GameState::resetPlayers()
         // Ignores inactive players.
         if (mStakes[j] == 0)
             continue;
-        mPlayersHands[j] = omp::Hand::empty();
+        mPlayerHands[j] = omp::Hand::empty();
         mBets[j] = 0;
         mPlayers.push_back(j);
     }
@@ -104,14 +102,15 @@ void GameState::chargeBlinds()
     mBets[bbPlayer] += mBB;
     mPots[0] += mBB;
 
-    mOpeningPlayer = *mCurrentPlayer;
-    mLastBet = mBB;
+    mInitiator = *mCurrentPlayer;
+    mMinRaise = 2 * mBB;
+    mLastRaise = mBB;
 }
 
 void GameState::dealHoleCards(uint64_t& usedCardsMask)
 {
     for (uint8_t i : mPlayers) {
-        dealCards(mPlayersHands[i], omp::HOLE_CARDS, usedCardsMask);
+        dealCards(mPlayerHands[i], omp::HOLE_CARDS, usedCardsMask);
     }
 }
 
@@ -134,53 +133,69 @@ void GameState::dealCards(omp::Hand& hand, unsigned nCards, uint64_t& usedCardsM
     }
 }
 
-void GameState::nextState(uint32_t bet)
+bool GameState::nextState(uint32_t bet)
 {
     // Current player checks or folds.
     if (bet == 0) {
         // Fold
-        if (mBets[*mCurrentPlayer] < mLastBet) {
+        if (mBets[*mCurrentPlayer] != mLastRaise) {
             mCurrentPlayer = mPlayers.erase(mCurrentPlayer);
             --mNPlayers;
         }
         // Check
-        else
+        else {
             goNextPlayer();
+        }
     }
 
-    // Current player calls, bets or raises.
+    // Current player calls or raises.
     else {
         mStakes[*mCurrentPlayer] -= bet;
         mBets[*mCurrentPlayer] += bet;
         mPots[0] += bet;
-        // Bet or raise
-        if (mBets[*mCurrentPlayer] > mLastBet) {
-            mLastBet = mBets[*mCurrentPlayer];
-            mOpeningPlayer = *mCurrentPlayer;
+        // Raise
+        if (mBets[*mCurrentPlayer] > mLastRaise) {
+            mMinRaise = 2 * mBets[*mCurrentPlayer] - mLastRaise;
+            mLastRaise = mBets[*mCurrentPlayer];
+            mInitiator = *mCurrentPlayer;
         }
         goNextPlayer();
     }
 
     // End of the round (we went around the table)
-    if (*mCurrentPlayer == mOpeningPlayer) {
+    if (*mCurrentPlayer == mInitiator) {
 
         // Everybody folded but one.
-        if (mNPlayers == 1)
+        if (mNPlayers == 1) {
             mStakes[*mCurrentPlayer] += mPots[0];
+            return true;
+        }
 
         // Showdown
-        else if (mCurrentRound == Round::river) {
-
+        else if (mRound == Round::river) {
+            std::vector<uint8_t> winners = evaluateHands();
+            uint32_t gain = mPots[0] / winners.size();
+            for (uint8_t i : winners) {
+                mStakes[i] += gain;
+            }
+            // Remaining chips go to the first players after the dealer.
+            uint8_t extra = mPots[0] % winners.size();
+            for (uint8_t i = 0; i < extra; ++i) {
+                ++mStakes[winners[i]];
+            }
+            return true;
         }
 
         // Goes to the next round.
         else {
             for (uint8_t i : mPlayers)
                 mBets[i] = 0;
-            mLastBet = 0;
-            ++mCurrentRound;
+            mMinRaise = mBB;
+            mLastRaise = 0;
+            ++mRound;
             mCurrentPlayer = mPlayers.begin();
-            mOpeningPlayer = *mCurrentPlayer;
+            mInitiator = *mCurrentPlayer;
+            return false;
         }
     }
 }
@@ -189,6 +204,44 @@ void GameState::goNextPlayer()
 {
     if (++mCurrentPlayer == mPlayers.end())
         mCurrentPlayer = mPlayers.begin();
+}
+
+std::vector<uint8_t> GameState::evaluateHands() const
+{
+    uint16_t bestRank = 0;
+    std::vector<uint8_t> winners;
+    for (uint8_t i : mPlayers) {
+        Hand hand = mBoardCards + mPlayerHands[i];
+        uint16_t rank = mEval.evaluate(hand);
+        if (rank > bestRank) {
+            bestRank = rank;
+            winners = { i };
+        }
+        else if (rank == bestRank) {
+            winners.push_back(i);
+        }
+    }
+    return winners;
+}
+
+uint8_t GameState::currentPlayer() const
+{
+    return *mCurrentPlayer;
+}
+
+uint32_t GameState::stake() const
+{
+    return mStakes[*mCurrentPlayer];
+}
+
+uint32_t GameState::call() const
+{
+    return mLastRaise;
+}
+
+uint32_t GameState::minRaise() const
+{
+    return mMinRaise;
 }
 
 } // egn
