@@ -31,14 +31,15 @@ public:
 	bool nextState(uint32_t bet);
 
 	// Legal actions (uint32_t bet) for currentPlayer() are:
-	// case stake() <= call():              0 & stake()
-	// case call() < stake() <= minRaise(): 0 & call() & stake()
-	// case minRaise() < stake():           0 & call() & [minRaise(), stake()]
+	// case allin() <= call():              0 & allin()
+	// case call() < allin() <= minRaise(): 0 & call() & allin()
+	// case minRaise() < allin():           0 & call() & [minRaise(), allin()]
 	uint8_t currentPlayer() const;
-	uint32_t stake() const;
+	// Number of chips to all-in
+	uint32_t allin() const;
+	// Chips to give to call
 	uint32_t call() const;
-	// When we talk about raise without specifying,
-	// we refer to "raise to" and not "raise by".
+	// Minimum chips to give to raise
 	uint32_t minRaise() const;
 
 private:
@@ -55,6 +56,7 @@ private:
 	void dealHoleCards(uint64_t& usedCardsMask);
 	void dealBoardCards(uint64_t& usedCardsMask);
 	void dealCards(omp::Hand& hand, unsigned nCards, uint64_t& usedCardsMask);
+	void setMaxRaise();
 	void goNextPlayer();
 	std::vector<uint8_t> evaluateHands() const;
 
@@ -73,6 +75,7 @@ private:
 	omp::Hand mBoardCards;
 	// Main pot at index 0, followed by side pots.
 	std::array<uint32_t, opt::MAX_PLAYERS - 1> mPots;
+	uint8_t mLastPot;
 
 	Round mRound;
 
@@ -86,8 +89,13 @@ private:
 	uint8_t mDealer;
 	// First acting player of the round or last player who raised.
 	uint8_t mInitiator;
+	// Minimum raise to
 	uint32_t mMinRaise;
+	// Last raise to
 	uint32_t mLastRaise;
+	// Maximum raise allowed (by the player with the largest stake)
+	// Equals to the second largest stake.
+	uint32_t mMaxRaise;
 
 	omp::HandEvaluator mEval;
 };

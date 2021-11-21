@@ -1,5 +1,6 @@
 #include "GameState.h"
 #include <random>
+#include <numeric>
 
 namespace egn
 {
@@ -71,6 +72,7 @@ void GameState::resetBoard()
     mBoardCards = omp::Hand::empty();
     for (uint8_t i = 0; i < mPots.size(); ++i)
         mPots[i] = 0;
+    mLastPot = 0;
 }
 
 void GameState::chargeAnte()
@@ -152,12 +154,27 @@ bool GameState::nextState(uint32_t bet)
     else {
         mStakes[*mCurrentPlayer] -= bet;
         mBets[*mCurrentPlayer] += bet;
-        mPots[0] += bet;
+        setMaxRaise();
+        //mRoundPot += bet; //////////////////
         // Raise
-        if (mBets[*mCurrentPlayer] > mLastRaise) {
+        if (mBets[*mCurrentPlayer] >= mMinRaise) {
             mMinRaise = 2 * mBets[*mCurrentPlayer] - mLastRaise;
             mLastRaise = mBets[*mCurrentPlayer];
             mInitiator = *mCurrentPlayer;
+        }
+        // All-in not raising
+        else if (mStakes[*mCurrentPlayer] == 0) {
+            // Incomplete call
+            if (mBets[*mCurrentPlayer] < mLastRaise) {
+                //uint32_t transfer = (*mCurrentPlayer - mInitiator) * (mLastRaise - mBets[*mCurrentPlayer]);
+                //mPots[mLastPot] -= transfer;
+                //++mLastPot;
+                //mPots[mLastPot] += transfer;
+            }
+            // Incomplete raise
+            else if (mBets[*mCurrentPlayer] != mLastRaise) {
+
+            }
         }
         goNextPlayer();
     }
@@ -167,7 +184,9 @@ bool GameState::nextState(uint32_t bet)
 
         // Everybody folded but one.
         if (mNPlayers == 1) {
-            mStakes[*mCurrentPlayer] += mPots[0];
+            mStakes[*mCurrentPlayer] += std::accumulate(
+                mPots.begin(), mPots.begin() + mLastPot, 0U
+            );
             return true;
         }
 
@@ -184,6 +203,9 @@ bool GameState::nextState(uint32_t bet)
                 ++mStakes[winners[i]];
             }
             return true;
+
+            /////////////////////
+            for (std::vector<uint8_t>& winners : )
         }
 
         // Goes to the next round.
@@ -200,10 +222,27 @@ bool GameState::nextState(uint32_t bet)
     }
 }
 
+void GameState::setMaxRaise()
+{
+    // Set mMaxRaise to the second largest stake.
+    uint32_t max = 0;
+    for (uint8_t i : mPlayers) {
+        if (mStakes[i] > max) {
+            mMaxRaise = max;
+            max = mStakes[i];
+        }
+        else if (mStakes[i] > mMaxRaise && mStakes[i] != max)
+            mMaxRaise = mStakes[i];
+    }
+}
+
 void GameState::goNextPlayer()
 {
-    if (++mCurrentPlayer == mPlayers.end())
-        mCurrentPlayer = mPlayers.begin();
+    // Skip all-in players
+    do {
+        if (++mCurrentPlayer == mPlayers.end())
+            mCurrentPlayer = mPlayers.begin();
+    } while (mStakes[*mCurrentPlayer] == 0);
 }
 
 std::vector<uint8_t> GameState::evaluateHands() const
@@ -229,19 +268,19 @@ uint8_t GameState::currentPlayer() const
     return *mCurrentPlayer;
 }
 
-uint32_t GameState::stake() const
+uint32_t GameState::allin() const
 {
-    return mStakes[*mCurrentPlayer];
+    return std::min(mStakes[*mCurrentPlayer], mMaxRaise);
 }
 
 uint32_t GameState::call() const
 {
-    return mLastRaise;
+    return mLastRaise - mBets[*mCurrentPlayer];
 }
 
 uint32_t GameState::minRaise() const
 {
-    return mMinRaise;
+    return mMinRaise - mBets[*mCurrentPlayer];
 }
 
 } // egn
