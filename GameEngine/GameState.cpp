@@ -154,7 +154,6 @@ bool GameState::nextState(uint32_t bet)
     else {
         mStakes[*mCurrentPlayer] -= bet;
         mBets[*mCurrentPlayer] += bet;
-        setMaxRaise();
         //mRoundPot += bet; //////////////////
         // Raise
         if (mBets[*mCurrentPlayer] >= mMinRaise) {
@@ -166,10 +165,7 @@ bool GameState::nextState(uint32_t bet)
         else if (mStakes[*mCurrentPlayer] == 0) {
             // Incomplete call
             if (mBets[*mCurrentPlayer] < mLastRaise) {
-                //uint32_t transfer = (*mCurrentPlayer - mInitiator) * (mLastRaise - mBets[*mCurrentPlayer]);
-                //mPots[mLastPot] -= transfer;
-                //++mLastPot;
-                //mPots[mLastPot] += transfer;
+
             }
             // Incomplete raise
             else if (mBets[*mCurrentPlayer] != mLastRaise) {
@@ -192,20 +188,94 @@ bool GameState::nextState(uint32_t bet)
 
         // Showdown
         else if (mRound == Round::river) {
-            std::vector<uint8_t> winners = evaluateHands();
-            uint32_t gain = mPots[0] / winners.size();
-            for (uint8_t i : winners) {
-                mStakes[i] += gain;
-            }
-            // Remaining chips go to the first players after the dealer.
-            uint8_t extra = mPots[0] % winners.size();
-            for (uint8_t i = 0; i < extra; ++i) {
-                ++mStakes[winners[i]];
-            }
-            return true;
+            std::vector<std::vector<uint8_t>> rankings = getRankings();
 
-            /////////////////////
-            for (std::vector<uint8_t>& winners : )
+            // One pot and one winner
+            // (deals with this specific case to speed up the computation)
+            if (mLastPot == 0 && rankings[0].size() == 1) {
+                mStakes[rankings[0][0]] += mPots[0];
+                return true;
+            }
+
+            // One pot and several winners
+            // (deals with this specific case to speed up the computation)
+            else if (mLastPot == 0) {
+                uint32_t gain = mPots[0] / rankings[0].size();
+                for (uint8_t i : rankings[0]) {
+                    mStakes[i] += gain;
+                }
+                // Remaining chips go to the first players after the dealer
+                uint8_t extra = mPots[0] % rankings[0].size();
+                for (uint8_t i = 0; i < extra; ++i) {
+                    ++mStakes[rankings[0][i]];
+                }
+                return true;
+            }
+            
+            // General case: several pots
+
+            // Computes the number of winners of each pot.
+            std::array<uint8_t, opt::MAX_PLAYERS> nWinners;
+            bool oneWinnerPerPot = true;
+            uint8_t headPot = 0;
+            for (std::vector<uint8_t>& sameRankPlayers : rankings) {
+                uint8_t maxLastPot = 0;
+                for (uint8_t player : sameRankPlayers) {
+                    for (uint8_t pot = headPot; pot <= mPlayerLastPots[player]; ++pot) {
+                        ++nWinners[pot];
+                        if (nWinners[pot] != 1)
+                            oneWinnerPerPot = false;
+                    }
+                    maxLastPot = std::max(maxLastPot, mPlayerLastPots[player]);
+                }
+                headPot = maxLastPot + 1;
+                if (headPot > mLastPot)
+                    break;
+            }
+
+            // One winner per pot
+            // (deals with this specific case to speed up the computation)
+            if (oneWinnerPerPot) {
+                headPot = 0;
+                for (std::vector<uint8_t>& sameRankPlayers : rankings) {
+                    for (uint8_t pot = headPot; pot <= mPlayerLastPots[sameRankPlayers[0]]; ++pot) {
+                        mStakes[sameRankPlayers[0]] += mPots[pot];
+                    }
+                    headPot = mPlayerLastPots[sameRankPlayers[0]] + 1;
+                    if (headPot > mLastPot)
+                        break;
+                }
+                return true;
+            }
+
+            // Computes the gains and extras of each pot.
+            std::array<uint32_t, opt::MAX_PLAYERS> gains;
+            std::array<uint8_t, opt::MAX_PLAYERS> extras;
+            for (uint8_t i = 0; i <= mLastPot; ++i) {
+                gains[i] = mPots[i] / nWinners[i];
+                extras[i] = mPots[i] % nWinners[i];
+            }
+
+            // Distributes the gains and extras to the winners.
+            headPot = 0;
+            for (std::vector<uint8_t>& sameRankPlayers : rankings) {
+                uint8_t maxLastPot = 0;
+                for (uint8_t player : sameRankPlayers) {
+                    for (uint8_t pot = headPot; pot <= mPlayerLastPots[player]; ++pot) {
+                        mStakes[player] += gains[pot];
+                        if (extras[pot] != 0) {
+                            ++mStakes[player];
+                            --extras[pot];
+                        }
+                    }
+                    maxLastPot = std::max(maxLastPot, mPlayerLastPots[player]);
+                }
+                headPot = maxLastPot + 1;
+                if (headPot > mLastPot)
+                    break;
+            }
+
+            return true;
         }
 
         // Goes to the next round.
@@ -222,20 +292,6 @@ bool GameState::nextState(uint32_t bet)
     }
 }
 
-void GameState::setMaxRaise()
-{
-    // Set mMaxRaise to the second largest stake.
-    uint32_t max = 0;
-    for (uint8_t i : mPlayers) {
-        if (mStakes[i] > max) {
-            mMaxRaise = max;
-            max = mStakes[i];
-        }
-        else if (mStakes[i] > mMaxRaise && mStakes[i] != max)
-            mMaxRaise = mStakes[i];
-    }
-}
-
 void GameState::goNextPlayer()
 {
     // Skip all-in players
@@ -245,22 +301,55 @@ void GameState::goNextPlayer()
     } while (mStakes[*mCurrentPlayer] == 0);
 }
 
-std::vector<uint8_t> GameState::evaluateHands() const
+std::vector<std::vector<uint8_t>> GameState::getRankings() const
 {
+    // Computes players' ranks.
+    std::vector<uint16_t> ranks(mNPlayers);
+    std::vector<uint8_t> players(mNPlayers);
+    std::vector<uint8_t> range(mNPlayers);
     uint16_t bestRank = 0;
-    std::vector<uint8_t> winners;
-    for (uint8_t i : mPlayers) {
-        Hand hand = mBoardCards + mPlayerHands[i];
-        uint16_t rank = mEval.evaluate(hand);
-        if (rank > bestRank) {
-            bestRank = rank;
-            winners = { i };
+    std::vector<uint8_t> bestRankPlayers;
+    uint8_t i = 0;
+    for (uint8_t player : mPlayers) {
+        Hand hand = mBoardCards + mPlayerHands[player];
+        ranks[i] = mEval.evaluate(hand);
+        players[i] = player;
+        range[i] = i;
+        if (ranks[i] > bestRank) {
+            bestRank = ranks[i];
+            bestRankPlayers = { player };
         }
-        else if (rank == bestRank) {
-            winners.push_back(i);
+        else if (ranks[i] == bestRank) {
+            bestRankPlayers.push_back(player);
         }
+        ++i;
     }
-    return winners;
+
+    // One pot
+    // (deals with this specific case to speed up the computation)
+    if (mLastPot == 0)
+        return { bestRankPlayers };
+
+    // stable_sort is needed to preserve the order of the players
+    // with the same rank for the distribution of the extras
+    // in clockwise order.
+    std::stable_sort(
+        range.begin(), range.end(),
+        [&](uint8_t i, uint8_t j) { return ranks[i] > ranks[j]; }
+    );
+
+    // Builds players' rankings.
+    std::vector<std::vector<uint8_t>> rankings;
+    for (auto i = range.begin(); i != range.end(); ++i) {
+        std::vector<uint8_t> sameRankPlayers = { players[*i] };
+        while (i + 1 != range.end() && ranks[*i] == ranks[*(i + 1)]) {
+            ++i;
+            sameRankPlayers.push_back(players[*i]);
+        }
+        rankings.emplace_back(sameRankPlayers);
+    }
+
+    return rankings;
 }
 
 uint8_t GameState::currentPlayer() const
@@ -268,9 +357,9 @@ uint8_t GameState::currentPlayer() const
     return *mCurrentPlayer;
 }
 
-uint32_t GameState::allin() const
+uint32_t GameState::stake() const
 {
-    return std::min(mStakes[*mCurrentPlayer], mMaxRaise);
+    return mStakes[*mCurrentPlayer];
 }
 
 uint32_t GameState::call() const

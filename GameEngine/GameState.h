@@ -31,12 +31,11 @@ public:
 	bool nextState(uint32_t bet);
 
 	// Legal actions (uint32_t bet) for currentPlayer() are:
-	// case allin() <= call():              0 & allin()
-	// case call() < allin() <= minRaise(): 0 & call() & allin()
-	// case minRaise() < allin():           0 & call() & [minRaise(), allin()]
+	// case stake() <= call():              0 & stake()
+	// case call() < stake() <= minRaise(): 0 & call() & stake()
+	// case minRaise() < stake():           0 & call() & [minRaise(), stake()]
 	uint8_t currentPlayer() const;
-	// Number of chips to all-in
-	uint32_t allin() const;
+	uint32_t stake() const;
 	// Chips to give to call
 	uint32_t call() const;
 	// Minimum chips to give to raise
@@ -56,9 +55,8 @@ private:
 	void dealHoleCards(uint64_t& usedCardsMask);
 	void dealBoardCards(uint64_t& usedCardsMask);
 	void dealCards(omp::Hand& hand, unsigned nCards, uint64_t& usedCardsMask);
-	void setMaxRaise();
 	void goNextPlayer();
-	std::vector<uint8_t> evaluateHands() const;
+	std::vector<std::vector<uint8_t>> getRankings() const;
 
 	uint16_t mAnte, mSB, mBB;
 
@@ -70,6 +68,8 @@ private:
 	std::array<uint32_t, opt::MAX_PLAYERS> mStakes;
 	std::array<omp::Hand, opt::MAX_PLAYERS> mPlayerHands;
 	std::array<uint32_t, opt::MAX_PLAYERS> mBets;
+	// The index of the last pot to which a player contributed.
+	std::array<uint8_t, opt::MAX_PLAYERS> mPlayerLastPots;
 
 	// Board
 	omp::Hand mBoardCards;
@@ -93,9 +93,6 @@ private:
 	uint32_t mMinRaise;
 	// Last raise to
 	uint32_t mLastRaise;
-	// Maximum raise allowed (by the player with the largest stake)
-	// Equals to the second largest stake.
-	uint32_t mMaxRaise;
 
 	omp::HandEvaluator mEval;
 };
