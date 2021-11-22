@@ -67,15 +67,14 @@ private:
 	// Set a player's stake to 0 if he is not active.
 	std::array<uint32_t, opt::MAX_PLAYERS> mStakes;
 	std::array<omp::Hand, opt::MAX_PLAYERS> mPlayerHands;
+	// Bets since the start of the hand
 	std::array<uint32_t, opt::MAX_PLAYERS> mBets;
-	// The index of the last pot to which a player contributed.
-	std::array<uint8_t, opt::MAX_PLAYERS> mPlayerLastPots;
 
 	// Board
 	omp::Hand mBoardCards;
-	// Main pot at index 0, followed by side pots.
-	std::array<uint32_t, opt::MAX_PLAYERS - 1> mPots;
-	uint8_t mLastPot;
+	// Sum of all pots
+	uint32_t mPot;
+	bool mOnePot;
 
 	Round mRound;
 
@@ -89,10 +88,11 @@ private:
 	uint8_t mDealer;
 	// First acting player of the round or last player who raised.
 	uint8_t mInitiator;
-	// Minimum raise to
+	// Minimum raise to (counting from the start of the hand)
 	uint32_t mMinRaise;
-	// Last raise to
+	// Last raise to (counting from the start of the hand)
 	uint32_t mLastRaise;
+	bool mAllInFlag;
 
 	omp::HandEvaluator mEval;
 };

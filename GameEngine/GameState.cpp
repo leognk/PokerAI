@@ -37,6 +37,7 @@ void GameState::startNewHand(uint8_t dealerIdx)
 {
     mDealer = dealerIdx;
     mRound = Round::preflop;
+    mAllInFlag = false;
 
     resetPlayers();
     resetBoard();
@@ -70,16 +71,15 @@ void GameState::resetPlayers()
 void GameState::resetBoard()
 {
     mBoardCards = omp::Hand::empty();
-    for (uint8_t i = 0; i < mPots.size(); ++i)
-        mPots[i] = 0;
-    mLastPot = 0;
+    mPot = 0;
+    mOnePot = true;
 }
 
 void GameState::chargeAnte()
 {
     for (uint8_t i : mPlayers)
         mStakes[i] -= mAnte;
-    mPots[0] += mNPlayers * mAnte;
+    mPot += mNPlayers * mAnte;
 }
 
 void GameState::chargeBlinds()
@@ -100,9 +100,9 @@ void GameState::chargeBlinds()
     }
 
     mBets[sbPlayer] += mSB;
-    mPots[0] += mSB;
+    mPot += mSB;
     mBets[bbPlayer] += mBB;
-    mPots[0] += mBB;
+    mPot += mBB;
 
     mInitiator = *mCurrentPlayer;
     mMinRaise = 2 * mBB;
@@ -141,11 +141,6 @@ bool GameState::nextState(uint32_t bet)
     if (bet == 0) {
         // Fold
         if (mBets[*mCurrentPlayer] != mLastRaise) {
-            // Before the player is erased and we lose access to his bets,
-            // we transfer them to the pot (no risk that they have to be moved
-            // to a side pot because it's a fold).
-            mPots[mLastPot] += mBets[*mCurrentPlayer];
-            mBets[*mCurrentPlayer] = 0;
             mCurrentPlayer = mPlayers.erase(mCurrentPlayer);
             --mNPlayers;
         }
@@ -159,6 +154,15 @@ bool GameState::nextState(uint32_t bet)
     else {
         mStakes[*mCurrentPlayer] -= bet;
         mBets[*mCurrentPlayer] += bet;
+        mPot += bet;
+
+        // If someone went all-in and the bet is not a call,
+        // it means we have to use side pots.
+        if (mAllInFlag && mBets[*mCurrentPlayer] != mLastRaise)
+            mOnePot = false;
+        else if (mStakes[*mCurrentPlayer] == 0)
+            mAllInFlag = true;
+
         // Raise
         if (mBets[*mCurrentPlayer] >= mMinRaise) {
             mMinRaise = 2 * mBets[*mCurrentPlayer] - mLastRaise;
@@ -169,7 +173,7 @@ bool GameState::nextState(uint32_t bet)
         else if (mStakes[*mCurrentPlayer] == 0) {
             // Incomplete call
             if (mBets[*mCurrentPlayer] < mLastRaise) {
-
+                mOnePot = false;
             }
             // Incomplete raise
             else if (mBets[*mCurrentPlayer] != mLastRaise) {
@@ -184,9 +188,7 @@ bool GameState::nextState(uint32_t bet)
 
         // Everybody folded but one.
         if (mNPlayers == 1) {
-            mStakes[*mCurrentPlayer] += std::accumulate(
-                mPots.begin(), mPots.begin() + mLastPot, 0U
-            );
+            mStakes[*mCurrentPlayer] += mPot;
             return true;
         }
 
@@ -196,20 +198,21 @@ bool GameState::nextState(uint32_t bet)
 
             // One pot and one winner
             // (deals with this specific case to speed up the computation)
-            if (mLastPot == 0 && rankings[0].size() == 1) {
-                mStakes[rankings[0][0]] += mPots[0];
+            if (mOnePot && rankings[0].size() == 1) {
+                mStakes[rankings[0][0]] += mPot;
                 return true;
             }
 
             // One pot and several winners
             // (deals with this specific case to speed up the computation)
-            else if (mLastPot == 0) {
-                uint32_t gain = mPots[0] / rankings[0].size();
+            else if (mOnePot) {
+                // Distributes the gains to each winner.
+                uint32_t gain = mPot / rankings[0].size();
                 for (uint8_t i : rankings[0]) {
                     mStakes[i] += gain;
                 }
-                // Remaining chips go to the first players after the dealer
-                uint8_t extra = mPots[0] % rankings[0].size();
+                // Remaining chips go to the first players after the dealer.
+                uint8_t extra = mPot % rankings[0].size();
                 for (uint8_t i = 0; i < extra; ++i) {
                     ++mStakes[rankings[0][i]];
                 }
@@ -217,6 +220,46 @@ bool GameState::nextState(uint32_t bet)
             }
             
             // General case: several pots
+
+            for (std::vector<uint8_t>& sameRankPlayers : rankings) {
+
+                std::vector<uint8_t> orderedWinners(sameRankPlayers.size());
+                std::partial_sort_copy(
+                    sameRankPlayers.begin(), sameRankPlayers.end(),
+                    orderedWinners.begin(), orderedWinners.end(),
+                    [&](uint8_t i, uint8_t j) { return mBets[i] < mBets[j]; }
+                );
+                orderedWinners.erase(
+                    std::unique(
+                        orderedWinners.begin(), orderedWinners.end(),
+                        [&](uint8_t i, uint8_t j) { return mBets[i] == mBets[j]; }
+                    ),
+                    orderedWinners.end()
+                );
+
+                for (uint8_t winner : orderedWinners) {
+                    uint32_t pot = 0;
+                    for (uint8_t player = 0; player < opt::MAX_PLAYERS; ++player) {
+                        if (mBets[player] == 0)
+                            continue;
+                        uint32_t due = std::min(mBets[winner], mBets[player]);
+                        pot += due;
+                        mBets[player] -= due;
+                    }
+                    // Distributes the gains to each winner.
+                    uint32_t gain = pot / sameRankPlayers.size();
+                    for (uint8_t i : sameRankPlayers) {
+                        mStakes[i] += gain;
+                    }
+                    // Remaining chips go to the first players after the dealer
+                    uint8_t extra = mPot % sameRankPlayers.size();
+                    for (uint8_t i = 0; i < extra; ++i) {
+                        ++mStakes[sameRankPlayers[i]];
+                    }
+                }
+            }
+
+            ////////////
 
             // Computes the number of winners of each pot.
             std::array<uint8_t, opt::MAX_PLAYERS> nWinners;
@@ -284,22 +327,7 @@ bool GameState::nextState(uint32_t bet)
 
         // Goes to the next round.
         else {
-            if (!mUseSidePots) {
-                mPots[0] += 
-            }
-
-            else {
-                std::vector<uint32_t> bets;
-                std::partial_sort_copy(
-                    mBets.begin(), mBets.end(),
-                    bets.begin(), bets.end()
-               );
-            }
-
-            for (uint8_t i : mPlayers)
-                mBets[i] = 0;
-            mMinRaise = mBB;
-            mLastRaise = 0;
+            mMinRaise += mBB;
             ++mRound;
             mCurrentPlayer = mPlayers.begin();
             mInitiator = *mCurrentPlayer;
@@ -310,7 +338,7 @@ bool GameState::nextState(uint32_t bet)
 
 void GameState::goNextPlayer()
 {
-    // Skip all-in players
+    // Skips players who went all-in.
     do {
         if (++mCurrentPlayer == mPlayers.end())
             mCurrentPlayer = mPlayers.begin();
@@ -322,7 +350,6 @@ std::vector<std::vector<uint8_t>> GameState::getRankings() const
     // Computes players' ranks.
     std::vector<uint16_t> ranks(mNPlayers);
     std::vector<uint8_t> players(mNPlayers);
-    std::vector<uint8_t> range(mNPlayers);
     uint16_t bestRank = 0;
     std::vector<uint8_t> bestRankPlayers;
     uint8_t i = 0;
@@ -330,7 +357,6 @@ std::vector<std::vector<uint8_t>> GameState::getRankings() const
         Hand hand = mBoardCards + mPlayerHands[player];
         ranks[i] = mEval.evaluate(hand);
         players[i] = player;
-        range[i] = i;
         if (ranks[i] > bestRank) {
             bestRank = ranks[i];
             bestRankPlayers = { player };
@@ -343,9 +369,11 @@ std::vector<std::vector<uint8_t>> GameState::getRankings() const
 
     // One pot
     // (deals with this specific case to speed up the computation)
-    if (mLastPot == 0)
+    if (mOnePot)
         return { bestRankPlayers };
 
+    std::vector<uint8_t> range(mNPlayers);
+    std::iota(range.begin(), range.end(), uint8_t(0));
     // stable_sort is needed to preserve the order of the players
     // with the same rank for the distribution of the extras
     // in clockwise order.
