@@ -56,6 +56,7 @@ private:
 	void dealBoardCards(uint64_t& usedCardsMask);
 	void dealCards(omp::Hand& hand, unsigned nCards, uint64_t& usedCardsMask);
 	void goNextPlayer();
+	void showdown();
 	std::vector<std::vector<uint8_t>> getRankings() const;
 
 	uint16_t mAnte, mSB, mBB;

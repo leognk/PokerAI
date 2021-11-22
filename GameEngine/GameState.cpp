@@ -194,103 +194,7 @@ bool GameState::nextState(uint32_t bet)
 
         // Showdown
         else if (mRound == Round::river) {
-            std::vector<std::vector<uint8_t>> rankings = getRankings();
-
-            // One pot and one winner
-            // (deals with this specific case to speed up the computation)
-            if (mOnePot && rankings[0].size() == 1) {
-                mStakes[rankings[0][0]] += mPot;
-                return true;
-            }
-
-            // One pot and several winners
-            // (deals with this specific case to speed up the computation)
-            else if (mOnePot) {
-                // Distributes the gains to each winner.
-                uint32_t gain = mPot / rankings[0].size();
-                for (uint8_t i : rankings[0]) {
-                    mStakes[i] += gain;
-                }
-                // Remaining chips go to the first players after the dealer.
-                uint8_t extra = mPot % rankings[0].size();
-                for (uint8_t i = 0; i < extra; ++i) {
-                    ++mStakes[rankings[0][i]];
-                }
-                return true;
-            }
-            
-            // General case: several pots
-            for (std::vector<uint8_t>& sameRankPlayers : rankings) {
-
-                // One winner for this pot
-                // (deals with this specific case to speed up the computation)
-                if (sameRankPlayers.size() == 1) {
-                    if (mBets[sameRankPlayers[0]] == 0)
-                        continue;
-                    // Builds the pot corresponding to the winner's bet.
-                    uint32_t pot = 0;
-                    for (uint8_t player = 0; player < opt::MAX_PLAYERS; ++player) {
-                        if (mBets[player] == 0)
-                            continue;
-                        uint32_t due = std::min(mBets[sameRankPlayers[0]], mBets[player]);
-                        pot += due;
-                        mBets[player] -= due;
-                    }
-                    mStakes[sameRankPlayers[0]] += pot;
-                    continue;
-                }
-
-                // Builds ordered bets of the same rank players.
-                std::vector<uint32_t> orderedBets(sameRankPlayers.size());
-                for (uint8_t i = 0; i < orderedBets.size(); ++i)
-                    orderedBets[i] = mBets[sameRankPlayers[i]];
-                std::sort(orderedBets.begin(), orderedBets.end());
-                // Removes duplicates.
-                orderedBets.erase(
-                    std::unique(orderedBets.begin(), orderedBets.end()),
-                    orderedBets.end()
-                );
-
-                // Skips if nobody in this bracket has a gain.
-                if (orderedBets.size() == 1 && orderedBets[0] == 0)
-                    continue;
-
-                // Flags for winners eligible for a gain.
-                std::vector<bool> giveGain(sameRankPlayers.size(), true);
-                uint8_t nWinners = sameRankPlayers.size();
-
-                for (uint32_t winnerBet : orderedBets) {
-                    if (winnerBet == 0)
-                        continue;
-                    // Unflags winners who are not eligible for the current pot.
-                    for (uint8_t i : sameRankPlayers) {
-                        if (giveGain[i] && mBets[i] == 0) {
-                            giveGain[i] = false;
-                            --nWinners;
-                        }
-                    }
-                    // Builds the pot corresponding to winnerBet.
-                    uint32_t pot = 0;
-                    for (uint8_t player = 0; player < opt::MAX_PLAYERS; ++player) {
-                        if (mBets[player] == 0)
-                            continue;
-                        uint32_t due = std::min(winnerBet, mBets[player]);
-                        pot += due;
-                        mBets[player] -= due;
-                    }
-                    // Distributes the gains to each winner.
-                    uint32_t gain = pot / nWinners;
-                    // Remaining chips go to the first players after the dealer
-                    uint8_t extra = pot % nWinners;
-                    for (uint8_t i : sameRankPlayers) {
-                        if (giveGain[i]) {
-                            mStakes[i] += gain;
-                            if (extra--)
-                                ++mStakes[i];
-                        }
-                    }
-                }
-            }
+            showdown();
             return true;
         }
 
@@ -314,32 +218,144 @@ void GameState::goNextPlayer()
     } while (mStakes[*mCurrentPlayer] == 0);
 }
 
+void GameState::showdown()
+{
+    std::vector<std::vector<uint8_t>> rankings = getRankings();
+
+    // One pot and one winner
+    // (deals with this specific case to speed up the computation)
+    if (mOnePot && rankings[0].size() == 1) {
+        mStakes[rankings[0][0]] += mPot;
+        return;
+    }
+
+    // One pot and several winners
+    // (deals with this specific case to speed up the computation)
+    else if (mOnePot) {
+        // Distributes the gains to each winner.
+        uint32_t gain = mPot / rankings[0].size();
+        for (uint8_t i : rankings[0]) {
+            mStakes[i] += gain;
+        }
+        // Remaining chips go to the first players after the dealer.
+        uint8_t extra = mPot % rankings[0].size();
+        for (uint8_t i = 0; i < extra; ++i) {
+            ++mStakes[rankings[0][i]];
+        }
+        return;
+    }
+
+    // General case: several pots
+    for (std::vector<uint8_t>& sameRankPlayers : rankings) {
+
+        // One winner for this pot
+        // (deals with this specific case to speed up the computation)
+        if (sameRankPlayers.size() == 1) {
+            if (mBets[sameRankPlayers[0]] == 0)
+                continue;
+            // Builds the pot corresponding to the winner's bet.
+            uint32_t pot = 0;
+            for (uint8_t player = 0; player < opt::MAX_PLAYERS; ++player) {
+                if (mBets[player] == 0)
+                    continue;
+                uint32_t due = std::min(mBets[sameRankPlayers[0]], mBets[player]);
+                pot += due;
+                mBets[player] -= due;
+            }
+            mStakes[sameRankPlayers[0]] += pot;
+            continue;
+        }
+
+        // Builds ordered bets of the same rank players.
+        std::vector<uint32_t> orderedBets(sameRankPlayers.size());
+        for (uint8_t i = 0; i < orderedBets.size(); ++i)
+            orderedBets[i] = mBets[sameRankPlayers[i]];
+        std::sort(orderedBets.begin(), orderedBets.end());
+        // Removes duplicates.
+        orderedBets.erase(
+            std::unique(orderedBets.begin(), orderedBets.end()),
+            orderedBets.end()
+        );
+
+        // Skips if nobody in this bracket has a gain.
+        if (orderedBets.size() == 1 && orderedBets[0] == 0)
+            continue;
+
+        // Flags for winners eligible for a gain.
+        std::vector<bool> giveGain(sameRankPlayers.size(), true);
+        uint8_t nWinners = sameRankPlayers.size();
+
+        // Each non-zero winnerBet will correspond to one pot
+        // for the flagged players of the current rank's bracket to share.
+        for (uint32_t winnerBet : orderedBets) {
+            if (winnerBet == 0)
+                continue;
+            // Unflags winners who are not eligible for the current pot.
+            for (uint8_t i : sameRankPlayers) {
+                if (giveGain[i] && mBets[i] == 0) {
+                    giveGain[i] = false;
+                    --nWinners;
+                }
+            }
+            // Builds the pot corresponding to winnerBet.
+            uint32_t pot = 0;
+            for (uint8_t player = 0; player < opt::MAX_PLAYERS; ++player) {
+                if (mBets[player] == 0)
+                    continue;
+                uint32_t due = std::min(winnerBet, mBets[player]);
+                pot += due;
+                mBets[player] -= due;
+            }
+            // Distributes the gains to each winner.
+            uint32_t gain = pot / nWinners;
+            // Remaining chips go to the first players after the dealer
+            uint8_t extra = pot % nWinners;
+            for (uint8_t i : sameRankPlayers) {
+                if (giveGain[i]) {
+                    mStakes[i] += gain;
+                    if (extra--)
+                        ++mStakes[i];
+                }
+            }
+        }
+    }
+    return;
+}
+
 std::vector<std::vector<uint8_t>> GameState::getRankings() const
 {
+
+    // One pot
+    // (deals with this specific case to speed up the computation)
+    if (mOnePot) {
+        uint16_t bestRank = 0;
+        std::vector<uint8_t> winners;
+        for (uint8_t player : mPlayers) {
+            Hand hand = mBoardCards + mPlayerHands[player];
+            uint16_t rank = mEval.evaluate(hand);
+            if (rank > bestRank) {
+                bestRank = rank;
+                winners = { player };
+            }
+            else if (rank == bestRank) {
+                winners.push_back(player);
+            }
+        }
+        return { winners };
+    }
+
+    // General case of several pots
+
     // Computes players' ranks.
     std::vector<uint16_t> ranks(mNPlayers);
     std::vector<uint8_t> players(mNPlayers);
-    uint16_t bestRank = 0;
-    std::vector<uint8_t> bestRankPlayers;
     uint8_t i = 0;
     for (uint8_t player : mPlayers) {
         Hand hand = mBoardCards + mPlayerHands[player];
         ranks[i] = mEval.evaluate(hand);
         players[i] = player;
-        if (ranks[i] > bestRank) {
-            bestRank = ranks[i];
-            bestRankPlayers = { player };
-        }
-        else if (ranks[i] == bestRank) {
-            bestRankPlayers.push_back(player);
-        }
         ++i;
     }
-
-    // One pot
-    // (deals with this specific case to speed up the computation)
-    if (mOnePot)
-        return { bestRankPlayers };
 
     std::vector<uint8_t> range(mNPlayers);
     std::iota(range.begin(), range.end(), uint8_t(0));
