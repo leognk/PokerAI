@@ -141,6 +141,11 @@ bool GameState::nextState(uint32_t bet)
     if (bet == 0) {
         // Fold
         if (mBets[*mCurrentPlayer] != mLastRaise) {
+            // Before the player is erased and we lose access to his bets,
+            // we transfer them to the pot (no risk that they have to be moved
+            // to a side pot because it's a fold).
+            mPots[mLastPot] += mBets[*mCurrentPlayer];
+            mBets[*mCurrentPlayer] = 0;
             mCurrentPlayer = mPlayers.erase(mCurrentPlayer);
             --mNPlayers;
         }
@@ -154,7 +159,6 @@ bool GameState::nextState(uint32_t bet)
     else {
         mStakes[*mCurrentPlayer] -= bet;
         mBets[*mCurrentPlayer] += bet;
-        //mRoundPot += bet; //////////////////
         // Raise
         if (mBets[*mCurrentPlayer] >= mMinRaise) {
             mMinRaise = 2 * mBets[*mCurrentPlayer] - mLastRaise;
@@ -280,6 +284,18 @@ bool GameState::nextState(uint32_t bet)
 
         // Goes to the next round.
         else {
+            if (!mUseSidePots) {
+                mPots[0] += 
+            }
+
+            else {
+                std::vector<uint32_t> bets;
+                std::partial_sort_copy(
+                    mBets.begin(), mBets.end(),
+                    bets.begin(), bets.end()
+               );
+            }
+
             for (uint8_t i : mPlayers)
                 mBets[i] = 0;
             mMinRaise = mBB;
