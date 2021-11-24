@@ -105,8 +105,8 @@ void GameState::chargeBlinds()
     mPot += mBB;
 
     mInitiator = *mCurrentPlayer;
-    mMinRaise = 2 * mBB;
-    mLastRaise = mBB;
+    mToCall = mBB;
+    mLargestRaise = mBB;
 }
 
 void GameState::dealHoleCards(uint64_t& usedCardsMask)
@@ -140,7 +140,7 @@ bool GameState::nextState(uint32_t bet)
     // Current player checks or folds.
     if (!bet) {
         // Fold
-        if (mBets[*mCurrentPlayer] != mLastRaise) {
+        if (mBets[*mCurrentPlayer] != mToCall) {
             mCurrentPlayer = mPlayers.erase(mCurrentPlayer);
             --mNPlayers;
         }
@@ -156,28 +156,31 @@ bool GameState::nextState(uint32_t bet)
         mBets[*mCurrentPlayer] += bet;
         mPot += bet;
 
+        uint32_t raise = mBets[*mCurrentPlayer] - mToCall;
+
         // If someone has gone all-in before and the bet is not a call,
         // it means we have to use side pots.
-        if (mAllInFlag && mBets[*mCurrentPlayer] != mLastRaise)
+        if (mAllInFlag && raise)
             mOnePot = false;
         else if (!mStakes[*mCurrentPlayer])
             mAllInFlag = true;
 
         // Raise
-        if (mBets[*mCurrentPlayer] >= mMinRaise) {
-            mMinRaise = 2 * mBets[*mCurrentPlayer] - mLastRaise;
-            mLastRaise = mBets[*mCurrentPlayer];
+        if (raise >= mLargestRaise) {
+            mToCall = mBets[*mCurrentPlayer];
+            mLargestRaise = raise;
             mInitiator = *mCurrentPlayer;
         }
         // All-in not full raise
         else if (!mStakes[*mCurrentPlayer]) {
             // Incomplete call
-            if (mBets[*mCurrentPlayer] < mLastRaise) {
+            if (raise < 0) {
                 mOnePot = false;
             }
             // Incomplete raise
-            else if (mBets[*mCurrentPlayer] != mLastRaise) {
-                
+            else if (raise) {
+                mToCall = mBets[*mCurrentPlayer];
+                mInitiator = *mCurrentPlayer;
             }
         }
         goNextPlayer();
@@ -200,9 +203,9 @@ bool GameState::nextState(uint32_t bet)
 
         // Goes to the next round.
         else {
-            mMinRaise += mBB;
+            mLargestRaise = mBB;
             ++mRound;
-            mCurrentPlayer = mPlayers.begin();
+            mCurrentPlayer = mPlayers.begin(); /////////////////////////// if the first player is all-in???
             mInitiator = *mCurrentPlayer;
             return false;
         }
@@ -389,6 +392,11 @@ uint8_t GameState::currentPlayer() const
     return *mCurrentPlayer;
 }
 
+bool GameState::notFacingFullRaise() const
+{
+    return call() && call() < mLargestRaise;
+}
+
 uint32_t GameState::stake() const
 {
     return mStakes[*mCurrentPlayer];
@@ -396,12 +404,12 @@ uint32_t GameState::stake() const
 
 uint32_t GameState::call() const
 {
-    return mLastRaise - mBets[*mCurrentPlayer];
+    return mToCall - mBets[*mCurrentPlayer];
 }
 
 uint32_t GameState::minRaise() const
 {
-    return mMinRaise - mBets[*mCurrentPlayer];
+    return call() + mLargestRaise;
 }
 
 } // egn

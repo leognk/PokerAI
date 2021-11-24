@@ -31,10 +31,20 @@ public:
 	bool nextState(uint32_t bet);
 
 	// Legal actions (uint32_t bet) for currentPlayer() are:
-	// case stake() <= call():              0 & stake()
-	// case call() < stake() <= minRaise(): 0 & call() & stake()
-	// case minRaise() < stake():           0 & call() & [minRaise(), stake()]
+	// if      stake() <= call():     0 & stake()
+	// else if notFacingFullRaise():  0 & call()
+	// else if stake() <= minRaise(): 0 & call() & stake()
+	// else    minRaise() < stake():  0 & call() & [minRaise(), stake()]
+	//
+	// Equivalent to:
+	// if notFacingFullRaise():
+	//     0 & min(call(), stake())
+	// else:
+	//     case stake() <= call():              0 & stake()
+	//     case call() < stake() <= minRaise(): 0 & call() & stake()
+	//     case minRaise() < stake():           0 & call() & [minRaise(), stake()]
 	uint8_t currentPlayer() const;
+	bool notFacingFullRaise() const;
 	uint32_t stake() const;
 	// Chips to give to call
 	uint32_t call() const;
@@ -89,10 +99,10 @@ private:
 	uint8_t mDealer;
 	// First acting player of the round or last player who raised.
 	uint8_t mInitiator;
-	// Minimum raise to (counting from the start of the hand)
-	uint32_t mMinRaise;
-	// Last raise to (counting from the start of the hand)
-	uint32_t mLastRaise;
+	// Largest raise (by) of the current round.
+	uint32_t mLargestRaise;
+	// Current number of chips to call (counting from the start of the hand).
+	uint32_t mToCall;
 	bool mAllInFlag;
 
 	omp::HandEvaluator mEval;
