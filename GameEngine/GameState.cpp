@@ -7,7 +7,7 @@ namespace egn
 
 #pragma warning(suppress: 26495)
 GameState::GameState(unsigned rngSeed) :
-    mRng{ (rngSeed == 0) ? std::random_device{}() : rngSeed },
+    mRng{ (!rngSeed) ? std::random_device{}() : rngSeed },
     mCardDist(0, omp::CARD_COUNT - 1)
 {
 }
@@ -59,7 +59,7 @@ void GameState::resetPlayers()
     for (uint8_t i = mDealer + 1, j; i < mDealer + opt::MAX_PLAYERS + 1; ++i) {
         j = i % opt::MAX_PLAYERS;
         // Ignores inactive players.
-        if (mStakes[j] == 0)
+        if (!mStakes[j])
             continue;
         mPlayerHands[j] = omp::Hand::empty();
         mBets[j] = 0;
@@ -138,7 +138,7 @@ void GameState::dealCards(omp::Hand& hand, unsigned nCards, uint64_t& usedCardsM
 bool GameState::nextState(uint32_t bet)
 {
     // Current player checks or folds.
-    if (bet == 0) {
+    if (!bet) {
         // Fold
         if (mBets[*mCurrentPlayer] != mLastRaise) {
             mCurrentPlayer = mPlayers.erase(mCurrentPlayer);
@@ -156,11 +156,11 @@ bool GameState::nextState(uint32_t bet)
         mBets[*mCurrentPlayer] += bet;
         mPot += bet;
 
-        // If someone went all-in and the bet is not a call,
+        // If someone has gone all-in before and the bet is not a call,
         // it means we have to use side pots.
         if (mAllInFlag && mBets[*mCurrentPlayer] != mLastRaise)
             mOnePot = false;
-        else if (mStakes[*mCurrentPlayer] == 0)
+        else if (!mStakes[*mCurrentPlayer])
             mAllInFlag = true;
 
         // Raise
@@ -169,15 +169,15 @@ bool GameState::nextState(uint32_t bet)
             mLastRaise = mBets[*mCurrentPlayer];
             mInitiator = *mCurrentPlayer;
         }
-        // All-in not raising
-        else if (mStakes[*mCurrentPlayer] == 0) {
+        // All-in not full raise
+        else if (!mStakes[*mCurrentPlayer]) {
             // Incomplete call
             if (mBets[*mCurrentPlayer] < mLastRaise) {
                 mOnePot = false;
             }
             // Incomplete raise
             else if (mBets[*mCurrentPlayer] != mLastRaise) {
-
+                
             }
         }
         goNextPlayer();
@@ -207,15 +207,18 @@ bool GameState::nextState(uint32_t bet)
             return false;
         }
     }
+
+    return false;
 }
 
 void GameState::goNextPlayer()
 {
-    // Skips players who went all-in.
+    // Skips players who went all-in except if it is the initiator
+    // so that the round can end.
     do {
         if (++mCurrentPlayer == mPlayers.end())
             mCurrentPlayer = mPlayers.begin();
-    } while (mStakes[*mCurrentPlayer] == 0);
+    } while (!mStakes[*mCurrentPlayer] && *mCurrentPlayer != mInitiator);
 }
 
 void GameState::showdown()
@@ -229,7 +232,7 @@ void GameState::showdown()
         return;
     }
 
-    // One pot and several winners
+    // One pot and multiple winners
     // (deals with this specific case to speed up the computation)
     else if (mOnePot) {
         // Distributes the gains to each winner.
@@ -245,18 +248,18 @@ void GameState::showdown()
         return;
     }
 
-    // General case: several pots
+    // General case: multiple pots
     for (std::vector<uint8_t>& sameRankPlayers : rankings) {
 
         // One winner for this pot
         // (deals with this specific case to speed up the computation)
         if (sameRankPlayers.size() == 1) {
-            if (mBets[sameRankPlayers[0]] == 0)
+            if (!mBets[sameRankPlayers[0]])
                 continue;
             // Builds the pot corresponding to the winner's bet.
             uint32_t pot = 0;
             for (uint8_t player = 0; player < opt::MAX_PLAYERS; ++player) {
-                if (mBets[player] == 0)
+                if (!mBets[player])
                     continue;
                 uint32_t due = std::min(mBets[sameRankPlayers[0]], mBets[player]);
                 pot += due;
@@ -278,7 +281,7 @@ void GameState::showdown()
         );
 
         // Skips if nobody in this bracket has a gain.
-        if (orderedBets.size() == 1 && orderedBets[0] == 0)
+        if (orderedBets.size() == 1 && !orderedBets[0])
             continue;
 
         // Flags for winners eligible for a gain.
@@ -288,11 +291,11 @@ void GameState::showdown()
         // Each non-zero winnerBet will correspond to one pot
         // for the flagged players of the current rank's bracket to share.
         for (uint32_t winnerBet : orderedBets) {
-            if (winnerBet == 0)
+            if (!winnerBet)
                 continue;
             // Unflags winners who are not eligible for the current pot.
             for (uint8_t i : sameRankPlayers) {
-                if (giveGain[i] && mBets[i] == 0) {
+                if (giveGain[i] && !mBets[i]) {
                     giveGain[i] = false;
                     --nWinners;
                 }
@@ -300,7 +303,7 @@ void GameState::showdown()
             // Builds the pot corresponding to winnerBet.
             uint32_t pot = 0;
             for (uint8_t player = 0; player < opt::MAX_PLAYERS; ++player) {
-                if (mBets[player] == 0)
+                if (!mBets[player])
                     continue;
                 uint32_t due = std::min(winnerBet, mBets[player]);
                 pot += due;
@@ -344,7 +347,7 @@ std::vector<std::vector<uint8_t>> GameState::getRankings() const
         return { winners };
     }
 
-    // General case of several pots
+    // General case of multiple pots
 
     // Computes players' ranks.
     std::vector<uint16_t> ranks(mNPlayers);
