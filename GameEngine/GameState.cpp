@@ -51,21 +51,58 @@ void GameState::startNewHand(uint8_t dealerIdx)
     dealBoardCards(usedCardsMask);
 }
 
+uint8_t& GameState::nextAlive(uint8_t& i) const
+{
+    do {
+        ++i %= opt::MAX_PLAYERS;
+    } while (!mAlive[i]);
+    return i;
+}
+
+uint8_t& GameState::nextActing(uint8_t& i) const
+{
+    do {
+        ++i %= opt::MAX_PLAYERS;
+    } while (!mActing[i]);
+    return i;
+}
+
+void GameState::eraseAlive(uint8_t& i)
+{
+    mAlive[i] = false;
+    if (i == mFirstAlive)
+        nextAlive(mFirstAlive);
+    --mNAlive;
+}
+
+void GameState::eraseActing(uint8_t& i)
+{
+    mActing[i] = false;
+    if (i == mFirstActing)
+        nextActing(mFirstActing);
+    --mNActing;
+}
+
 void GameState::resetPlayers()
 {
-    mPlayers.clear();
+    mNAlive = 0;
     // The first acting player after the preflop is always
     // the player following the dealer.
-    for (uint8_t i = mDealer + 1, j; i < mDealer + opt::MAX_PLAYERS + 1; ++i) {
-        j = i % opt::MAX_PLAYERS;
+    uint8_t i = mDealer + 1;
+    do {
         // Ignores inactive players.
-        if (!mStakes[j])
+        if (!mStakes[i])
             continue;
-        mPlayerHands[j] = omp::Hand::empty();
-        mBets[j] = 0;
-        mPlayers.push_back(j);
-    }
-    mNPlayers = mPlayers.size();
+        mHands[i] = omp::Hand::empty();
+        mBets[i] = 0;
+        mAlive[i] = true;
+        ++mNAlive;
+        mActing[i] = true;
+        ++mNActing;
+        mActed[i] = false;
+    } while (++i % opt::MAX_PLAYERS != mDealer + 1);
+    mFirstAlive = nextAlive(mDealer);
+    mFirstActing = nextActing(mDealer);
 }
 
 void GameState::resetBoard()
@@ -77,26 +114,26 @@ void GameState::resetBoard()
 
 void GameState::chargeAnte()
 {
-    for (uint8_t i : mPlayers)
+    uint8_t i = mFirstAlive;
+    do {
         mStakes[i] -= mAnte;
-    mPot += mNPlayers * mAnte;
+    } while (nextAlive(i) != mFirstAlive);
+    mPot += mNAlive * mAnte;
 }
 
 void GameState::chargeBlinds()
 {
-    mCurrentPlayer = mPlayers.begin();
+    mCurrentActing = mFirstActing;
     uint8_t sbPlayer, bbPlayer;
     // Heads-up
-    if (mNPlayers == 2) {
-        bbPlayer = *mCurrentPlayer;
-        ++mCurrentPlayer;
-        sbPlayer = *mCurrentPlayer;
+    if (mNAlive == 2) {
+        bbPlayer = mCurrentActing;
+        sbPlayer = nextActing(mCurrentActing);
     }
     else {
-        sbPlayer = *mCurrentPlayer;
-        ++mCurrentPlayer;
-        bbPlayer = *mCurrentPlayer;
-        ++mCurrentPlayer;
+        sbPlayer = mCurrentActing;
+        bbPlayer = nextActing(mCurrentActing);
+        nextActing(mCurrentActing);
     }
 
     mBets[sbPlayer] += mSB;
@@ -104,16 +141,16 @@ void GameState::chargeBlinds()
     mBets[bbPlayer] += mBB;
     mPot += mBB;
 
-    mInitiator = *mCurrentPlayer;
     mToCall = mBB;
     mLargestRaise = mBB;
 }
 
 void GameState::dealHoleCards(uint64_t& usedCardsMask)
 {
-    for (uint8_t i : mPlayers) {
-        dealCards(mPlayerHands[i], omp::HOLE_CARDS, usedCardsMask);
-    }
+    uint8_t i = mFirstAlive;
+    do {
+        dealCards(mHands[i], omp::HOLE_CARDS, usedCardsMask);
+    } while (nextAlive(i) != mFirstAlive);
 }
 
 void GameState::dealBoardCards(uint64_t& usedCardsMask)
@@ -137,91 +174,88 @@ void GameState::dealCards(omp::Hand& hand, unsigned nCards, uint64_t& usedCardsM
 
 bool GameState::nextState(uint32_t bet)
 {
-    // Current player checks or folds.
-    if (!bet) {
-        // Fold
-        if (mBets[*mCurrentPlayer] != mToCall) {
-            mCurrentPlayer = mPlayers.erase(mCurrentPlayer);
-            --mNPlayers;
-        }
-        // Check
-        else {
-            goNextPlayer();
-        }
+    mActed[mCurrentActing] = true;
+
+    // Current player folds.
+    if (!bet && mBets[mCurrentActing] != mToCall) {
+        eraseAlive(mCurrentActing);
+        eraseActing(mCurrentActing);
     }
 
     // Current player calls or raises.
     else {
-        mStakes[*mCurrentPlayer] -= bet;
-        mBets[*mCurrentPlayer] += bet;
+        mStakes[mCurrentActing] -= bet;
+        mBets[mCurrentActing] += bet;
         mPot += bet;
 
-        uint32_t raise = mBets[*mCurrentPlayer] - mToCall;
+        uint32_t raise = mBets[mCurrentActing] - mToCall;
 
         // If someone has gone all-in before and the bet is not a call,
         // it means we have to use side pots.
         if (mAllInFlag && raise)
             mOnePot = false;
-        else if (!mStakes[*mCurrentPlayer])
-            mAllInFlag = true;
 
         // Raise
         if (raise >= mLargestRaise) {
-            mToCall = mBets[*mCurrentPlayer];
+            mToCall = mBets[mCurrentActing];
             mLargestRaise = raise;
-            mInitiator = *mCurrentPlayer;
         }
         // All-in not full raise
-        else if (!mStakes[*mCurrentPlayer]) {
+        else if (!mStakes[mCurrentActing]) {
             // Incomplete call
             if (raise < 0) {
                 mOnePot = false;
             }
             // Incomplete raise
             else if (raise) {
-                mToCall = mBets[*mCurrentPlayer];
-                mInitiator = *mCurrentPlayer;
+                mToCall = mBets[mCurrentActing];
             }
         }
-        goNextPlayer();
+
+        // Goes all-in.
+        if (!mStakes[mCurrentActing]) {
+            mAllInFlag = true;
+            eraseActing(mCurrentActing);
+        }
+    }
+
+    // Everybody folded but one.
+    if (mNAlive == 1) {
+        mStakes[mFirstAlive] += mPot;
+        return true;
+    }
+
+    if (mNActing)
+        nextActing(mCurrentActing);
+    // Everybody went all-in.
+    else {
+        showdown();
+        return true;
     }
 
     // End of the round (we went around the table)
-    if (*mCurrentPlayer == mInitiator) {
-
-        // Everybody folded but one.
-        if (mNPlayers == 1) {
-            mStakes[*mCurrentPlayer] += mPot;
-            return true;
-        }
+    if (mActed[mCurrentActing] && mToCall == mBets[mCurrentActing]) {
 
         // Showdown
-        else if (mRound == Round::river) {
+        if (mRound == Round::river || mNActing == 1) {
             showdown();
             return true;
         }
 
         // Goes to the next round.
         else {
-            mLargestRaise = mBB;
             ++mRound;
-            mCurrentPlayer = mPlayers.begin(); /////////////////////////// if the first player is all-in???
-            mInitiator = *mCurrentPlayer;
+            mLargestRaise = mBB;
+            uint8_t i = mFirstActing;
+            do {
+                mActed[i] = false;
+            } while (nextActing(i) != mFirstActing);
+            mCurrentActing = mFirstActing;
             return false;
         }
     }
 
     return false;
-}
-
-void GameState::goNextPlayer()
-{
-    // Skips players who went all-in except if it is the initiator
-    // so that the round can end.
-    do {
-        if (++mCurrentPlayer == mPlayers.end())
-            mCurrentPlayer = mPlayers.begin();
-    } while (!mStakes[*mCurrentPlayer] && *mCurrentPlayer != mInitiator);
 }
 
 void GameState::showdown()
@@ -336,34 +370,35 @@ std::vector<std::vector<uint8_t>> GameState::getRankings() const
     if (mOnePot) {
         uint16_t bestRank = 0;
         std::vector<uint8_t> winners;
-        for (uint8_t player : mPlayers) {
-            Hand hand = mBoardCards + mPlayerHands[player];
+        uint8_t i = mFirstAlive;
+        do {
+            Hand hand = mBoardCards + mHands[i];
             uint16_t rank = mEval.evaluate(hand);
             if (rank > bestRank) {
                 bestRank = rank;
-                winners = { player };
+                winners = { i };
             }
             else if (rank == bestRank) {
-                winners.push_back(player);
+                winners.push_back(i);
             }
-        }
+        } while (nextAlive(i) != mFirstAlive);
         return { winners };
     }
 
     // General case of multiple pots
 
     // Computes players' ranks.
-    std::vector<uint16_t> ranks(mNPlayers);
-    std::vector<uint8_t> players(mNPlayers);
-    uint8_t i = 0;
-    for (uint8_t player : mPlayers) {
-        Hand hand = mBoardCards + mPlayerHands[player];
+    std::vector<uint16_t> ranks(mNAlive);
+    std::vector<uint8_t> players(mNAlive);
+    uint8_t player = mFirstAlive;
+    for (uint8_t i = 0; i < mNAlive; ++i) {
+        Hand hand = mBoardCards + mHands[player];
         ranks[i] = mEval.evaluate(hand);
         players[i] = player;
-        ++i;
+        nextAlive(player);
     }
 
-    std::vector<uint8_t> range(mNPlayers);
+    std::vector<uint8_t> range(mNAlive);
     std::iota(range.begin(), range.end(), uint8_t(0));
     // stable_sort is needed to preserve the order of the players
     // with the same rank for the distribution of the extras
@@ -387,9 +422,9 @@ std::vector<std::vector<uint8_t>> GameState::getRankings() const
     return rankings;
 }
 
-uint8_t GameState::currentPlayer() const
+uint8_t GameState::actingPlayer() const
 {
-    return *mCurrentPlayer;
+    return mCurrentActing;
 }
 
 bool GameState::notFacingFullRaise() const
@@ -399,12 +434,12 @@ bool GameState::notFacingFullRaise() const
 
 uint32_t GameState::stake() const
 {
-    return mStakes[*mCurrentPlayer];
+    return mStakes[mCurrentActing];
 }
 
 uint32_t GameState::call() const
 {
-    return mToCall - mBets[*mCurrentPlayer];
+    return mToCall - mBets[mCurrentActing];
 }
 
 uint32_t GameState::minRaise() const

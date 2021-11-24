@@ -5,7 +5,6 @@
 #include "../OMPEval/omp/Random.h"
 #include "../OMPEval/omp/HandEvaluator.h"
 #include "../Optimus/Constants.h"
-#include <list>
 #include <vector>
 
 namespace egn {
@@ -43,7 +42,7 @@ public:
 	//     case stake() <= call():              0 & stake()
 	//     case call() < stake() <= minRaise(): 0 & call() & stake()
 	//     case minRaise() < stake():           0 & call() & [minRaise(), stake()]
-	uint8_t currentPlayer() const;
+	uint8_t actingPlayer() const;
 	bool notFacingFullRaise() const;
 	uint32_t stake() const;
 	// Chips to give to call
@@ -57,7 +56,11 @@ private:
 
 	enum class Round { preflop, flop, turn, river };
 	friend Round& operator++(Round& r);
-	
+
+	uint8_t& nextAlive(uint8_t& i) const;
+	uint8_t& nextActing(uint8_t& i) const;
+	void eraseAlive(uint8_t& i);
+	void eraseActing(uint8_t& i);
 	void resetPlayers();
 	void resetBoard();
 	void chargeAnte();
@@ -65,7 +68,6 @@ private:
 	void dealHoleCards(uint64_t& usedCardsMask);
 	void dealBoardCards(uint64_t& usedCardsMask);
 	void dealCards(omp::Hand& hand, unsigned nCards, uint64_t& usedCardsMask);
-	void goNextPlayer();
 	void showdown();
 	std::vector<std::vector<uint8_t>> getRankings() const;
 
@@ -77,9 +79,18 @@ private:
 	// Players
 	// Set a player's stake to 0 if he is not active.
 	std::array<uint32_t, opt::MAX_PLAYERS> mStakes;
-	std::array<omp::Hand, opt::MAX_PLAYERS> mPlayerHands;
-	// Bets since the start of the hand
+	std::array<omp::Hand, opt::MAX_PLAYERS> mHands;
+	// Bets since the start of the hand.
 	std::array<uint32_t, opt::MAX_PLAYERS> mBets;
+	std::array<uint8_t, opt::MAX_PLAYERS> mAlive;
+	uint8_t mFirstAlive;
+	uint8_t mNAlive;
+	// Alive and did not go all-in yet.
+	std::array<uint8_t, opt::MAX_PLAYERS> mActing;
+	uint8_t mFirstActing;
+	uint8_t mNActing;
+	// Acted on the current round.
+	std::array<bool, opt::MAX_PLAYERS> mActed;
 
 	// Board
 	omp::Hand mBoardCards;
@@ -89,16 +100,9 @@ private:
 
 	Round mRound;
 
-	// Number of players still alive
-	uint8_t mNPlayers;
-	// Indices of players still alive
-	// Alive players are ordered starting from the player following the dealer.
-	std::list<uint8_t> mPlayers;
-	// Player making the action passed to nextState.
-	std::list<uint8_t>::iterator mCurrentPlayer;
 	uint8_t mDealer;
-	// First acting player of the round or last player who raised.
-	uint8_t mInitiator;
+	// Player making the action passed to nextState.
+	uint8_t mCurrentActing;
 	// Largest raise (by) of the current round.
 	uint32_t mLargestRaise;
 	// Current number of chips to call (counting from the start of the hand).
