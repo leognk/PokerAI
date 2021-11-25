@@ -12,12 +12,12 @@ GameState::GameState(unsigned rngSeed) :
 {
 }
 
-void GameState::setAnte(uint16_t ante)
+void GameState::setAnte(uint32_t ante)
 {
     mAnte = ante;
 }
 
-void GameState::setBigBlind(uint16_t bigBlind)
+void GameState::setBigBlind(uint32_t bigBlind)
 {
     mBB = bigBlind;
     mSB = mBB / 2;
@@ -33,7 +33,7 @@ void GameState::setStake(uint8_t playerIdx, uint32_t stake)
     mStakes[playerIdx] = stake;
 }
 
-void GameState::startNewHand(uint8_t dealerIdx)
+bool GameState::startNewHand(uint8_t dealerIdx)
 {
     mDealer = dealerIdx;
     mRound = Round::preflop;
@@ -42,15 +42,18 @@ void GameState::startNewHand(uint8_t dealerIdx)
     resetPlayers();
     resetBoard();
 
-    chargeAnte();
-    chargeBlinds();
-
     // Deals cards.
     uint64_t usedCardsMask = 0;
     dealHoleCards(usedCardsMask);
     dealBoardCards(usedCardsMask);
+
+    // Charges antes and blinds.
+    if (chargeAnte())
+        return true;
+    return chargeBlinds();
 }
 
+// mNAlive must be non-zero to avoid infinite loop.
 uint8_t& GameState::nextAlive(uint8_t& i) const
 {
     do {
@@ -59,6 +62,7 @@ uint8_t& GameState::nextAlive(uint8_t& i) const
     return i;
 }
 
+// mNActing must be non-zero to avoid infinite loop.
 uint8_t& GameState::nextActing(uint8_t& i) const
 {
     do {
@@ -70,17 +74,19 @@ uint8_t& GameState::nextActing(uint8_t& i) const
 void GameState::eraseAlive(uint8_t& i)
 {
     mAlive[i] = false;
+    --mNAlive;
     if (i == mFirstAlive)
         nextAlive(mFirstAlive);
-    --mNAlive;
 }
 
 void GameState::eraseActing(uint8_t& i)
 {
     mActing[i] = false;
-    if (i == mFirstActing)
-        nextActing(mFirstActing);
     --mNActing;
+    // If there is no acting player left,
+    // we leave mFirstActing as it is.
+    if (i == mFirstActing && mNActing)
+        nextActing(mFirstActing);
 }
 
 void GameState::resetPlayers()
@@ -112,37 +118,102 @@ void GameState::resetBoard()
     mOnePot = true;
 }
 
-void GameState::chargeAnte()
+bool GameState::chargeAnte()
 {
-    uint8_t i = mFirstAlive;
+    uint8_t i = mFirstActing;
     do {
-        mStakes[i] -= mAnte;
-    } while (nextAlive(i) != mFirstAlive);
-    mPot += mNAlive * mAnte;
+        // The player must all-in on the ante.
+        if (mStakes[i] <= mAnte) {
+            mPot += mStakes[i];
+            mBets[i] += mStakes[i];
+            mStakes[i] = 0;
+            eraseActing(i);
+            // Everybody went all-in.
+            // We deal with this case here to
+            // avoid infinite loop.
+            if (!mNActing) {
+                showdown();
+                return true;
+            }
+        }
+        else {
+            mPot += mAnte;
+            mBets[i] += mAnte;
+            mStakes[i] -= mAnte;
+        }
+    } while (nextActing(i) != mFirstActing);
+
+    // Only one player did not went all-in.
+    if (mNActing == 1) {
+        showdown();
+        return true;
+    }
+
+    return false;
 }
 
-void GameState::chargeBlinds()
+bool GameState::chargeBlinds()
 {
-    mCurrentActing = mFirstActing;
+    // Finds out the sb and bb players.
+    mCurrentActing = mFirstAlive;
     uint8_t sbPlayer, bbPlayer;
     // Heads-up
     if (mNAlive == 2) {
         bbPlayer = mCurrentActing;
-        sbPlayer = nextActing(mCurrentActing);
+        sbPlayer = nextAlive(mCurrentActing);
     }
     else {
         sbPlayer = mCurrentActing;
-        bbPlayer = nextActing(mCurrentActing);
+        bbPlayer = nextAlive(mCurrentActing);
         nextActing(mCurrentActing);
     }
 
-    mBets[sbPlayer] += mSB;
-    mPot += mSB;
-    mBets[bbPlayer] += mBB;
-    mPot += mBB;
+    // Charges the sb.
+    // Verifies that the sb did not all-in on the ante.
+    if (mActing[sbPlayer]) {
+        // The player must all-in on the sb.
+        if (mStakes[sbPlayer] <= mSB) {
+            mPot += mStakes[sbPlayer];
+            mBets[sbPlayer] += mStakes[sbPlayer];
+            mStakes[sbPlayer] = 0;
+            eraseActing(sbPlayer);
+        }
+        else {
+            mPot += mSB;
+            mBets[sbPlayer] += mSB;
+            mStakes[sbPlayer] -= mSB;
+        }
+    }
 
+    // Charges the bb.
+    // Verifies that the bb did not all-in on the ante.
+    if (mActing[bbPlayer]) {
+        // The player must all-in on the bb.
+        if (mStakes[bbPlayer] <= mBB) {
+            mPot += mStakes[bbPlayer];
+            mBets[bbPlayer] += mStakes[bbPlayer];
+            mStakes[bbPlayer] = 0;
+            eraseActing(bbPlayer);
+        }
+        else {
+            mPot += mBB;
+            mBets[bbPlayer] += mBB;
+            mStakes[bbPlayer] -= mBB;
+        }
+    }
+
+    // Less than 2 players did not go all-in.
+    if (mNActing <= 1) {
+        showdown();
+        return true;
+    }
+
+    // Even if the bb was incomplete, the amount
+    // to call is still the bb.
     mToCall = mBB;
     mLargestRaise = mBB;
+
+    return false;
 }
 
 void GameState::dealHoleCards(uint64_t& usedCardsMask)
@@ -184,9 +255,9 @@ bool GameState::nextState(uint32_t bet)
 
     // Current player calls or raises.
     else {
-        mStakes[mCurrentActing] -= bet;
-        mBets[mCurrentActing] += bet;
         mPot += bet;
+        mBets[mCurrentActing] += bet;
+        mStakes[mCurrentActing] -= bet;
 
         uint32_t raise = mBets[mCurrentActing] - mToCall;
 

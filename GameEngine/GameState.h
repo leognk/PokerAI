@@ -16,13 +16,16 @@ public:
 	// Set rngSeed to 0 to set a random seed.
 	GameState(unsigned rngSeed = 0);
 
-	void setAnte(uint16_t ante);
+	void setAnte(uint32_t ante);
 	// Small blind is set to half the big blind.
-	void setBigBlind(uint16_t bigBlind);
+	void setBigBlind(uint32_t bigBlind);
 	void setStakes(std::array<uint32_t, opt::MAX_PLAYERS> stakes);
 	void setStake(uint8_t playerIdx, uint32_t stake);
 
-	void startNewHand(uint8_t dealerIdx);
+	// Returns whether the hand finished.
+	// The game could have finished if there was less than 2 acting players
+	// left after charging the antes and the blinds.
+	bool startNewHand(uint8_t dealerIdx);
 	// bet is the action made by the current acting player.
 	// It must be equal to 0 for a check or fold. It the player
 	// has the possibility to check, we force him to do so (no fold).
@@ -63,15 +66,17 @@ private:
 	void eraseActing(uint8_t& i);
 	void resetPlayers();
 	void resetBoard();
-	void chargeAnte();
-	void chargeBlinds();
+	// Returns whether the hand finished.
+	bool chargeAnte();
+	// Returns whether the hand finished.
+	bool chargeBlinds();
 	void dealHoleCards(uint64_t& usedCardsMask);
 	void dealBoardCards(uint64_t& usedCardsMask);
 	void dealCards(omp::Hand& hand, unsigned nCards, uint64_t& usedCardsMask);
 	void showdown();
 	std::vector<std::vector<uint8_t>> getRankings() const;
 
-	uint16_t mAnte, mSB, mBB;
+	uint32_t mAnte, mSB, mBB;
 
 	Rng mRng;
 	CardDist mCardDist;
