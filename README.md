@@ -1,3 +1,3 @@
 # Optimus
 
-An AI for multiplayer No Limit Texas hold'em based on the AI Pluribus.
+An AI for multiplayer no limit Texas hold'em based on the AI Pluribus.
