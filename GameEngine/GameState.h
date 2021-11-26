@@ -19,7 +19,9 @@ public:
 	void setAnte(uint32_t ante);
 	// Small blind is set to half the big blind.
 	void setBigBlind(uint32_t bigBlind);
-	void setStakes(std::array<uint32_t, opt::MAX_PLAYERS> stakes);
+	// Set a player's stake to 0 before a round starts
+	// if he is not active.
+	void setStakes(const std::array<uint32_t, opt::MAX_PLAYERS>& stakes);
 	void setStake(uint8_t playerIdx, uint32_t stake);
 
 	// Return whether the hand finished.
@@ -32,7 +34,7 @@ public:
 	// Return whether the hand finished.
 	bool nextState(uint32_t bet);
 
-	// Legal actions (uint32_t bet) for currentPlayer() are:
+	// Legal actions (uint32_t bet) for actingPlayer() are:
 	// if      stake() <= call():     0 & stake()
 	// else if notFacingFullRaise():  0 & call()
 	// else if stake() <= minRaise(): (call() ? 0 & call() : 0) & stake()
@@ -48,9 +50,9 @@ public:
 	uint8_t actingPlayer() const;
 	bool notFacingFullRaise() const;
 	uint32_t stake() const;
-	// Chips to give to call
+	// Chips to put to call
 	uint32_t call() const;
-	// Minimum chips to give to raise
+	// Minimum chips to put to raise
 	uint32_t minRaise() const;
 
 private:
@@ -60,33 +62,37 @@ private:
 	enum class Round { preflop, flop, turn, river };
 	friend Round& operator++(Round& r);
 
-	uint8_t& nextAlive(uint8_t& i) const;
-	uint8_t& nextActing(uint8_t& i) const;
-	void eraseAlive(uint8_t& i);
-	void eraseActing(uint8_t& i);
 	void resetPlayers();
 	void resetBoard();
+	void dealHoleCards(uint64_t& usedCardsMask);
+	void dealBoardCards(uint64_t& usedCardsMask);
+	void dealCards(omp::Hand& hand, unsigned nCards, uint64_t& usedCardsMask);
 	// Return whether the hand finished.
 	bool chargeAnte();
 	// Return whether the hand finished.
 	bool chargeBlinds();
-	void dealHoleCards(uint64_t& usedCardsMask);
-	void dealBoardCards(uint64_t& usedCardsMask);
-	void dealCards(omp::Hand& hand, unsigned nCards, uint64_t& usedCardsMask);
+
+	uint8_t& nextAlive(uint8_t& i) const;
+	uint8_t& nextActing(uint8_t& i) const;
+	void eraseAlive(uint8_t& i);
+	void eraseActing(uint8_t& i);
+
 	void showdown();
 	std::vector<std::vector<uint8_t>> getRankings() const;
-
-	uint32_t mAnte, mSB, mBB;
 
 	Rng mRng;
 	CardDist mCardDist;
 
+	uint32_t mAnte, mSB, mBB;
+
+	Round mRound;
+
 	// Players
-	// Set a player's stake to 0 if he is not active.
 	std::array<uint32_t, opt::MAX_PLAYERS> mStakes;
 	std::array<omp::Hand, opt::MAX_PLAYERS> mHands;
-	// Bets since the start of the hand.
+	// Bets since the start of a hand.
 	std::array<uint32_t, opt::MAX_PLAYERS> mBets;
+	// Active players (were dealt cards and did not fold)
 	std::array<uint8_t, opt::MAX_PLAYERS> mAlive;
 	uint8_t mFirstAlive;
 	uint8_t mNAlive;
@@ -101,17 +107,16 @@ private:
 	omp::Hand mBoardCards;
 	// Sum of all pots
 	uint32_t mPot;
+	// Using only one pot
 	bool mOnePot;
-
-	Round mRound;
 
 	uint8_t mDealer;
 	// Player making the action passed to nextState.
 	uint8_t mCurrentActing;
-	// Largest raise (by) of the current round.
-	uint32_t mLargestRaise;
-	// Current number of chips to call (counting from the start of the hand).
+	// Current number of chips to call (counting from the start of the hand)
 	uint32_t mToCall;
+	// Largest raise (by) of the current round
+	uint32_t mLargestRaise;
 	bool mAllInFlag;
 
 	omp::HandEvaluator mEval;
