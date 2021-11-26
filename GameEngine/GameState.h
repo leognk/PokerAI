@@ -22,21 +22,21 @@ public:
 	void setStakes(std::array<uint32_t, opt::MAX_PLAYERS> stakes);
 	void setStake(uint8_t playerIdx, uint32_t stake);
 
-	// Returns whether the hand finished.
+	// Return whether the hand finished.
 	// The game could have finished if there was less than 2 acting players
 	// left after charging the antes and the blinds.
 	bool startNewHand(uint8_t dealerIdx);
 	// bet is the action made by the current acting player.
 	// It must be equal to 0 for a check or fold. It the player
 	// has the possibility to check, we force him to do so (no fold).
-	// Returns whether the hand finished.
+	// Return whether the hand finished.
 	bool nextState(uint32_t bet);
 
 	// Legal actions (uint32_t bet) for currentPlayer() are:
 	// if      stake() <= call():     0 & stake()
 	// else if notFacingFullRaise():  0 & call()
-	// else if stake() <= minRaise(): 0 & call() & stake()
-	// else    minRaise() < stake():  0 & call() & [minRaise(), stake()]
+	// else if stake() <= minRaise(): (call() ? 0 & call() : 0) & stake()
+	// else    minRaise() < stake():  (call() ? 0 & call() : 0) & [minRaise(), stake()]
 	//
 	// Equivalent to:
 	// if notFacingFullRaise():
@@ -66,9 +66,9 @@ private:
 	void eraseActing(uint8_t& i);
 	void resetPlayers();
 	void resetBoard();
-	// Returns whether the hand finished.
+	// Return whether the hand finished.
 	bool chargeAnte();
-	// Returns whether the hand finished.
+	// Return whether the hand finished.
 	bool chargeBlinds();
 	void dealHoleCards(uint64_t& usedCardsMask);
 	void dealBoardCards(uint64_t& usedCardsMask);

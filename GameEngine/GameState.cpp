@@ -42,12 +42,12 @@ bool GameState::startNewHand(uint8_t dealerIdx)
     resetPlayers();
     resetBoard();
 
-    // Deals cards.
+    // Deal cards.
     uint64_t usedCardsMask = 0;
     dealHoleCards(usedCardsMask);
     dealBoardCards(usedCardsMask);
 
-    // Charges antes and blinds.
+    // Charge antes and blinds.
     if (chargeAnte())
         return true;
     return chargeBlinds();
@@ -96,7 +96,7 @@ void GameState::resetPlayers()
     // the player following the dealer.
     uint8_t i = mDealer + 1;
     do {
-        // Ignores inactive players.
+        // Ignore inactive players.
         if (!mStakes[i])
             continue;
         mHands[i] = omp::Hand::empty();
@@ -154,7 +154,7 @@ bool GameState::chargeAnte()
 
 bool GameState::chargeBlinds()
 {
-    // Finds out the sb and bb players.
+    // Find out the sb and bb players.
     mCurrentActing = mFirstAlive;
     uint8_t sbPlayer, bbPlayer;
     // Heads-up
@@ -168,8 +168,8 @@ bool GameState::chargeBlinds()
         nextActing(mCurrentActing);
     }
 
-    // Charges the sb.
-    // Verifies that the sb did not all-in on the ante.
+    // Charge the sb.
+    // Verify that the sb did not all-in on the ante.
     if (mActing[sbPlayer]) {
         // The player must all-in on the sb.
         if (mStakes[sbPlayer] <= mSB) {
@@ -185,8 +185,8 @@ bool GameState::chargeBlinds()
         }
     }
 
-    // Charges the bb.
-    // Verifies that the bb did not all-in on the ante.
+    // Charge the bb.
+    // Verify that the bb did not all-in on the ante.
     if (mActing[bbPlayer]) {
         // The player must all-in on the bb.
         if (mStakes[bbPlayer] <= mBB) {
@@ -247,10 +247,13 @@ bool GameState::nextState(uint32_t bet)
 {
     mActed[mCurrentActing] = true;
 
-    // Current player folds.
-    if (!bet && mBets[mCurrentActing] != mToCall) {
-        eraseAlive(mCurrentActing);
-        eraseActing(mCurrentActing);
+    // Current player checks or folds.
+    if (!bet) {
+        // Current player folds.
+        if (mBets[mCurrentActing] != mToCall) {
+            eraseAlive(mCurrentActing);
+            eraseActing(mCurrentActing);
+        }
     }
 
     // Current player calls or raises.
@@ -283,7 +286,7 @@ bool GameState::nextState(uint32_t bet)
             }
         }
 
-        // Goes all-in.
+        // Go all-in.
         if (!mStakes[mCurrentActing]) {
             mAllInFlag = true;
             eraseActing(mCurrentActing);
@@ -313,7 +316,7 @@ bool GameState::nextState(uint32_t bet)
             return true;
         }
 
-        // Goes to the next round.
+        // Go to the next round.
         else {
             ++mRound;
             mLargestRaise = mBB;
@@ -334,16 +337,16 @@ void GameState::showdown()
     std::vector<std::vector<uint8_t>> rankings = getRankings();
 
     // One pot and one winner
-    // (deals with this specific case to speed up the computation)
+    // (deal with this specific case to speed up the computation)
     if (mOnePot && rankings[0].size() == 1) {
         mStakes[rankings[0][0]] += mPot;
         return;
     }
 
     // One pot and multiple winners
-    // (deals with this specific case to speed up the computation)
+    // (deal with this specific case to speed up the computation)
     else if (mOnePot) {
-        // Distributes the gains to each winner.
+        // Distribute the gains to each winner.
         uint32_t gain = mPot / rankings[0].size();
         for (uint8_t i : rankings[0]) {
             mStakes[i] += gain;
@@ -359,65 +362,74 @@ void GameState::showdown()
     // General case: multiple pots
     for (std::vector<uint8_t>& sameRankPlayers : rankings) {
 
+        // If the sum of all pots has been emptied, exit.
+        if (!mPot)
+            return;
+
         // One winner for this pot
-        // (deals with this specific case to speed up the computation)
+        // (deal with this specific case to speed up the computation)
         if (sameRankPlayers.size() == 1) {
             if (!mBets[sameRankPlayers[0]])
                 continue;
-            // Builds the pot corresponding to the winner's bet.
+            // Build the pot corresponding to the winner's bet.
             uint32_t pot = 0;
             for (uint8_t player = 0; player < opt::MAX_PLAYERS; ++player) {
                 if (!mBets[player])
                     continue;
                 uint32_t due = std::min(mBets[sameRankPlayers[0]], mBets[player]);
                 pot += due;
+                mPot -= due;
                 mBets[player] -= due;
             }
             mStakes[sameRankPlayers[0]] += pot;
             continue;
         }
 
-        // Builds ordered bets of the same rank players.
-        std::vector<uint32_t> orderedBets(sameRankPlayers.size());
-        for (uint8_t i = 0; i < orderedBets.size(); ++i)
-            orderedBets[i] = mBets[sameRankPlayers[i]];
+        // General case: multiple pots and multiple winners
+
+        // Build ordered bets of players of the same current rank.
+        std::vector<uint32_t> orderedBets;
+        orderedBets.reserve(sameRankPlayers.size());
+        for (uint8_t i = 0; i < orderedBets.size(); ++i) {
+            // Skip null bets.
+            if (mBets[sameRankPlayers[i]])
+                orderedBets.push_back(mBets[sameRankPlayers[i]]);
+        }
+        // Skip if nobody in this bracket has a gain.
+        if (!orderedBets.size())
+            continue;
         std::sort(orderedBets.begin(), orderedBets.end());
-        // Removes duplicates.
+        // Remove duplicates.
         orderedBets.erase(
             std::unique(orderedBets.begin(), orderedBets.end()),
             orderedBets.end()
         );
 
-        // Skips if nobody in this bracket has a gain.
-        if (orderedBets.size() == 1 && !orderedBets[0])
-            continue;
-
-        // Flags for winners eligible for a gain.
+        // Flag for winners eligible for a gain.
         std::vector<bool> giveGain(sameRankPlayers.size(), true);
         uint8_t nWinners = sameRankPlayers.size();
 
-        // Each non-zero winnerBet will correspond to one pot
+        // Each winnerBet will correspond to one pot
         // for the flagged players of the current rank's bracket to share.
         for (uint32_t winnerBet : orderedBets) {
-            if (!winnerBet)
-                continue;
-            // Unflags winners who are not eligible for the current pot.
+            // Unflag winners who are not eligible for the current pot.
             for (uint8_t i : sameRankPlayers) {
                 if (giveGain[i] && !mBets[i]) {
                     giveGain[i] = false;
                     --nWinners;
                 }
             }
-            // Builds the pot corresponding to winnerBet.
+            // Build the pot corresponding to winnerBet.
             uint32_t pot = 0;
             for (uint8_t player = 0; player < opt::MAX_PLAYERS; ++player) {
                 if (!mBets[player])
                     continue;
                 uint32_t due = std::min(winnerBet, mBets[player]);
                 pot += due;
+                mPot -= due;
                 mBets[player] -= due;
             }
-            // Distributes the gains to each winner.
+            // Distribute the gains to each winner.
             uint32_t gain = pot / nWinners;
             // Remaining chips go to the first players after the dealer
             uint8_t extra = pot % nWinners;
@@ -430,14 +442,13 @@ void GameState::showdown()
             }
         }
     }
-    return;
 }
 
 std::vector<std::vector<uint8_t>> GameState::getRankings() const
 {
 
     // One pot
-    // (deals with this specific case to speed up the computation)
+    // (deal with this specific case to speed up the computation)
     if (mOnePot) {
         uint16_t bestRank = 0;
         std::vector<uint8_t> winners;
@@ -458,7 +469,7 @@ std::vector<std::vector<uint8_t>> GameState::getRankings() const
 
     // General case of multiple pots
 
-    // Computes players' ranks.
+    // Compute players' ranks.
     std::vector<uint16_t> ranks(mNAlive);
     std::vector<uint8_t> players(mNAlive);
     uint8_t player = mFirstAlive;
@@ -479,7 +490,7 @@ std::vector<std::vector<uint8_t>> GameState::getRankings() const
         [&](uint8_t i, uint8_t j) { return ranks[i] > ranks[j]; }
     );
 
-    // Builds players' rankings.
+    // Build players' rankings.
     std::vector<std::vector<uint8_t>> rankings;
     for (auto i = range.begin(); i != range.end(); ++i) {
         std::vector<uint8_t> sameRankPlayers = { players[*i] };
