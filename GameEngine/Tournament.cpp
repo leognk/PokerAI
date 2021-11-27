@@ -14,27 +14,33 @@ Tournament::Tournament(
 	mPlayers(players),
 	mDealer(dealerIdx)
 {
-	initNextActive();
+	initActive();
 }
 
-void Tournament::initNextActive()
+void Tournament::initActive()
 {
-	uint8_t prevActive = 0;
-	while (!mState.stake(prevActive))
-		++prevActive;
+	// Current active player.
+	// We assume that the initial dealer that was given
+	// is always active.
+	uint8_t current = mDealer;
+	// Next active player.
+	uint8_t next = mDealer + 1;
 	mNActive = 1;
-	for (uint8_t i = prevActive + 1; i < opt::MAX_PLAYERS; ++i) {
-		if (mState.stake(prevActive)) {
-			mNextActive[prevActive] = i;
-			prevActive = i;
+	do {
+		// If the next player is active, add him.
+		if (mState.stakes[next]) {
+			mNextActive[current] = next;
+			mPrevActive[next] = current;
 			++mNActive;
+			current = next;
 		}
-	}
+		(++next) %= opt::MAX_PLAYERS;
+	} while (next != mDealer + 1);
 }
 
 void Tournament::playToEnd()
 {
-	while (nActive() != 1) {
+	while (mNActive != 1) {
 		playOneHand();
 	}
 }
@@ -48,19 +54,18 @@ void Tournament::playOneHand()
 	}
 }
 
-uint8_t Tournament::nActive() const
+void Tournament::updateNextActive()
 {
-	uint8_t res = 0;
-	for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i) {
-		if (mState.stake(i))
-			++res;
-	}
-	return res;
-}
-
-uint8_t& Tournament::nextActive(uint8_t& i) const
-{
-
+	uint8_t i = mDealer;
+	do {
+		// Player i got eliminated.
+		if (!mState.stakes[i]) {
+			mNextActive[mPrevActive[i]] = mNextActive[i];
+			mPrevActive[mNextActive[i]] = mPrevActive[i];
+			--mNActive;
+		}
+		i = mNextActive[i];
+	} while (i != mDealer); // PROBLEM IF mDealer IS NOT ACTIVE ANYMORE. And if there is only 2 are less active left?
 }
 
 } // egn

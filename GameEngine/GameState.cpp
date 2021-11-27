@@ -7,7 +7,7 @@ namespace egn {
 #pragma warning(suppress: 26495)
 GameState::GameState(
     uint32_t ante, uint32_t bigBlind,
-    std::array<uint32_t, opt::MAX_PLAYERS>& stakes,
+    const std::array<uint32_t, opt::MAX_PLAYERS>& stakes,
     unsigned rngSeed = 0) :
 
     stakes(stakes),

@@ -17,7 +17,7 @@ public:
 	// Set rngSeed to 0 to set a random seed.
 	GameState(
 		uint32_t ante, uint32_t bigBlind,
-		std::array<uint32_t, opt::MAX_PLAYERS>& stakes,
+		const std::array<uint32_t, opt::MAX_PLAYERS>& stakes,
 		unsigned rngSeed = 0);
 
 	void setAnte(uint32_t ante);
@@ -58,7 +58,7 @@ public:
 	// Return the rewards obtained by each player after the end of the hand.
 	std::array<int64_t, opt::MAX_PLAYERS> rewards() const;
 
-	std::array<uint32_t, opt::MAX_PLAYERS>& stakes;
+	std::array<uint32_t, opt::MAX_PLAYERS> stakes;
 
 private:
 	typedef omp::XoroShiro128Plus Rng;
