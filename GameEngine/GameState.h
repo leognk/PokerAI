@@ -14,7 +14,10 @@ class GameState
 {
 public:
 	// Set rngSeed to 0 to set a random seed.
-	GameState(unsigned rngSeed = 0);
+	GameState(
+		uint32_t ante, uint32_t bigBlind,
+		const std::array<uint32_t, opt::MAX_PLAYERS>& stakes,
+		unsigned rngSeed = 0);
 
 	void setAnte(uint32_t ante);
 	// Small blind is set to half the big blind.
@@ -23,6 +26,8 @@ public:
 	// if he is not active.
 	void setStakes(const std::array<uint32_t, opt::MAX_PLAYERS>& stakes);
 	void setStake(uint8_t playerIdx, uint32_t stake);
+
+	uint32_t stake(uint8_t playerIdx) const;
 
 	// Return whether the hand finished.
 	// The game could have finished if there was less than 2 acting players
@@ -54,6 +59,9 @@ public:
 	uint32_t call() const;
 	// Minimum chips to put to raise
 	uint32_t minRaise() const;
+
+	// Return the rewards obtained by each player after the end of the hand.
+	std::array<int64_t, opt::MAX_PLAYERS> rewards() const;
 
 private:
 	typedef omp::XoroShiro128Plus Rng;
@@ -88,6 +96,7 @@ private:
 	Round mRound;
 
 	// Players
+	std::array<uint32_t, opt::MAX_PLAYERS> mInitialStakes;
 	std::array<uint32_t, opt::MAX_PLAYERS> mStakes;
 	std::array<omp::Hand, opt::MAX_PLAYERS> mHands;
 	// Bets since the start of a hand.
@@ -120,7 +129,7 @@ private:
 	bool mAllInFlag;
 
 	omp::HandEvaluator mEval;
-};
+}; // GameState
 
 GameState::Round& operator++(GameState::Round& r)
 {

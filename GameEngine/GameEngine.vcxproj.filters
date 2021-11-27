@@ -21,6 +21,9 @@
     <ClCompile Include="GameState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Tournament.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Hand.h">
@@ -30,6 +33,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Optimus\Constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tournament.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

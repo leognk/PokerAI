@@ -165,6 +165,7 @@
   <ItemGroup>
     <ClCompile Include="GameState.cpp" />
     <ClCompile Include="Hand.cpp" />
+    <ClCompile Include="Tournament.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OMPEval\OMPEval.vcxproj">
@@ -175,6 +176,8 @@
     <ClInclude Include="..\Optimus\Constants.h" />
     <ClInclude Include="Hand.h" />
     <ClInclude Include="GameState.h" />
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="Tournament.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

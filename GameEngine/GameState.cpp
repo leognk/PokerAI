@@ -2,14 +2,20 @@
 #include <random>
 #include <numeric>
 
-namespace egn
-{
+namespace egn {
 
 #pragma warning(suppress: 26495)
-GameState::GameState(unsigned rngSeed) :
+GameState::GameState(
+    uint32_t ante, uint32_t bigBlind,
+    const std::array<uint32_t, opt::MAX_PLAYERS>& stakes,
+    unsigned rngSeed = 0) :
+
     mRng{ (!rngSeed) ? std::random_device{}() : rngSeed },
     mCardDist(0, omp::CARD_COUNT - 1)
 {
+    setAnte(ante);
+    setBigBlind(bigBlind);
+    setStakes(stakes);
 }
 
 void GameState::setAnte(uint32_t ante)
@@ -31,6 +37,11 @@ void GameState::setStakes(const std::array<uint32_t, opt::MAX_PLAYERS>& stakes)
 void GameState::setStake(uint8_t playerIdx, uint32_t stake)
 {
     mStakes[playerIdx] = stake;
+}
+
+uint32_t GameState::stake(uint8_t playerIdx) const
+{
+    return mStakes[playerIdx];
 }
 
 bool GameState::startNewHand(uint8_t dealerIdx)
@@ -55,6 +66,7 @@ bool GameState::startNewHand(uint8_t dealerIdx)
 
 void GameState::resetPlayers()
 {
+    mInitialStakes = mStakes;
     mNAlive = 0;
     mNActing = 0;
     // The first acting player after the preflop is always
@@ -525,6 +537,15 @@ uint32_t GameState::call() const
 uint32_t GameState::minRaise() const
 {
     return call() + mLargestRaise;
+}
+
+std::array<int64_t, opt::MAX_PLAYERS> GameState::rewards() const
+{
+    std::array<int64_t, opt::MAX_PLAYERS> res;
+    for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i) {
+        res[i] = mStakes[i] - mInitialStakes[i];
+    }
+    return res;
 }
 
 } // egn
