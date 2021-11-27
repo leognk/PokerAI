@@ -7,15 +7,15 @@ namespace egn {
 #pragma warning(suppress: 26495)
 GameState::GameState(
     uint32_t ante, uint32_t bigBlind,
-    const std::array<uint32_t, opt::MAX_PLAYERS>& stakes,
+    std::array<uint32_t, opt::MAX_PLAYERS>& stakes,
     unsigned rngSeed = 0) :
 
+    stakes(stakes),
     mRng{ (!rngSeed) ? std::random_device{}() : rngSeed },
     mCardDist(0, omp::CARD_COUNT - 1)
 {
     setAnte(ante);
     setBigBlind(bigBlind);
-    setStakes(stakes);
 }
 
 void GameState::setAnte(uint32_t ante)
@@ -27,21 +27,6 @@ void GameState::setBigBlind(uint32_t bigBlind)
 {
     mBB = bigBlind;
     mSB = mBB / 2;
-}
-
-void GameState::setStakes(const std::array<uint32_t, opt::MAX_PLAYERS>& stakes)
-{
-    mStakes = stakes;
-}
-
-void GameState::setStake(uint8_t playerIdx, uint32_t stake)
-{
-    mStakes[playerIdx] = stake;
-}
-
-uint32_t GameState::stake(uint8_t playerIdx) const
-{
-    return mStakes[playerIdx];
 }
 
 bool GameState::startNewHand(uint8_t dealerIdx)
@@ -66,7 +51,7 @@ bool GameState::startNewHand(uint8_t dealerIdx)
 
 void GameState::resetPlayers()
 {
-    mInitialStakes = mStakes;
+    mInitialStakes = stakes;
     mNAlive = 0;
     mNActing = 0;
     // The first acting player after the preflop is always
@@ -74,7 +59,7 @@ void GameState::resetPlayers()
     uint8_t i = mDealer + 1;
     do {
         // Ignore inactive players.
-        if (!mStakes[i])
+        if (!stakes[i])
             continue;
         mHands[i] = omp::Hand::empty();
         mBets[i] = 0;
@@ -127,10 +112,10 @@ bool GameState::chargeAnte()
     uint8_t i = mFirstActing;
     do {
         // The player must all-in on the ante.
-        if (mStakes[i] <= mAnte) {
-            mPot += mStakes[i];
-            mBets[i] += mStakes[i];
-            mStakes[i] = 0;
+        if (stakes[i] <= mAnte) {
+            mPot += stakes[i];
+            mBets[i] += stakes[i];
+            stakes[i] = 0;
             eraseActing(i);
             // Everybody went all-in.
             // We deal with this case here to
@@ -143,7 +128,7 @@ bool GameState::chargeAnte()
         else {
             mPot += mAnte;
             mBets[i] += mAnte;
-            mStakes[i] -= mAnte;
+            stakes[i] -= mAnte;
         }
     } while (nextActing(i) != mFirstActing);
 
@@ -176,16 +161,16 @@ bool GameState::chargeBlinds()
     // Verify that the sb did not all-in on the ante.
     if (mActing[sbPlayer]) {
         // The player must all-in on the sb.
-        if (mStakes[sbPlayer] <= mSB) {
-            mPot += mStakes[sbPlayer];
-            mBets[sbPlayer] += mStakes[sbPlayer];
-            mStakes[sbPlayer] = 0;
+        if (stakes[sbPlayer] <= mSB) {
+            mPot += stakes[sbPlayer];
+            mBets[sbPlayer] += stakes[sbPlayer];
+            stakes[sbPlayer] = 0;
             eraseActing(sbPlayer);
         }
         else {
             mPot += mSB;
             mBets[sbPlayer] += mSB;
-            mStakes[sbPlayer] -= mSB;
+            stakes[sbPlayer] -= mSB;
         }
     }
 
@@ -193,16 +178,16 @@ bool GameState::chargeBlinds()
     // Verify that the bb did not all-in on the ante.
     if (mActing[bbPlayer]) {
         // The player must all-in on the bb.
-        if (mStakes[bbPlayer] <= mBB) {
-            mPot += mStakes[bbPlayer];
-            mBets[bbPlayer] += mStakes[bbPlayer];
-            mStakes[bbPlayer] = 0;
+        if (stakes[bbPlayer] <= mBB) {
+            mPot += stakes[bbPlayer];
+            mBets[bbPlayer] += stakes[bbPlayer];
+            stakes[bbPlayer] = 0;
             eraseActing(bbPlayer);
         }
         else {
             mPot += mBB;
             mBets[bbPlayer] += mBB;
-            mStakes[bbPlayer] -= mBB;
+            stakes[bbPlayer] -= mBB;
         }
     }
 
@@ -273,7 +258,7 @@ bool GameState::nextState(uint32_t bet)
     else {
         mPot += bet;
         mBets[mCurrentActing] += bet;
-        mStakes[mCurrentActing] -= bet;
+        stakes[mCurrentActing] -= bet;
 
         uint32_t raise = mBets[mCurrentActing] - mToCall;
 
@@ -288,7 +273,7 @@ bool GameState::nextState(uint32_t bet)
             mLargestRaise = raise;
         }
         // All-in not full raise
-        else if (!mStakes[mCurrentActing]) {
+        else if (!stakes[mCurrentActing]) {
             // Incomplete call
             if (raise < 0) {
                 mOnePot = false;
@@ -300,7 +285,7 @@ bool GameState::nextState(uint32_t bet)
         }
 
         // Go all-in.
-        if (!mStakes[mCurrentActing]) {
+        if (!stakes[mCurrentActing]) {
             mAllInFlag = true;
             eraseActing(mCurrentActing);
         }
@@ -308,7 +293,7 @@ bool GameState::nextState(uint32_t bet)
 
     // Everybody folded but one.
     if (mNAlive == 1) {
-        mStakes[mFirstAlive] += mPot;
+        stakes[mFirstAlive] += mPot;
         return true;
     }
 
@@ -352,7 +337,7 @@ void GameState::showdown()
     // One pot and one winner
     // (deal with this specific case to speed up the computation)
     if (mOnePot && rankings[0].size() == 1) {
-        mStakes[rankings[0][0]] += mPot;
+        stakes[rankings[0][0]] += mPot;
         return;
     }
 
@@ -364,9 +349,9 @@ void GameState::showdown()
         // Remaining chips go to the first players after the dealer.
         uint8_t extra = mPot % rankings[0].size();
         for (uint8_t i : rankings[0]) {
-            mStakes[i] += gain;
+            stakes[i] += gain;
             if (extra--)
-                ++mStakes[rankings[0][i]];
+                ++stakes[rankings[0][i]];
         }
         return;
     }
@@ -393,7 +378,7 @@ void GameState::showdown()
                 mPot -= due;
                 mBets[player] -= due;
             }
-            mStakes[sameRankPlayers[0]] += pot;
+            stakes[sameRankPlayers[0]] += pot;
             continue;
         }
 
@@ -447,9 +432,9 @@ void GameState::showdown()
             uint8_t extra = pot % nWinners;
             for (uint8_t i : sameRankPlayers) {
                 if (giveGain[i]) {
-                    mStakes[i] += gain;
+                    stakes[i] += gain;
                     if (extra--)
-                        ++mStakes[i];
+                        ++stakes[i];
                 }
             }
         }
@@ -526,7 +511,7 @@ bool GameState::notFacingFullRaise() const
 
 uint32_t GameState::stake() const
 {
-    return mStakes[mCurrentActing];
+    return stakes[mCurrentActing];
 }
 
 uint32_t GameState::call() const
@@ -543,7 +528,7 @@ std::array<int64_t, opt::MAX_PLAYERS> GameState::rewards() const
 {
     std::array<int64_t, opt::MAX_PLAYERS> res;
     for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i) {
-        res[i] = mStakes[i] - mInitialStakes[i];
+        res[i] = stakes[i] - mInitialStakes[i];
     }
     return res;
 }

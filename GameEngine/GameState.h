@@ -13,21 +13,16 @@ namespace egn {
 class GameState
 {
 public:
+	// Set a player's stake to 0 if he is not active.
 	// Set rngSeed to 0 to set a random seed.
 	GameState(
 		uint32_t ante, uint32_t bigBlind,
-		const std::array<uint32_t, opt::MAX_PLAYERS>& stakes,
+		std::array<uint32_t, opt::MAX_PLAYERS>& stakes,
 		unsigned rngSeed = 0);
 
 	void setAnte(uint32_t ante);
 	// Small blind is set to half the big blind.
 	void setBigBlind(uint32_t bigBlind);
-	// Set a player's stake to 0 before a round starts
-	// if he is not active.
-	void setStakes(const std::array<uint32_t, opt::MAX_PLAYERS>& stakes);
-	void setStake(uint8_t playerIdx, uint32_t stake);
-
-	uint32_t stake(uint8_t playerIdx) const;
 
 	// Return whether the hand finished.
 	// The game could have finished if there was less than 2 acting players
@@ -63,6 +58,8 @@ public:
 	// Return the rewards obtained by each player after the end of the hand.
 	std::array<int64_t, opt::MAX_PLAYERS> rewards() const;
 
+	std::array<uint32_t, opt::MAX_PLAYERS>& stakes;
+
 private:
 	typedef omp::XoroShiro128Plus Rng;
 	typedef omp::FastUniformIntDistribution<unsigned, 16> CardDist;
@@ -97,7 +94,6 @@ private:
 
 	// Players
 	std::array<uint32_t, opt::MAX_PLAYERS> mInitialStakes;
-	std::array<uint32_t, opt::MAX_PLAYERS> mStakes;
 	std::array<omp::Hand, opt::MAX_PLAYERS> mHands;
 	// Bets since the start of a hand.
 	std::array<uint32_t, opt::MAX_PLAYERS> mBets;
