@@ -14,35 +14,17 @@ Tournament::Tournament(
 	mPlayers(players),
 	mDealer(dealerIdx)
 {
-	initActive();
-}
-
-void Tournament::initActive()
-{
-	// Current active player.
-	// We assume that the initial dealer that was given
-	// is always active.
-	uint8_t current = mDealer;
-	// Next active player.
-	uint8_t next = mDealer + 1;
-	mNActive = 1;
-	do {
-		// If the next player is active, add him.
-		if (mState.stakes[next]) {
-			mNextActive[current] = next;
-			mPrevActive[next] = current;
-			++mNActive;
-			current = next;
-		}
-		(++next) %= opt::MAX_PLAYERS;
-	} while (next != mDealer + 1);
 }
 
 void Tournament::playToEnd()
 {
-	while (mNActive != 1) {
+	// The loop ends when only one active player
+	// remains (the winner).
+	// We use the forward-moving button rule:
+	// the button is moved clockwise.
+	do {
 		playOneHand();
-	}
+	} while (mDealer != nextActive(mDealer));
 }
 
 void Tournament::playOneHand()
@@ -54,18 +36,12 @@ void Tournament::playOneHand()
 	}
 }
 
-void Tournament::updateNextActive()
+uint8_t& Tournament::nextActive(uint8_t& i)
 {
-	uint8_t i = mDealer;
 	do {
-		// Player i got eliminated.
-		if (!mState.stakes[i]) {
-			mNextActive[mPrevActive[i]] = mNextActive[i];
-			mPrevActive[mNextActive[i]] = mPrevActive[i];
-			--mNActive;
-		}
-		i = mNextActive[i];
-	} while (i != mDealer); // PROBLEM IF mDealer IS NOT ACTIVE ANYMORE. And if there is only 2 are less active left?
+		(++i) %= opt::MAX_PLAYERS;
+	} while (!mState.stakes[i]);
+	return i;
 }
 
 } // egn

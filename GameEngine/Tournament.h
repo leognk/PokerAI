@@ -10,7 +10,7 @@ namespace egn {
 class Tournament
 {
 public:
-	// stakes[dealerIdx] must be non-zero.
+	// Set a player's stake to 0 if he is not active.
 	// Set rngSeed to 0 to set a random seed.
 	Tournament(
 		uint32_t ante, uint32_t bigBlind,
@@ -22,17 +22,12 @@ public:
 	void playToEnd();
 
 private:
-	void initActive();
 	void playOneHand();
-	void updateNextActive();
+	uint8_t& nextActive(uint8_t& i);
 
 	GameState mState;
 	std::array<Player, opt::MAX_PLAYERS> mPlayers;
-
-	std::array<uint8_t, opt::MAX_PLAYERS> mNextActive;
-	std::array<uint8_t, opt::MAX_PLAYERS> mPrevActive;
 	uint8_t mDealer;
-	uint8_t mNActive;
 };
 
 } // egn
