@@ -28,7 +28,8 @@ private:
 	GameState mState;
 	std::array<Player, opt::MAX_PLAYERS> mPlayers;
 	uint8_t mDealer;
-};
+
+}; // Tournament
 
 } // egn
 

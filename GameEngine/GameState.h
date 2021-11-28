@@ -35,18 +35,18 @@ public:
 	bool nextState(uint32_t bet);
 
 	// Legal actions (uint32_t bet) for actingPlayer() are:
-	// if      stake() <= call():     0 & stake()
-	// else if notFacingFullRaise():  0 & call()
+	// if      stake() <= call()    : 0 & stake()
+	// else if notFacingFullRaise() : 0 & call()
 	// else if stake() <= minRaise(): (call() ? 0 & call() : 0) & stake()
-	// else    minRaise() < stake():  (call() ? 0 & call() : 0) & [minRaise(), stake()]
+	// else                         : (call() ? 0 & call() : 0) & [minRaise(), stake()]
 	//
 	// Equivalent to:
 	// if notFacingFullRaise():
 	//     0 & min(call(), stake())
 	// else:
-	//     case stake() <= call():              0 & stake()
+	//     case stake() <= call()             : 0 & stake()
 	//     case call() < stake() <= minRaise(): 0 & call() & stake()
-	//     case minRaise() < stake():           0 & call() & [minRaise(), stake()]
+	//     case minRaise() < stake()          : 0 & call() & [minRaise(), stake()]
 	uint8_t actingPlayer() const;
 	bool notFacingFullRaise() const;
 	uint32_t stake() const;
@@ -125,6 +125,7 @@ private:
 	bool mAllInFlag;
 
 	omp::HandEvaluator mEval;
+
 }; // GameState
 
 GameState::Round& operator++(GameState::Round& r)

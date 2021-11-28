@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test-GameEngine", "Test-Gam
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test", "Test\Test.vcxproj", "{E6D528CD-A910-4455-ACDD-9A41C5875BF0}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RandomAI", "RandomAI\RandomAI.vcxproj", "{C493D8C9-AF17-42A4-8420-E92C6C892CAE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -61,6 +63,14 @@ Global
 		{E6D528CD-A910-4455-ACDD-9A41C5875BF0}.Release|x64.Build.0 = Release|x64
 		{E6D528CD-A910-4455-ACDD-9A41C5875BF0}.Release|x86.ActiveCfg = Release|Win32
 		{E6D528CD-A910-4455-ACDD-9A41C5875BF0}.Release|x86.Build.0 = Release|Win32
+		{C493D8C9-AF17-42A4-8420-E92C6C892CAE}.Debug|x64.ActiveCfg = Debug|x64
+		{C493D8C9-AF17-42A4-8420-E92C6C892CAE}.Debug|x64.Build.0 = Debug|x64
+		{C493D8C9-AF17-42A4-8420-E92C6C892CAE}.Debug|x86.ActiveCfg = Debug|Win32
+		{C493D8C9-AF17-42A4-8420-E92C6C892CAE}.Debug|x86.Build.0 = Debug|Win32
+		{C493D8C9-AF17-42A4-8420-E92C6C892CAE}.Release|x64.ActiveCfg = Release|x64
+		{C493D8C9-AF17-42A4-8420-E92C6C892CAE}.Release|x64.Build.0 = Release|x64
+		{C493D8C9-AF17-42A4-8420-E92C6C892CAE}.Release|x86.ActiveCfg = Release|Win32
+		{C493D8C9-AF17-42A4-8420-E92C6C892CAE}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
