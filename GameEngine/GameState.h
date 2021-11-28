@@ -39,27 +39,19 @@ public:
 
 	std::array<uint32_t, opt::MAX_PLAYERS> stakes{};
 
-	// Legal actions (uint32_t bet) for actingPlayer are:
-	// switch (actionOption)
-	// case 0: actions[0] &              actions[3]
-	// case 1: actions[0] & actions[1]
-	// case 2: actions[0] & actions[1] & actions[3]
-	// case 3: actions[0] &                           [actions[2], actions[3]]
-	// case 4: actions[0] & actions[1] &              [actions[2], actions[3]]
-	//
-	// Equivalent to:
-	// if      stake <= call        : 0 & stake
-	// else if notFacingFullRaise(*): 0 & call
-	// else if stake <= minRaise    : (call ? 0 & call : 0) & stake
-	// else                         : (call ? 0 & call : 0) & [minRaise, stake]
-	// (*): notFacingFullRaise = call && call < mLargestRaise
+	// Legal actions for actingPlayer are given in the array actions
+	// from index 0 to nActions excluded (always 2 or 3).
+	// If the chosen action is of type fold, call or allin,
+	// the uint32_t bet to pass to nextState is the value of the variables
+	// fold (always 0), call or allin respectively.
+	// If the chosen action is of type raise, the uint32_t bet must be
+	// between minRaise and allin.
 	uint8_t actingPlayer;
-	uint8_t actionOption;
-	// actions[0] = 0
-	// actions[1] = call (chips to put to call)
-	// actions[2] = minRaise (minimum chips to put to raise)
-	// actions[3] = stake
-	std::array<uint32_t, 4> actions{};
+	uint32_t fold = 0, call, minRaise, allin;
+	// A check is simply a null call.
+	enum class ActionType { fold, call, raise, allin };
+	std::array<ActionType, 3> actions{};
+	uint8_t nActions;
 
 private:
 	typedef omp::XoroShiro128Plus Rng;
@@ -84,7 +76,6 @@ private:
 	void eraseActing(uint8_t& i);
 
 	void setLegalActions();
-	uint8_t getActionOption() const;
 
 	void showdown();
 	std::vector<std::vector<uint8_t>> getRankings() const;

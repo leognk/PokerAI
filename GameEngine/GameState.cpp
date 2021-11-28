@@ -336,27 +336,49 @@ bool GameState::nextState(uint32_t bet)
 void GameState::setLegalActions()
 {
     actingPlayer = mCurrentActing;
-    actions[1] = mToCall - mBets[mCurrentActing];
-    actions[2] = actions[1] + mLargestRaise;
-    actions[3] = stakes[mCurrentActing];
-    actionOption = getActionOption();
-}
 
-uint8_t GameState::getActionOption() const
-{
-    if (!actions[1]) {
-        if (actions[3] <= actions[2])
-            return 0;
-        else
-            return 3;
+    call = mToCall - mBets[mCurrentActing];
+    minRaise = call + mLargestRaise;
+    allin = stakes[mCurrentActing];
+
+    // Determine legal actions.
+    if (allin <= call) {
+        actions[0] = ActionType::fold;
+        actions[1] = ActionType::allin;
+        nActions = 2;
     }
-    if (actions[3] <= actions[1])
-        return 0;
-    if (actions[1] < mLargestRaise)
-        return 1;
-    if (actions[3] <= actions[2])
-        return 2;
-    return 4;
+    // Not facing a full raise.
+    else if (call && call < mLargestRaise) {
+        actions[0] = ActionType::fold;
+        actions[1] = ActionType::call;
+        nActions = 2;
+    }
+    else if (allin <= minRaise) {
+        if (call) {
+            actions[0] = ActionType::fold;
+            actions[1] = ActionType::call;
+            actions[2] = ActionType::allin;
+            nActions = 3;
+        }
+        else {
+            actions[0] = ActionType::call;
+            actions[1] = ActionType::allin;
+            nActions = 2;
+        }
+    }
+    else {
+        if (call) {
+            actions[0] = ActionType::fold;
+            actions[1] = ActionType::call;
+            actions[2] = ActionType::raise;
+            nActions = 3;
+        }
+        else {
+            actions[0] = ActionType::call;
+            actions[1] = ActionType::raise;
+            nActions = 2;
+        }
+    }
 }
 
 void GameState::showdown()
