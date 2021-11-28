@@ -202,6 +202,7 @@ bool GameState::chargeBlinds()
     mToCall = mBB;
     mLargestRaise = mBB;
 
+    setLegalActions();
     return false;
 }
 
@@ -323,11 +324,39 @@ bool GameState::nextState(uint32_t bet)
                 mActed[i] = false;
             } while (nextActing(i) != mFirstActing);
             mCurrentActing = mFirstActing;
+            setLegalActions();
             return false;
         }
     }
 
+    setLegalActions();
     return false;
+}
+
+void GameState::setLegalActions()
+{
+    actingPlayer = mCurrentActing;
+    actions[1] = mToCall - mBets[mCurrentActing];
+    actions[2] = actions[1] + mLargestRaise;
+    actions[3] = stakes[mCurrentActing];
+    actionOption = getActionOption();
+}
+
+uint8_t GameState::getActionOption() const
+{
+    if (!actions[1]) {
+        if (actions[3] <= actions[2])
+            return 0;
+        else
+            return 3;
+    }
+    if (actions[3] <= actions[1])
+        return 0;
+    if (actions[1] < mLargestRaise)
+        return 1;
+    if (actions[3] <= actions[2])
+        return 2;
+    return 4;
 }
 
 void GameState::showdown()
@@ -497,31 +526,6 @@ std::vector<std::vector<uint8_t>> GameState::getRankings() const
     }
 
     return rankings;
-}
-
-uint8_t GameState::actingPlayer() const
-{
-    return mCurrentActing;
-}
-
-bool GameState::notFacingFullRaise() const
-{
-    return call() && call() < mLargestRaise;
-}
-
-uint32_t GameState::stake() const
-{
-    return stakes[mCurrentActing];
-}
-
-uint32_t GameState::call() const
-{
-    return mToCall - mBets[mCurrentActing];
-}
-
-uint32_t GameState::minRaise() const
-{
-    return call() + mLargestRaise;
 }
 
 std::array<int64_t, opt::MAX_PLAYERS> GameState::rewards() const

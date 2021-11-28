@@ -34,31 +34,32 @@ public:
 	// Return whether the hand finished.
 	bool nextState(uint32_t bet);
 
-	// Legal actions (uint32_t bet) for actingPlayer() are:
-	// if      stake() <= call()    : 0 & stake()
-	// else if notFacingFullRaise() : 0 & call()
-	// else if stake() <= minRaise(): (call() ? 0 & call() : 0) & stake()
-	// else                         : (call() ? 0 & call() : 0) & [minRaise(), stake()]
-	//
-	// Equivalent to:
-	// if notFacingFullRaise():
-	//     0 & min(call(), stake())
-	// else:
-	//     case stake() <= call()             : 0 & stake()
-	//     case call() < stake() <= minRaise(): 0 & call() & stake()
-	//     case minRaise() < stake()          : 0 & call() & [minRaise(), stake()]
-	uint8_t actingPlayer() const;
-	bool notFacingFullRaise() const;
-	uint32_t stake() const;
-	// Chips to put to call
-	uint32_t call() const;
-	// Minimum chips to put to raise
-	uint32_t minRaise() const;
-
 	// Return the rewards obtained by each player after the end of the hand.
 	std::array<int64_t, opt::MAX_PLAYERS> rewards() const;
 
-	std::array<uint32_t, opt::MAX_PLAYERS> stakes;
+	std::array<uint32_t, opt::MAX_PLAYERS> stakes{};
+
+	// Legal actions (uint32_t bet) for actingPlayer are:
+	// switch (actionOption)
+	// case 0: actions[0] &              actions[3]
+	// case 1: actions[0] & actions[1]
+	// case 2: actions[0] & actions[1] & actions[3]
+	// case 3: actions[0] &                           [actions[2], actions[3]]
+	// case 4: actions[0] & actions[1] &              [actions[2], actions[3]]
+	//
+	// Equivalent to:
+	// if      stake <= call        : 0 & stake
+	// else if notFacingFullRaise(*): 0 & call
+	// else if stake <= minRaise    : (call ? 0 & call : 0) & stake
+	// else                         : (call ? 0 & call : 0) & [minRaise, stake]
+	// (*): notFacingFullRaise = call && call < mLargestRaise
+	uint8_t actingPlayer;
+	uint8_t actionOption;
+	// actions[0] = 0
+	// actions[1] = call (chips to put to call)
+	// actions[2] = minRaise (minimum chips to put to raise)
+	// actions[3] = stake
+	std::array<uint32_t, 4> actions{};
 
 private:
 	typedef omp::XoroShiro128Plus Rng;
@@ -82,6 +83,9 @@ private:
 	void eraseAlive(uint8_t& i);
 	void eraseActing(uint8_t& i);
 
+	void setLegalActions();
+	uint8_t getActionOption() const;
+
 	void showdown();
 	std::vector<std::vector<uint8_t>> getRankings() const;
 
@@ -93,20 +97,20 @@ private:
 	Round mRound;
 
 	// Players
-	std::array<uint32_t, opt::MAX_PLAYERS> mInitialStakes;
-	std::array<omp::Hand, opt::MAX_PLAYERS> mHands;
+	std::array<uint32_t, opt::MAX_PLAYERS> mInitialStakes{};
+	std::array<omp::Hand, opt::MAX_PLAYERS> mHands{};
 	// Bets since the start of a hand.
-	std::array<uint32_t, opt::MAX_PLAYERS> mBets;
+	std::array<uint32_t, opt::MAX_PLAYERS> mBets{};
 	// Active players (were dealt cards and did not fold)
-	std::array<uint8_t, opt::MAX_PLAYERS> mAlive;
+	std::array<uint8_t, opt::MAX_PLAYERS> mAlive{};
 	uint8_t mFirstAlive;
 	uint8_t mNAlive;
 	// Alive and did not go all-in yet.
-	std::array<uint8_t, opt::MAX_PLAYERS> mActing;
+	std::array<uint8_t, opt::MAX_PLAYERS> mActing{};
 	uint8_t mFirstActing;
 	uint8_t mNActing;
 	// Acted on the current round.
-	std::array<bool, opt::MAX_PLAYERS> mActed;
+	std::array<bool, opt::MAX_PLAYERS> mActed{};
 
 	// Board
 	omp::Hand mBoardCards;
