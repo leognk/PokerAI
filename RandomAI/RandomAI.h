@@ -22,7 +22,7 @@ private:
 
 	Rng mRng;
 	FastRandomChoice<16> mRandChoice;
-	omp::FastUniformIntDistribution<uint32_t, 31> mRaiseDist;
+	omp::FastUniformIntDistribution<uint32_t, 32> mRaiseDist;
 
 	double mFoldProba, mCallProba, mRaiseProba;
 

@@ -122,7 +122,7 @@ public:
     }
 
 private:
-    static const unsigned MASK = (1u << tBits) - 1;
+    static const unsigned MASK = (1ull << tBits) - 1;
 
     uint64_t mBuffer;
     unsigned mBufferUsesLeft;

@@ -1,6 +1,7 @@
 #include "../GameEngine/PlayGame.h"
 #include "../RandomAI/RandomAI.h"
 #include <iostream>
+#include <iomanip> 
 #include <chrono>
 
 int main()
@@ -37,8 +38,10 @@ int main()
     }
 
     // Print results.
-    std::cout << "Duration: " << duration << " s" << std::endl;
-    std::cout << "Game count: " << gameCount << " games" << std::endl;
-    std::cout << 1e9 * duration / gameCount << " nanosec/game" << std::endl;
-    std::cout << gameCount / duration << " game/s" << std::endl;
+    std::cout << (uint64_t)std::round(duration) << " s" << std::endl;
+    std::cout << std::fixed << std::setprecision(1);
+    std::cout << 1e-6 * gameCount << " Mgames" << std::endl;
+    std::cout << (uint64_t)std::round(1e9 * duration / gameCount) << " nanosec/game" << std::endl;
+    std::cout << std::setprecision(2);
+    std::cout << 1e-6 * gameCount / duration << " Mgame/s" << std::endl;
 }
