@@ -343,39 +343,39 @@ void GameState::setLegalActions()
 
     // Determine legal actions.
     if (allin <= call) {
-        actions[0] = ActionType::fold;
-        actions[1] = ActionType::allin;
+        actions[0] = Action::fold;
+        actions[1] = Action::allin;
         nActions = 2;
     }
     // Not facing a full raise.
     else if (call && call < mLargestRaise) {
-        actions[0] = ActionType::fold;
-        actions[1] = ActionType::call;
+        actions[0] = Action::fold;
+        actions[1] = Action::call;
         nActions = 2;
     }
     else if (allin <= minRaise) {
         if (call) {
-            actions[0] = ActionType::fold;
-            actions[1] = ActionType::call;
-            actions[2] = ActionType::allin;
+            actions[0] = Action::fold;
+            actions[1] = Action::call;
+            actions[2] = Action::allin;
             nActions = 3;
         }
         else {
-            actions[0] = ActionType::call;
-            actions[1] = ActionType::allin;
+            actions[0] = Action::call;
+            actions[1] = Action::allin;
             nActions = 2;
         }
     }
     else {
         if (call) {
-            actions[0] = ActionType::fold;
-            actions[1] = ActionType::call;
-            actions[2] = ActionType::raise;
+            actions[0] = Action::fold;
+            actions[1] = Action::call;
+            actions[2] = Action::raise;
             nActions = 3;
         }
         else {
-            actions[0] = ActionType::call;
-            actions[1] = ActionType::raise;
+            actions[0] = Action::call;
+            actions[1] = Action::raise;
             nActions = 2;
         }
     }

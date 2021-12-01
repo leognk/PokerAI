@@ -9,6 +9,17 @@
 
 namespace egn {
 
+// A check is simply a null call.
+enum class Action { fold, call, raise, allin };
+
+enum class Round { preflop, flop, turn, river };
+
+Round& operator++(Round& r)
+{
+	r = Round(int(r) + 1);
+	return r;
+}
+
 // Class defining a state of the poker game.
 class GameState
 {
@@ -48,17 +59,12 @@ public:
 	// between minRaise and allin.
 	uint8_t actingPlayer;
 	uint32_t fold = 0, call, minRaise, allin;
-	// A check is simply a null call.
-	enum class ActionType { fold, call, raise, allin };
-	std::array<ActionType, 3> actions{};
+	std::array<Action, 3> actions{};
 	uint8_t nActions;
 
 private:
 	typedef omp::XoroShiro128Plus Rng;
 	typedef omp::FastUniformIntDistribution<unsigned, 16> CardDist;
-
-	enum class Round { preflop, flop, turn, river };
-	friend Round& operator++(Round& r);
 
 	void resetPlayers();
 	void resetBoard();
@@ -122,12 +128,6 @@ private:
 	omp::HandEvaluator mEval;
 
 }; // GameState
-
-GameState::Round& operator++(GameState::Round& r)
-{
-	r = GameState::Round(int(r) + 1);
-	return r;
-}
 
 } // egn
 
