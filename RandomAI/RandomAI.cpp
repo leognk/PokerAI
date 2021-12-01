@@ -1,19 +1,50 @@
 #include "RandomAI.h"
-#include "../Utils/Random.h"
-#include <random> 
+#include <random>
 
 namespace opt {
 
-RandomAI::RandomAI(unsigned rngSeed = 0) :
+RandomAI::RandomAI(
+	double foldProba, double callProba,
+	unsigned rngSeed) :
 
+	mFoldProba(foldProba),
+	mCallProba(callProba),
+	mRaiseProba(1 - foldProba - callProba),
 	mRng{ (!rngSeed) ? std::random_device{}() : rngSeed }
 {
+	assert(0 <= foldProba && foldProba <= 1);
+	assert(0 <= callProba && callProba <= 1);
 }
 
 uint32_t RandomAI::act(egn::GameState state)
 {
-	omp::FastUniformIntDistribution<uint32_t, 16> actionDist(0, state.nActions - 1);
-	egn::Action action = state.actions[actionDist(mRng)];
+	// Build the distribution over legal actions.
+	std::vector<double> proba(state.nActions);
+	for (uint8_t i = 0; i < state.nActions; ++i) {
+		switch (state.actions[i]) {
+		case egn::Action::fold:
+			proba[i] = mFoldProba;
+			break;
+		case egn::Action::call:
+			proba[i] = mCallProba;
+			break;
+		case egn::Action::raise:
+			proba[i] = mRaiseProba;
+			break;
+		case egn::Action::allin:
+			proba[i] = mRaiseProba;
+			break;
+		}
+	}
+	// Renormalize the distribution if the number of actions is not 3.
+	if (state.nActions == 2) {
+		double sum = (proba[0] + proba[1]);
+		proba[0] /= sum;
+		proba[1] /= sum;
+	}
+
+	// Pick a random action using the distribution.
+	egn::Action action = state.actions[mRandChoice(proba, mRng)];
 
 	switch (action) {
 
