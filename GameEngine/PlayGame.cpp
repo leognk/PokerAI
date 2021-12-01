@@ -1,9 +1,9 @@
-#include "Tournament.h"
+#include "PlayGame.h"
 
 namespace egn {
 
 #pragma warning(suppress: 26495)
-Tournament::Tournament(
+PlayGame::PlayGame(
 	uint32_t ante, uint32_t bigBlind,
 	const std::array<uint32_t, opt::MAX_PLAYERS>& stakes,
 	const std::array<Player, opt::MAX_PLAYERS>& players,
@@ -12,11 +12,12 @@ Tournament::Tournament(
 
 	mState(ante, bigBlind, stakes, rngSeed),
 	mPlayers(players),
-	mDealer(dealerIdx)
+	mDealer(dealerIdx),
+	mStakes(stakes)
 {
 }
 
-void Tournament::playToEnd()
+void PlayGame::playToEnd()
 {
 	// The loop ends when only one active player
 	// remains (the winner).
@@ -27,16 +28,23 @@ void Tournament::playToEnd()
 	} while (mDealer != nextActive(mDealer));
 }
 
-void Tournament::playOneHand()
+void PlayGame::playAndReset()
+{
+	playOneHand();
+	mState.stakes = mStakes;
+	nextActive(mDealer);
+}
+
+void PlayGame::playOneHand()
 {
 	bool finished = mState.startNewHand(mDealer);
 	while (!finished) {
 		finished = mState.nextState(
-			mPlayers[mState.actingPlayer()].act(mState));
+			mPlayers[mState.actingPlayer].act(mState));
 	}
 }
 
-uint8_t& Tournament::nextActive(uint8_t& i)
+uint8_t& PlayGame::nextActive(uint8_t& i)
 {
 	do {
 		(++i) %= opt::MAX_PLAYERS;

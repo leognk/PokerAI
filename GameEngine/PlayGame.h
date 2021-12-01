@@ -1,18 +1,18 @@
-#ifndef EGN_TOURNAMENT_H
-#define EGN_TOURNAMENT_H
+#ifndef EGN_PLAYGAME_H
+#define EGN_PLAYGAME_H
 
 #include "GameState.h"
 #include "Player.h"
 
 namespace egn {
 
-// Class for playing a poker tournament given some Players objects.
-class Tournament
+// Class for playing poker hands given some Players objects.
+class PlayGame
 {
 public:
 	// Set a player's stake to 0 if he is not active.
 	// Set rngSeed to 0 to set a random seed.
-	Tournament(
+	PlayGame(
 		uint32_t ante, uint32_t bigBlind,
 		const std::array<uint32_t, opt::MAX_PLAYERS>& stakes,
 		const std::array<Player, opt::MAX_PLAYERS>& players,
@@ -20,6 +20,7 @@ public:
 		unsigned rngSeed = 0);
 
 	void playToEnd();
+	void playAndReset();
 
 private:
 	void playOneHand();
@@ -28,9 +29,10 @@ private:
 	GameState mState;
 	std::array<Player, opt::MAX_PLAYERS> mPlayers;
 	uint8_t mDealer;
+	std::array<uint32_t, opt::MAX_PLAYERS> mStakes;
 
-}; // Tournament
+}; // PlayGame
 
 } // egn
 
-#endif // EGN_TOURNAMENT_H
+#endif // EGN_PLAYGAME_H
