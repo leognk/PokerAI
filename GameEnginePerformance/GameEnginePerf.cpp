@@ -6,11 +6,13 @@
 int main()
 {
     // Constants
-    const double maxDuration = 5;
+    // In seconds
+    const double maxDuration = 2;
     const unsigned rngSeed = 1;
     const uint32_t ante = 1, bigBlind = 10;
     const uint32_t stake = 1000;
-    const double foldProba = 1. / 3, callProba = 1. / 3;
+    const double foldProba = 1. / 3;
+    const double callProba = 1. / 3;
 
 
     // Define game variables.
@@ -28,7 +30,7 @@ int main()
     while (duration < maxDuration) {
         play.playAndReset();
         ++gameCount;
-        if (gameCount % 100 == 0) {
+        if (gameCount % uint64_t(1e3) == 0) {
             auto t2 = std::chrono::high_resolution_clock::now();
             duration = 1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
         }

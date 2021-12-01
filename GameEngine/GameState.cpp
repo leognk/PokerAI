@@ -398,8 +398,10 @@ void GameState::showdown()
     // (deal with this specific case to speed up the computation)
     else if (mOnePot) {
         // Distribute the gains to each winner.
+#pragma warning(suppress: 4267)
         uint32_t gain = mPot / rankings[0].size();
         // Remaining chips go to the first players after the dealer.
+#pragma warning(suppress: 4267)
         uint8_t extra = mPot % rankings[0].size();
         for (uint8_t i : rankings[0]) {
             stakes[i] += gain;
@@ -457,6 +459,7 @@ void GameState::showdown()
 
         // Flag for winners eligible for a gain.
         std::vector<bool> giveGain(sameRankPlayers.size(), true);
+#pragma warning(suppress: 4267)
         uint8_t nWinners = sameRankPlayers.size();
 
         // Each winnerBet will correspond to one pot for the flagged players
