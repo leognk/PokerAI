@@ -8,7 +8,7 @@ namespace egn {
 GameState::GameState(
     uint32_t ante, uint32_t bigBlind,
     const std::array<uint32_t, opt::MAX_PLAYERS>& stakes,
-    unsigned rngSeed = 0) :
+    unsigned rngSeed) :
 
     stakes(stakes),
     mRng{ (!rngSeed) ? std::random_device{}() : rngSeed },
@@ -56,7 +56,8 @@ void GameState::resetPlayers()
     mNActing = 0;
     // The first acting player after the preflop is always
     // the player following the dealer.
-    uint8_t i = mDealer + 1;
+    uint8_t firstPlayer = (mDealer + 1) % opt::MAX_PLAYERS;
+    uint8_t i = firstPlayer;
     do {
         // Ignore inactive players.
         if (!stakes[i])
@@ -68,7 +69,8 @@ void GameState::resetPlayers()
         mActing[i] = true;
         ++mNActing;
         mActed[i] = false;
-    } while (++i % opt::MAX_PLAYERS != mDealer + 1);
+        (++i) %= opt::MAX_PLAYERS;
+    } while (i != firstPlayer);
     mFirstAlive = nextAlive(mDealer);
     mFirstActing = mFirstAlive;
 }

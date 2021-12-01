@@ -14,6 +14,7 @@ enum class Action { fold, call, raise, allin };
 
 enum class Round { preflop, flop, turn, river };
 
+inline
 Round& operator++(Round& r)
 {
 	r = Round(int(r) + 1);

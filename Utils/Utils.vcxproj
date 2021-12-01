@@ -21,10 +21,13 @@
   <ItemGroup>
     <ClInclude Include="Random.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Random.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{10ec7ce5-9197-4bcc-bdf2-85b2cd6cee76}</ProjectGuid>
+    <ProjectGuid>{2b261b87-ab22-4819-a536-8f50fb66a682}</ProjectGuid>
     <RootNamespace>Utils</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>

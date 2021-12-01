@@ -37,6 +37,6 @@ int main()
     // Print results.
     std::cout << "Duration: " << duration << " s" << std::endl;
     std::cout << "Game count: " << gameCount << " games" << std::endl;
-    std::cout << 1e6 * duration / gameCount << " microsec/game" << std::endl;
+    std::cout << 1e9 * duration / gameCount << " nanosec/game" << std::endl;
     std::cout << gameCount / duration << " game/s" << std::endl;
 }

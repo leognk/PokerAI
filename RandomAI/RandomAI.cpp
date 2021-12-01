@@ -50,20 +50,16 @@ uint32_t RandomAI::act(egn::GameState state)
 
 	case egn::Action::fold:
 		return state.fold;
-		break;
 
 	case egn::Action::call:
 		return state.call;
-		break;
 
 	case egn::Action::allin:
 		return state.allin;
-		break;
 
 	case egn::Action::raise:
 		mRaiseDist.init(state.minRaise, state.allin);
 		return mRaiseDist(mRng);
-		break;
 	}
 }
 
