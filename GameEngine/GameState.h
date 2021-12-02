@@ -36,15 +36,13 @@ public:
 	// Small blind is set to half the big blind.
 	void setBigBlind(uint32_t bigBlind);
 
-	// Return whether the hand finished.
 	// The game could have finished if there was less than 2 acting players
 	// left after charging the antes and the blinds.
-	bool startNewHand(uint8_t dealerIdx);
+	void startNewHand(uint8_t dealerIdx);
 	// bet is the action made by the current acting player.
 	// It must be equal to 0 for a check or fold. It the player
 	// has the possibility to check, we force him to do so (no fold).
-	// Return whether the hand finished.
-	bool nextState(uint32_t bet);
+	void nextState(uint32_t bet);
 
 	// Return the rewards obtained by each player after the end of the hand.
 	std::array<int64_t, opt::MAX_PLAYERS> rewards() const;
@@ -62,6 +60,9 @@ public:
 	uint32_t fold = 0, call, minRaise, allin;
 	std::array<Action, 3> actions{};
 	uint8_t nActions;
+
+	// Whether the hand is finished.
+	bool finished;
 
 private:
 	typedef omp::XoroShiro128Plus Rng;

@@ -1,4 +1,5 @@
 #include "PlayGame.h"
+#include <iostream>
 
 namespace egn {
 
@@ -37,10 +38,9 @@ void PlayGame::playAndReset()
 
 void PlayGame::playOneHand()
 {
-	bool finished = mState.startNewHand(mDealer);
-	while (!finished) {
-		finished = mState.nextState(
-			mPlayers[mState.actingPlayer].act(mState));
+	mState.startNewHand(mDealer);
+	while (!mState.finished) {
+		mState.nextState(mPlayers[mState.actingPlayer].act(mState));
 	}
 }
 

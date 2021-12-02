@@ -29,10 +29,11 @@ void GameState::setBigBlind(uint32_t bigBlind)
     mSB = mBB / 2;
 }
 
-bool GameState::startNewHand(uint8_t dealerIdx)
+void GameState::startNewHand(uint8_t dealerIdx)
 {
     mDealer = dealerIdx;
     mRound = Round::preflop;
+    finished = false;
     mAllInFlag = false;
 
     resetPlayers();
@@ -44,9 +45,9 @@ bool GameState::startNewHand(uint8_t dealerIdx)
     dealBoardCards(usedCardsMask);
 
     // Charge antes and blinds.
-    if (chargeAnte())
-        return true;
-    return chargeBlinds();
+    finished = chargeAnte();
+    if (finished) return;
+    chargeBlinds();
 }
 
 void GameState::resetPlayers()
@@ -244,7 +245,7 @@ void GameState::eraseActing(uint8_t& i)
         nextActing(mFirstActing);
 }
 
-bool GameState::nextState(uint32_t bet)
+void GameState::nextState(uint32_t bet)
 {
     mActed[mCurrentActing] = true;
 
@@ -297,7 +298,8 @@ bool GameState::nextState(uint32_t bet)
     // Everybody folded but one.
     if (mNAlive == 1) {
         stakes[mFirstAlive] += mPot;
-        return true;
+        finished = true;
+        return;
     }
 
     if (mNActing)
@@ -305,7 +307,8 @@ bool GameState::nextState(uint32_t bet)
     // Everybody went all-in.
     else {
         showdown();
-        return true;
+        finished = true;
+        return;
     }
 
     // End of the round (we went around the table)
@@ -314,7 +317,8 @@ bool GameState::nextState(uint32_t bet)
         // Showdown
         if (mRound == Round::river || mNActing == 1) {
             showdown();
-            return true;
+            finished = true;
+            return;
         }
 
         // Go to the next round.
@@ -326,13 +330,10 @@ bool GameState::nextState(uint32_t bet)
                 mActed[i] = false;
             } while (nextActing(i) != mFirstActing);
             mCurrentActing = mFirstActing;
-            setLegalActions();
-            return false;
         }
     }
 
     setLegalActions();
-    return false;
 }
 
 void GameState::setLegalActions()

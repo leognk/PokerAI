@@ -15,7 +15,7 @@ public:
 	RandomAI(
 		double foldProba = 1./3, double callProba = 1./3,
 		unsigned rngSeed = 0);
-	uint32_t act(egn::GameState state);
+	uint32_t act(const egn::GameState state);
 
 private:
 	typedef omp::XoroShiro128Plus Rng;
