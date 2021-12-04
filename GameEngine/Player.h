@@ -10,7 +10,7 @@ class Player
 {
 public:
 	// Return an action (a bet) to take on the given game state.
-	uint32_t act(const GameState& state) { return 0; }
+	virtual uint32_t act(const GameState& state) = 0;
 };
 
 } // egn

@@ -16,7 +16,7 @@ RandomAI::RandomAI(
 	assert(0 <= callProba && callProba <= 1);
 }
 
-uint32_t RandomAI::act(const egn::GameState state)
+uint32_t RandomAI::act(const egn::GameState& state)
 {
 	// Build the distribution over legal actions.
 	std::vector<double> proba(state.nActions);
@@ -60,6 +60,9 @@ uint32_t RandomAI::act(const egn::GameState state)
 	case egn::Action::raise:
 		mRaiseDist.init(state.minRaise, state.allin);
 		return mRaiseDist(mRng);
+
+	default:
+		return 0;
 	}
 }
 

@@ -164,6 +164,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GameState.cpp" />
+    <ClCompile Include="GameStatePrint.cpp" />
     <ClCompile Include="Hand.cpp" />
     <ClCompile Include="PlayGame.cpp" />
   </ItemGroup>
@@ -174,6 +175,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Optimus\Constants.h" />
+    <ClInclude Include="GameStatePrint.h" />
     <ClInclude Include="Hand.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="Player.h" />

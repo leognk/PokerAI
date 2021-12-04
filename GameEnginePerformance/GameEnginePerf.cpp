@@ -20,8 +20,8 @@ int main()
     std::array<uint32_t, opt::MAX_PLAYERS> stakes{
         stake, stake, stake, stake, stake, stake };
     opt::RandomAI randomAI(foldProba, callProba, rngSeed);
-    std::array<egn::Player, opt::MAX_PLAYERS> players{
-        randomAI, randomAI, randomAI, randomAI, randomAI, randomAI};
+    std::array<egn::Player*, opt::MAX_PLAYERS> players{
+        &randomAI, &randomAI, &randomAI, &randomAI, &randomAI, &randomAI};
     egn::PlayGame play(ante, bigBlind, stakes, players, 0, rngSeed);
 
     // Simulate games.

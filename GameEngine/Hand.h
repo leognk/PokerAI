@@ -13,18 +13,18 @@ struct Hand :
     public omp::Hand
 {
 public:
+    Hand() : omp::Hand() {}
     // Allows conversion from omp::Hand to egn::Hand.
     Hand(const omp::Hand& hand) : omp::Hand(hand) {}
     Hand(const std::string& cardStr);
 
-private:
     std::string getStr() const;
+
+private:
     static unsigned charToRank(char c);
     static unsigned charToSuit(char c);
     static char intToRank(unsigned idx);
     static char intToSuit(unsigned idx);
-
-    friend std::ostream& operator<<(std::ostream& os, const Hand& hand);
 };
 
 std::ostream& operator<<(std::ostream& os, const Hand& hand);

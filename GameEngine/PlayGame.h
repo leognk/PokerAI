@@ -15,7 +15,7 @@ public:
 	PlayGame(
 		uint32_t ante, uint32_t bigBlind,
 		const std::array<uint32_t, opt::MAX_PLAYERS>& stakes,
-		const std::array<Player, opt::MAX_PLAYERS>& players,
+		const std::array<Player*, opt::MAX_PLAYERS>& players,
 		uint8_t dealerIdx,
 		unsigned rngSeed = 0);
 
@@ -24,10 +24,9 @@ public:
 
 private:
 	void playOneHand();
-	uint8_t& nextActive(uint8_t& i);
 
 	GameState mState;
-	std::array<Player, opt::MAX_PLAYERS> mPlayers;
+	std::array<Player*, opt::MAX_PLAYERS> mPlayers;
 	uint8_t mDealer;
 	std::array<uint32_t, opt::MAX_PLAYERS> mStakes;
 

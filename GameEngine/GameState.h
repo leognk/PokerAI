@@ -6,11 +6,29 @@
 #include "../OMPEval/omp/HandEvaluator.h"
 #include "../Optimus/Constants.h"
 #include <vector>
+#include <iostream>
 
 namespace egn {
 
 // A check is simply a null call.
 enum class Action { fold, call, raise, allin };
+
+inline
+std::ostream& operator<<(std::ostream& os, const Action& a)
+{
+	switch (a) {
+	case Action::fold:
+		return os << "fold";
+	case Action::call:
+		return os << "call";
+	case Action::raise:
+		return os << "raise";
+	case Action::allin:
+		return os << "all-in";
+	default:
+		return os;
+	}
+}
 
 enum class Round { preflop, flop, turn, river };
 
@@ -19,6 +37,23 @@ Round& operator++(Round& r)
 {
 	r = Round(int(r) + 1);
 	return r;
+}
+
+inline
+std::ostream& operator<<(std::ostream& os, const Round& r)
+{
+	switch (r) {
+	case Round::preflop:
+		return os << "preflop";
+	case Round::flop:
+		return os << "flop";
+	case Round::turn:
+		return os << "turn";
+	case Round::river:
+		return os << "river";
+	default:
+		return os;
+	}
 }
 
 // Class defining a state of the poker game.
@@ -43,9 +78,10 @@ public:
 	// It must be equal to 0 for a check or fold. It the player
 	// has the possibility to check, we force him to do so (no fold).
 	void nextState(uint32_t bet);
-
-	// Return the rewards obtained by each player after the end of the hand.
-	std::array<int64_t, opt::MAX_PLAYERS> rewards() const;
+	// Next active player, ie. non-zero stake player
+	// (to set the dealer of the next hand).
+	// Do not use it when a hand is running (because of all-in players).
+	uint8_t& nextActive(uint8_t& i) const;
 
 	std::array<uint32_t, opt::MAX_PLAYERS> stakes{};
 
@@ -63,8 +99,10 @@ public:
 
 	// Whether the hand is finished.
 	bool finished;
+	// Rewards obtained by each player after the end of the hand.
+	std::array<int64_t, opt::MAX_PLAYERS> rewards;
 
-private:
+protected:
 	typedef omp::XoroShiro128Plus Rng;
 	typedef omp::FastUniformIntDistribution<unsigned, 16> CardDist;
 
@@ -72,7 +110,6 @@ private:
 	void resetBoard();
 	void dealHoleCards(uint64_t& usedCardsMask);
 	void dealBoardCards(uint64_t& usedCardsMask);
-	void dealCards(omp::Hand& hand, unsigned nCards, uint64_t& usedCardsMask);
 	// Return whether the hand finished.
 	bool chargeAnte();
 	// Return whether the hand finished.
@@ -87,6 +124,7 @@ private:
 
 	void showdown();
 	std::vector<std::vector<uint8_t>> getRankings() const;
+	void setRewards();
 
 	Rng mRng;
 	CardDist mCardDist;
@@ -97,7 +135,7 @@ private:
 
 	// Players
 	std::array<uint32_t, opt::MAX_PLAYERS> mInitialStakes{};
-	std::array<omp::Hand, opt::MAX_PLAYERS> mHands{};
+	std::array<Hand, opt::MAX_PLAYERS> mHands{};
 	// Bets since the start of a hand.
 	std::array<uint32_t, opt::MAX_PLAYERS> mBets{};
 	// Active players (were dealt cards and did not fold)
@@ -112,7 +150,7 @@ private:
 	std::array<bool, opt::MAX_PLAYERS> mActed{};
 
 	// Board
-	omp::Hand mBoardCards;
+	Hand mBoardCards;
 	// Sum of all pots
 	uint32_t mPot;
 	// Using only one pot

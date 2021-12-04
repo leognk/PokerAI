@@ -46,8 +46,10 @@ void GameState::startNewHand(uint8_t dealerIdx)
 
     // Charge antes and blinds.
     finished = chargeAnte();
-    if (finished) return;
-    chargeBlinds();
+    if (!finished)
+        finished = chargeBlinds();
+    if (finished)
+        setRewards();
 }
 
 void GameState::resetPlayers()
@@ -61,24 +63,27 @@ void GameState::resetPlayers()
     uint8_t i = firstPlayer;
     do {
         // Ignore inactive players.
-        if (!stakes[i])
-            continue;
-        mHands[i] = omp::Hand::empty();
-        mBets[i] = 0;
-        mAlive[i] = true;
-        ++mNAlive;
-        mActing[i] = true;
-        ++mNActing;
-        mActed[i] = false;
+        if (stakes[i]) {
+            mBets[i] = 0;
+            mAlive[i] = true;
+            ++mNAlive;
+            mActing[i] = true;
+            ++mNActing;
+            mActed[i] = false;
+        }
+        else {
+            mAlive[i] = false;
+        }
         (++i) %= opt::MAX_PLAYERS;
     } while (i != firstPlayer);
-    mFirstAlive = nextAlive(mDealer);
+    mFirstAlive = mDealer;
+    nextAlive(mFirstAlive);
     mFirstActing = mFirstAlive;
 }
 
 void GameState::resetBoard()
 {
-    mBoardCards = omp::Hand::empty();
+    mBoardCards = Hand::empty();
     mPot = 0;
     mOnePot = true;
 }
@@ -87,18 +92,24 @@ void GameState::dealHoleCards(uint64_t& usedCardsMask)
 {
     uint8_t i = mFirstAlive;
     do {
-        dealCards(mHands[i], omp::HOLE_CARDS, usedCardsMask);
+        std::array<uint8_t, 2> hand;
+        for (unsigned j = 0; j < 2; ++j) {
+            uint8_t card;
+            uint64_t cardMask;
+            do {
+                card = mCardDist(mRng);
+                cardMask = 1ull << card;
+            } while (usedCardsMask & cardMask);
+            usedCardsMask |= cardMask;
+            hand[j] = card;
+        }
+        mHands[i] = Hand(hand);
     } while (nextAlive(i) != mFirstAlive);
 }
 
 void GameState::dealBoardCards(uint64_t& usedCardsMask)
 {
-    dealCards(mBoardCards, omp::BOARD_CARDS, usedCardsMask);
-}
-
-void GameState::dealCards(omp::Hand& hand, unsigned nCards, uint64_t& usedCardsMask)
-{
-    for (unsigned i = 0; i < nCards; ++i) {
+    for (unsigned i = 0; i < omp::BOARD_CARDS; ++i) {
         unsigned card;
         uint64_t cardMask;
         do {
@@ -106,7 +117,7 @@ void GameState::dealCards(omp::Hand& hand, unsigned nCards, uint64_t& usedCardsM
             cardMask = 1ull << card;
         } while (usedCardsMask & cardMask);
         usedCardsMask |= cardMask;
-        hand += omp::Hand(card);
+        mBoardCards += Hand(card);
     }
 }
 
@@ -202,11 +213,19 @@ bool GameState::chargeBlinds()
 
     // Even if the bb was incomplete, the amount
     // to call is still the bb.
-    mToCall = mBB;
+    mToCall = mAnte + mBB;
     mLargestRaise = mBB;
 
     setLegalActions();
     return false;
+}
+
+uint8_t& GameState::nextActive(uint8_t& i) const
+{
+    do {
+        (++i) %= opt::MAX_PLAYERS;
+    } while (!stakes[i]);
+    return i;
 }
 
 // mNAlive must be non-zero to avoid infinite loop.
@@ -299,6 +318,7 @@ void GameState::nextState(uint32_t bet)
     if (mNAlive == 1) {
         stakes[mFirstAlive] += mPot;
         finished = true;
+        setRewards();
         return;
     }
 
@@ -308,6 +328,7 @@ void GameState::nextState(uint32_t bet)
     else {
         showdown();
         finished = true;
+        setRewards();
         return;
     }
 
@@ -318,6 +339,7 @@ void GameState::nextState(uint32_t bet)
         if (mRound == Round::river || mNActing == 1) {
             showdown();
             finished = true;
+            setRewards();
             return;
         }
 
@@ -407,7 +429,7 @@ void GameState::showdown()
         for (uint8_t i : rankings[0]) {
             stakes[i] += gain;
             if (extra--)
-                ++stakes[rankings[0][i]];
+                ++stakes[i];
         }
         return;
     }
@@ -467,8 +489,8 @@ void GameState::showdown()
         // of the current rank's bracket to share.
         for (uint32_t winnerBet : orderedBets) {
             // Unflag winners who are not eligible for the current pot.
-            for (uint8_t i : sameRankPlayers) {
-                if (giveGain[i] && !mBets[i]) {
+            for (uint8_t i = 0; i < sameRankPlayers.size(); ++i) {
+                if (giveGain[i] && !mBets[sameRankPlayers[i]]) {
                     giveGain[i] = false;
                     --nWinners;
                 }
@@ -487,11 +509,11 @@ void GameState::showdown()
             uint32_t gain = pot / nWinners;
             // Remaining chips go to the first players after the dealer
             uint8_t extra = pot % nWinners;
-            for (uint8_t i : sameRankPlayers) {
+            for (uint8_t i = 0; i < sameRankPlayers.size(); ++i) {
                 if (giveGain[i]) {
-                    stakes[i] += gain;
+                    stakes[sameRankPlayers[i]] += gain;
                     if (extra--)
-                        ++stakes[i];
+                        ++stakes[sameRankPlayers[i]];
                 }
             }
         }
@@ -556,13 +578,10 @@ std::vector<std::vector<uint8_t>> GameState::getRankings() const
     return rankings;
 }
 
-std::array<int64_t, opt::MAX_PLAYERS> GameState::rewards() const
+void GameState::setRewards()
 {
-    std::array<int64_t, opt::MAX_PLAYERS> res;
-    for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i) {
-        res[i] = stakes[i] - mInitialStakes[i];
-    }
-    return res;
+    for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i)
+        rewards[i] = (int64_t)stakes[i] - (int64_t)mInitialStakes[i];
 }
 
 } // egn

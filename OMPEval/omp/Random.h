@@ -16,6 +16,9 @@ public:
     XoroShiro128Plus(uint64_t seed)
     {
         mState[0] = ~(mState[1] = seed);
+        // Warm-up the RNG.
+        for (unsigned i = 0; i < 10000; ++i)
+            operator()();
     }
 
     uint64_t operator()()
