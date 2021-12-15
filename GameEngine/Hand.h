@@ -16,11 +16,12 @@ public:
     Hand() : omp::Hand() {}
     // Allows conversion from omp::Hand to egn::Hand.
     Hand(const omp::Hand& hand) : omp::Hand(hand) {}
-    Hand(const std::string& cardStr);
+    Hand(const std::string& handStr);
 
     std::string getStr() const;
 
 private:
+    static unsigned getIdx(const std::string& cardStr);
     static unsigned charToRank(char c);
     static unsigned charToSuit(char c);
     static char intToRank(unsigned idx);

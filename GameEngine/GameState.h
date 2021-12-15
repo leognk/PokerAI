@@ -13,8 +13,7 @@ namespace egn {
 // A check is simply a null call.
 enum class Action { fold, call, raise, allin };
 
-inline
-std::ostream& operator<<(std::ostream& os, const Action& a)
+inline std::ostream& operator<<(std::ostream& os, const Action& a)
 {
 	switch (a) {
 	case Action::fold:
@@ -32,15 +31,13 @@ std::ostream& operator<<(std::ostream& os, const Action& a)
 
 enum class Round { preflop, flop, turn, river };
 
-inline
-Round& operator++(Round& r)
+inline Round& operator++(Round& r)
 {
 	r = Round(int(r) + 1);
 	return r;
 }
 
-inline
-std::ostream& operator<<(std::ostream& os, const Round& r)
+inline std::ostream& operator<<(std::ostream& os, const Round& r)
 {
 	switch (r) {
 	case Round::preflop:

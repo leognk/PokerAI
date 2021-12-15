@@ -7,18 +7,16 @@ namespace egn {
 
 Hand::Hand(const std::string& cardStr)
 {
-    assert(cardStr.size() == omp::HOLE_CARDS);
-
-    // Turn to lowercase.
+    // Ignore whitespaces and turn to lowercase.
     std::string s;
     for (char c : cardStr) {
-        s += std::tolower(c);
+        if (std::isgraph(c))
+            s += std::tolower(c);
     }
 
-    // Parse string.
-    unsigned rank = charToRank(s[0]);
-    unsigned suit = charToSuit(s[1]);
-    *this = Hand(omp::SUIT_COUNT * rank + suit);
+    *this = Hand(getIdx(s.substr(0, 2)));
+    for (size_t i = 2; i + 1 < s.size(); i += 2)
+        *this += Hand(getIdx(s.substr(i, 2)));
 }
 
 std::string Hand::getStr() const
@@ -39,6 +37,13 @@ std::string Hand::getStr() const
         }
     }
     return s;
+}
+
+unsigned Hand::getIdx(const std::string& cardStr)
+{
+    unsigned rank = charToRank(cardStr[0]);
+    unsigned suit = charToSuit(cardStr[1]);
+    return omp::SUIT_COUNT * rank + suit;
 }
 
 unsigned Hand::charToRank(char c)

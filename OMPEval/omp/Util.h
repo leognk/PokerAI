@@ -191,7 +191,7 @@ public:
 
     static size_t max_size()
     {
-        return std::numeric_limits<size_t>::max() / sizeof(T);
+        return (std::numeric_limits<size_t>::max)() / sizeof(T);
     }
 
     AlignedAllocator select_on_container_copy_construction() const
