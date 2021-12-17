@@ -10,14 +10,14 @@ int main()
     // In seconds
     const double maxDuration = 2;
     const unsigned rngSeed = 1;
-    const uint32_t ante = 1, bigBlind = 10;
-    const uint32_t stake = 1000;
+    const egn::chips ante = 1, bigBlind = 10;
+    const egn::chips stake = 1000;
     const double foldProba = 1. / 3;
     const double callProba = 1. / 3;
 
 
     // Define game variables.
-    std::array<uint32_t, opt::MAX_PLAYERS> stakes{
+    std::array<egn::chips, opt::MAX_PLAYERS> stakes{
         stake, stake, stake, stake, stake, stake };
     opt::RandomAI randomAI(foldProba, callProba, rngSeed);
     std::array<egn::Player*, opt::MAX_PLAYERS> players{

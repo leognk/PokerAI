@@ -10,6 +10,9 @@
 
 namespace egn {
 
+typedef uint32_t chips;
+typedef int32_t dchips;
+
 // A check is simply a null call.
 enum class Action { fold, call, raise, allin };
 
@@ -60,13 +63,13 @@ public:
 	// Set a player's stake to 0 if he is not active.
 	// Set rngSeed to 0 to set a random seed.
 	GameState(
-		uint32_t ante, uint32_t bigBlind,
-		const std::array<uint32_t, opt::MAX_PLAYERS>& stakes,
+		chips ante, chips bigBlind,
+		const std::array<chips, opt::MAX_PLAYERS>& stakes,
 		unsigned rngSeed = 0);
 
-	void setAnte(uint32_t ante);
+	void setAnte(chips ante);
 	// Small blind is set to half the big blind.
-	void setBigBlind(uint32_t bigBlind);
+	void setBigBlind(chips bigBlind);
 
 	// The game could have finished if there was less than 2 acting players
 	// left after charging the antes and the blinds.
@@ -76,23 +79,23 @@ public:
 	// bet is the action made by the current acting player.
 	// It must be equal to 0 for a check or fold. It the player
 	// has the possibility to check, we force him to do so (no fold).
-	void nextState(uint32_t bet);
+	void nextState(chips bet);
 	// Next active player, ie. non-zero stake player
 	// (to set the dealer of the next hand).
 	// Do not use it when a hand is running (because of all-in players).
 	uint8_t& nextActive(uint8_t& i) const;
 
-	std::array<uint32_t, opt::MAX_PLAYERS> stakes{};
+	std::array<chips, opt::MAX_PLAYERS> stakes{};
 
 	// Legal actions for actingPlayer are given in the array actions
 	// from index 0 to nActions excluded (always 2 or 3).
 	// If the chosen action is of type fold, call or allin,
-	// the uint32_t bet to pass to nextState is the value of the variables
+	// the bet to pass to nextState is the value of the variables
 	// fold (always 0), call or allin respectively.
-	// If the chosen action is of type raise, the uint32_t bet must be
+	// If the chosen action is of type raise, the bet must be
 	// between minRaise and allin.
 	uint8_t actingPlayer;
-	uint32_t fold = 0, call, minRaise, allin;
+	chips fold = 0, call, minRaise, allin;
 	std::array<Action, 3> actions{};
 	uint8_t nActions;
 
@@ -101,7 +104,7 @@ public:
 	// Whether the hand is finished.
 	bool finished;
 	// Rewards obtained by each player after the end of the hand.
-	std::array<int64_t, opt::MAX_PLAYERS> rewards{};
+	std::array<dchips, opt::MAX_PLAYERS> rewards{};
 
 protected:
 	typedef omp::XoroShiro128Plus Rng;
@@ -130,13 +133,13 @@ protected:
 	Rng mRng;
 	CardDist mCardDist;
 
-	uint32_t mAnte, mSB, mBB;
+	chips mAnte, mSB, mBB;
 
 	// Players
-	std::array<uint32_t, opt::MAX_PLAYERS> mInitialStakes{};
+	std::array<chips, opt::MAX_PLAYERS> mInitialStakes{};
 	std::array<Hand, opt::MAX_PLAYERS> mHands{};
 	// Bets since the start of a hand.
-	std::array<uint32_t, opt::MAX_PLAYERS> mBets{};
+	std::array<chips, opt::MAX_PLAYERS> mBets{};
 	// Active players (were dealt cards and did not fold)
 	std::array<uint8_t, opt::MAX_PLAYERS> mAlive{};
 	uint8_t mFirstAlive;
@@ -151,7 +154,7 @@ protected:
 	// Board
 	Hand mBoardCards;
 	// Sum of all pots
-	uint32_t mPot;
+	chips mPot;
 	// Using only one pot
 	bool mOnePot;
 
@@ -159,9 +162,9 @@ protected:
 	// Player making the action passed to nextState.
 	uint8_t mCurrentActing;
 	// Current number of chips to call (counting from the start of the hand)
-	uint32_t mToCall;
+	chips mToCall;
 	// Largest raise (by) of the current round
-	uint32_t mLargestRaise;
+	chips mLargestRaise;
 	bool mAllInFlag;
 
 	omp::HandEvaluator mEval;

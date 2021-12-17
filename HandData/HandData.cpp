@@ -64,7 +64,7 @@ std::istream& operator>>(std::istream& is, HandHistory& hist)
 
     // Read players names and stakes.
     std::unordered_map<std::string, uint8_t> nameToId;
-    hist.initialStakes = std::vector<uint32_t>(hist.maxPlayers, 0);
+    hist.initialStakes = std::vector<egn::chips>(hist.maxPlayers, 0);
     while (extractInfo(line, R"(Seat \d+: )", 0).size()) {
 
         // Read seat number.
@@ -82,12 +82,12 @@ std::istream& operator>>(std::istream& is, HandHistory& hist)
         std::getline(is, line);
     }
 
-    std::vector<uint32_t> stakes(hist.initialStakes);
-    hist.forcedBets.antes = std::vector<uint32_t>(hist.maxPlayers, 0);
+    std::vector<egn::chips> stakes(hist.initialStakes);
+    hist.forcedBets.antes = std::vector<egn::chips>(hist.maxPlayers, 0);
 
     // Preflop starts.
     hist.actions.push_back({});
-    std::vector<uint32_t> roundBets(hist.maxPlayers, 0);
+    std::vector<egn::chips> roundBets(hist.maxPlayers, 0);
 
     // Read forced bets.
     uint8_t nPostedBlinds = 0;
@@ -148,6 +148,7 @@ std::istream& operator>>(std::istream& is, HandHistory& hist)
     }
 
     hist.hands = std::vector(hist.maxPlayers, egn::Hand(egn::Hand::empty()));
+    hist.collectedPot = std::vector(hist.maxPlayers, false);
 
     // Read actions.
     while (line != "*** SUMMARY ***") {
@@ -156,7 +157,7 @@ std::istream& operator>>(std::istream& is, HandHistory& hist)
         if (extractInfo(line,
             R"(\*\*\* (FLOP|TURN|RIVER) \*\*\*)", 0).size()) {
             hist.actions.push_back({});
-            roundBets = std::vector<uint32_t>(hist.maxPlayers, 0);
+            roundBets = std::vector<egn::chips>(hist.maxPlayers, 0);
         }
 
         // Read action.
@@ -220,13 +221,14 @@ std::istream& operator>>(std::istream& is, HandHistory& hist)
             std::string player = extractInfo(line, R"((.+) collected)", 1);
             std::string reward = extractInfo(line, currency + R"(((\d|\.)+))", 1);
             stakes[nameToId[player]] += std::round(100 * std::stod(reward));
+            hist.collectedPot[nameToId[player]] = true;
         }
 
         // Read hole cards.
         else if (extractInfo(line, R"(: shows \[.. ..\])", 0).size()) {
             std::string player_name = extractInfo(line, R"(([^:]+): shows)", 1);
             std::string cards = extractInfo(line, R"(: shows \[(.. ..)\])", 1);
-            hist.hands[nameToId[player_name]] += egn::Hand(cards);
+            hist.hands[nameToId[player_name]] = egn::Hand(cards);
         }
 
         // Bizarre case of two hands dealt (I haven't heard of it).
@@ -272,10 +274,10 @@ std::istream& operator>>(std::istream& is, HandHistory& hist)
     }
 
     // Compute rewards.
-    hist.rewards = std::vector<int64_t>(hist.maxPlayers, 0);
+    hist.rewards = std::vector<egn::dchips>(hist.maxPlayers, 0);
     for (auto& it : nameToId)
-        hist.rewards[it.second] = (int64_t(stakes[it.second])
-            - int64_t(hist.initialStakes[it.second]));
+        hist.rewards[it.second] = (egn::dchips(stakes[it.second])
+            - egn::dchips(hist.initialStakes[it.second]));
 
     return is;
 }
@@ -322,15 +324,19 @@ std::ostream& operator<<(std::ostream& os, const HandHistory& hist)
             os << std::to_string(i + 1) << ": " << hist.hands[i] << "\n";
     }
 
-    // Print rake.
-    os << "\nRake: " << hist.rake << "\n";
-
     // Print rewards.
     os << "\nRewards:\n\n";
     for (uint8_t i = 0; i < hist.maxPlayers; ++i) {
-        if (hist.initialStakes[i])
-            os << std::to_string(i + 1) << ": " << hist.rewards[i] << "\n";
+        if (hist.initialStakes[i]) {
+            os << std::to_string(i + 1) << ": " << hist.rewards[i];
+            if (hist.collectedPot[i])
+                os << " (won)";
+            os << "\n";
+        }
     }
+
+    // Print rake.
+    os << "\nRake: " << hist.rake << "\n";
 
     return os;
 }
@@ -348,7 +354,7 @@ std::ostream& writeCompressedData(std::ostream& os, const HandHistory& hist)
 
     // Write initialStakes.
     Json::Value initialStakesJs(Json::arrayValue);
-    for (uint32_t x : hist.initialStakes)
+    for (egn::chips x : hist.initialStakes)
         initialStakesJs.append(Json::Value(x));
     histJs["inS"] = initialStakesJs;
 
@@ -362,7 +368,7 @@ std::ostream& writeCompressedData(std::ostream& os, const HandHistory& hist)
     // Write forcedBets.
     Json::Value forcedBetsJs;
     Json::Value antesJs(Json::arrayValue);
-    for (uint32_t x : hist.forcedBets.antes)
+    for (egn::chips x : hist.forcedBets.antes)
         antesJs.append(Json::Value(x));
     forcedBetsJs["at"] = antesJs;
     forcedBetsJs["sbP"] = hist.forcedBets.sbPlayer;
@@ -388,9 +394,15 @@ std::ostream& writeCompressedData(std::ostream& os, const HandHistory& hist)
 
     // Write rewards.
     Json::Value rewardsJs(Json::arrayValue);
-    for (int64_t r : hist.rewards)
+    for (egn::dchips r : hist.rewards)
         rewardsJs.append(Json::Value(r));
     histJs["rw"] = rewardsJs;
+
+    // Write collectedPot.
+    Json::Value collectJs(Json::arrayValue);
+    for (uint8_t x : hist.collectedPot)
+        collectJs.append(Json::Value(x));
+    histJs["co"] = collectJs;
 
     histJs["rk"] = hist.rake;
 
@@ -423,9 +435,10 @@ std::istream& readCompressedData(std::istream& is, HandHistory& hist)
     if (histJs["bd"].asString().size())
         hist.boardCards += egn::Hand(histJs["bd"].asString());
     for (const Json::Value& h : histJs["hd"]) {
-        hist.hands.push_back(egn::Hand::empty());
         if (h.asString().size())
-            hist.hands.back() += egn::Hand(h.asString());
+            hist.hands.push_back(egn::Hand(h.asString()));
+        else
+            hist.hands.push_back(egn::Hand::empty());
     }
 
     // Read forcedBets.
@@ -450,7 +463,11 @@ std::istream& readCompressedData(std::istream& is, HandHistory& hist)
 
     // Read rewards.
     for (const Json::Value& r : histJs["rw"])
-        hist.rewards.push_back(r.asInt64());
+        hist.rewards.push_back(r.asInt());
+
+    // Read collectedPot.
+    for (const Json::Value& x : histJs["co"])
+        hist.collectedPot.push_back(x.asUInt());
 
     hist.rake = histJs["rk"].asUInt();
 

@@ -15,14 +15,14 @@ public:
 	RandomAI(
 		double foldProba = 1./3, double callProba = 1./3,
 		unsigned rngSeed = 0);
-	uint32_t act(const egn::GameState& state) override;
+	egn::chips act(const egn::GameState& state) override;
 
 private:
 	typedef omp::XoroShiro128Plus Rng;
 
 	Rng mRng;
 	FastRandomChoice<16> mRandChoice;
-	omp::FastUniformIntDistribution<uint32_t, 32> mRaiseDist;
+	omp::FastUniformIntDistribution<egn::chips, 32> mRaiseDist;
 
 	double mFoldProba, mCallProba, mRaiseProba;
 

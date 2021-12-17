@@ -7,8 +7,8 @@ int main()
 {
     // Constants
     const unsigned rngSeed = 1;
-    const uint32_t ante = 1, bigBlind = 10;
-    const uint32_t stake = 1000;
+    const egn::chips ante = 1, bigBlind = 10;
+    const egn::chips stake = 1000;
     uint8_t dealer = 0;
     const double foldProba = 1. / 8;
     const double callProba = 6. / 8;
@@ -16,7 +16,7 @@ int main()
 
 
     // Define game variables.
-    std::array<uint32_t, opt::MAX_PLAYERS> stakes{
+    std::array<egn::chips, opt::MAX_PLAYERS> stakes{
         stake, stake, stake, stake, stake, stake };
     std::string separatorLine = std::string(50, '_') + "\n\n";
     opt::UserPlayer user(separatorLine);

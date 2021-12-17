@@ -6,8 +6,8 @@ namespace egn {
 
 #pragma warning(suppress: 26495)
 GameState::GameState(
-    uint32_t ante, uint32_t bigBlind,
-    const std::array<uint32_t, opt::MAX_PLAYERS>& stakes,
+    chips ante, chips bigBlind,
+    const std::array<chips, opt::MAX_PLAYERS>& stakes,
     unsigned rngSeed) :
 
     stakes(stakes),
@@ -18,12 +18,12 @@ GameState::GameState(
     setBigBlind(bigBlind);
 }
 
-void GameState::setAnte(uint32_t ante)
+void GameState::setAnte(chips ante)
 {
     mAnte = ante;
 }
 
-void GameState::setBigBlind(uint32_t bigBlind)
+void GameState::setBigBlind(chips bigBlind)
 {
     mBB = bigBlind;
     mSB = mBB / 2;
@@ -119,7 +119,7 @@ void GameState::dealBoardCards(uint64_t& usedCardsMask)
             cardMask = 1ull << card;
         } while (usedCardsMask & cardMask);
         usedCardsMask |= cardMask;
-        mBoardCards += Hand(card);
+        mBoardCards += card;
     }
 }
 
@@ -276,7 +276,7 @@ void GameState::eraseActing(uint8_t& i)
         nextActing(mFirstActing);
 }
 
-void GameState::nextState(uint32_t bet)
+void GameState::nextState(chips bet)
 {
     mActed[mCurrentActing] = true;
 
@@ -295,7 +295,7 @@ void GameState::nextState(uint32_t bet)
         mBets[mCurrentActing] += bet;
         stakes[mCurrentActing] -= bet;
 
-        uint32_t raise = mBets[mCurrentActing] - mToCall;
+        dchips raise = dchips(mBets[mCurrentActing]) - dchips(mToCall);
 
         // If someone has gone all-in before and the bet is not a call,
         // it means we have to use side pots.
@@ -303,7 +303,7 @@ void GameState::nextState(uint32_t bet)
             mOnePot = false;
 
         // Raise
-        if (raise >= mLargestRaise) {
+        if (raise >= dchips(mLargestRaise)) {
             mToCall = mBets[mCurrentActing];
             mLargestRaise = raise;
         }
@@ -434,14 +434,16 @@ void GameState::showdown()
     else if (mOnePot) {
         // Distribute the gains to each winner.
 #pragma warning(suppress: 4267)
-        uint32_t gain = mPot / rankings[0].size();
+        chips gain = mPot / rankings[0].size();
         // Remaining chips go to the first players after the dealer.
 #pragma warning(suppress: 4267)
         uint8_t extra = mPot % rankings[0].size();
         for (uint8_t i : rankings[0]) {
             stakes[i] += gain;
-            if (extra--)
+            if (extra) {
                 ++stakes[i];
+                --extra;
+            }
         }
         return;
     }
@@ -459,11 +461,11 @@ void GameState::showdown()
             if (!mBets[sameRankPlayers[0]])
                 continue;
             // Build the pot corresponding to the winner's bet.
-            uint32_t pot = 0;
+            chips pot = 0;
             for (uint8_t player = 0; player < opt::MAX_PLAYERS; ++player) {
                 if (!mBets[player])
                     continue;
-                uint32_t due = std::min(mBets[sameRankPlayers[0]], mBets[player]);
+                chips due = std::min(mBets[sameRankPlayers[0]], mBets[player]);
                 pot += due;
                 mPot -= due;
                 mBets[player] -= due;
@@ -475,7 +477,7 @@ void GameState::showdown()
         // General case: multiple pots and multiple winners
 
         // Build ordered bets of players of the same current rank.
-        std::vector<uint32_t> orderedBets;
+        std::vector<chips> orderedBets;
         orderedBets.reserve(sameRankPlayers.size());
         for (uint8_t i = 0; i < sameRankPlayers.size(); ++i) {
             // Skip null bets.
@@ -499,7 +501,7 @@ void GameState::showdown()
 
         // Each winnerBet will correspond to one pot for the flagged players
         // of the current rank's bracket to share.
-        for (uint32_t winnerBet : orderedBets) {
+        for (chips winnerBet : orderedBets) {
             // Unflag winners who are not eligible for the current pot.
             for (uint8_t i = 0; i < sameRankPlayers.size(); ++i) {
                 if (giveGain[i] && !mBets[sameRankPlayers[i]]) {
@@ -508,24 +510,26 @@ void GameState::showdown()
                 }
             }
             // Build the pot corresponding to winnerBet.
-            uint32_t pot = 0;
+            chips pot = 0;
             for (uint8_t player = 0; player < opt::MAX_PLAYERS; ++player) {
                 if (!mBets[player])
                     continue;
-                uint32_t due = std::min(winnerBet, mBets[player]);
+                chips due = std::min(winnerBet, mBets[player]);
                 pot += due;
                 mPot -= due;
                 mBets[player] -= due;
             }
             // Distribute the gains to each winner.
-            uint32_t gain = pot / nWinners;
+            chips gain = pot / nWinners;
             // Remaining chips go to the first players after the dealer
             uint8_t extra = pot % nWinners;
             for (uint8_t i = 0; i < sameRankPlayers.size(); ++i) {
                 if (giveGain[i]) {
                     stakes[sameRankPlayers[i]] += gain;
-                    if (extra--)
+                    if (extra) {
                         ++stakes[sameRankPlayers[i]];
+                        --extra;
+                    }
                 }
             }
         }
@@ -593,7 +597,7 @@ std::vector<std::vector<uint8_t>> GameState::getRankings() const
 void GameState::setRewards()
 {
     for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i)
-        rewards[i] = (int64_t)stakes[i] - (int64_t)mInitialStakes[i];
+        rewards[i] = dchips(stakes[i]) - dchips(mInitialStakes[i]);
 }
 
 } // egn

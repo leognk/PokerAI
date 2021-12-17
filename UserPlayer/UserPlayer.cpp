@@ -9,11 +9,11 @@ UserPlayer::UserPlayer(std::string separatorLine) :
 {
 }
 
-uint32_t UserPlayer::act(const egn::GameState& state)
+egn::chips UserPlayer::act(const egn::GameState& state)
 {
 	std::vector<char> legalInputs = printLegalActions(state);
 	egn::Action action = charToAction(getInputAction(legalInputs));
-	uint32_t bet = getInputBet(action, state);
+	egn::chips bet = getInputBet(action, state);
 	std::cout << mSeparatorLine;
 	return bet;
 }
@@ -72,9 +72,9 @@ egn::Action UserPlayer::charToAction(char c) const
 	}
 }
 
-uint32_t UserPlayer::getInputRaise(uint32_t minRaise, uint32_t allin) const
+egn::chips UserPlayer::getInputRaise(egn::chips minRaise, egn::chips allin) const
 {
-	uint32_t raise = 0;
+	egn::chips raise = 0;
 	do {
 		std::stringstream message;
 		message << "Enter an amount between "
@@ -84,7 +84,7 @@ uint32_t UserPlayer::getInputRaise(uint32_t minRaise, uint32_t allin) const
 	return raise;
 }
 
-uint32_t UserPlayer::getInputBet(egn::Action action, const egn::GameState& state) const
+egn::chips UserPlayer::getInputBet(egn::Action action, const egn::GameState& state) const
 {
 	switch (action) {
 	case egn::Action::fold:
@@ -110,9 +110,9 @@ char getInputChar(const std::string& message)
 	return input[0];
 }
 
-uint32_t getInputInt(const std::string& message)
+egn::chips getInputInt(const std::string& message)
 {
-	uint32_t x;
+	egn::chips x;
 	std::cout << message;
 	std::cin >> x;
 	while (std::cin.fail()) {

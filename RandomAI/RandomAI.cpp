@@ -16,7 +16,7 @@ RandomAI::RandomAI(
 	assert(0 <= callProba && callProba <= 1);
 }
 
-uint32_t RandomAI::act(const egn::GameState& state)
+egn::chips RandomAI::act(const egn::GameState& state)
 {
 	// Build the distribution over legal actions.
 	std::vector<double> proba(state.nActions);

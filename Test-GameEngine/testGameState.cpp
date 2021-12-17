@@ -17,7 +17,7 @@ TEST(GameStateTest, CoherentWithData)
         EXPECT_LE(hist.maxPlayers, opt::MAX_PLAYERS);
 
         // Create stakes array.
-        std::array<uint32_t, opt::MAX_PLAYERS> stakes{};
+        std::array<egn::chips, opt::MAX_PLAYERS> stakes{};
         for (uint8_t i = 0; i < hist.initialStakes.size(); ++i)
             stakes[i] = hist.initialStakes[i];
 
@@ -70,13 +70,17 @@ TEST(GameStateTest, CoherentWithData)
         }
         EXPECT_TRUE(state.finished);
 
+        bool x = hist.initialStakes == std::vector<egn::chips>{ 11822, 10140, 10000, 11468, 10000, 10000 };
+
         // Verify that the rewards are correct.
-        int64_t rake = 0;
+        egn::dchips rake = 0;
         for (uint8_t i = 0; i < hist.maxPlayers; ++i) {
-            if (hist.rewards[i] <= 0)
-                EXPECT_EQ(hist.rewards[i], state.rewards[i]);
-            else
+            if (hist.collectedPot[i]) {
+                EXPECT_GE(state.rewards[i], hist.rewards[i]);
                 rake += state.rewards[i] - hist.rewards[i];
+            }
+            else
+                EXPECT_EQ(hist.rewards[i], state.rewards[i]);
         }
         EXPECT_EQ(hist.rake, rake);
     }

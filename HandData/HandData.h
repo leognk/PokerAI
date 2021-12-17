@@ -10,32 +10,33 @@ static const std::string compressedHandDataFile = projectPath + "/data/BulkHands
 #pragma warning(disable: 26495)
 struct ForcedBets
 {
-    std::vector<uint32_t> antes;
+    std::vector<egn::chips> antes;
     uint8_t sbPlayer, bbPlayer;
-    uint32_t sb, bb;
+    egn::chips sb, bb;
 };
 
 struct Action
 {
     uint8_t player;
     egn::Action action;
-    uint32_t bet;
+    egn::chips bet;
 };
 
 struct HandHistory
 {
     uint8_t maxPlayers;
-    uint32_t ante, sb, bb;
+    egn::chips ante, sb, bb;
     uint8_t dealer;
-    std::vector<uint32_t> initialStakes;
+    std::vector<egn::chips> initialStakes;
 
     egn::Hand boardCards;
     std::vector<egn::Hand> hands;
 
     ForcedBets forcedBets;
     std::vector<std::vector<Action>> actions;
-    std::vector<int64_t> rewards;
-    uint32_t rake;
+    std::vector<egn::dchips> rewards;
+    std::vector<bool> collectedPot;
+    egn::chips rake;
 };
 #pragma warning(pop)
 

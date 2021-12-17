@@ -10,13 +10,13 @@ class GameStatePrint : public GameState
 {
 public:
 	GameStatePrint(
-		uint32_t ante, uint32_t bigBlind,
-		const std::array<uint32_t, opt::MAX_PLAYERS>& stakes,
+		chips ante, chips bigBlind,
+		const std::array<chips, opt::MAX_PLAYERS>& stakes,
 		unsigned rngSeed = 0,
 		std::string separatorLine = "");
 
 	void startNewHand(uint8_t dealerIdx);
-	void nextState(uint32_t bet);
+	void nextState(chips bet);
 	uint8_t& nextActiveInGame(uint8_t& i) const;
 
 	std::ostream& printState(std::ostream& os) const;
@@ -32,9 +32,9 @@ private:
 	std::string mSeparatorLine;
 
 	uint8_t mFirstActive;
-	std::array<uint32_t, opt::MAX_PLAYERS> mRoundBets;
+	std::array<chips, opt::MAX_PLAYERS> mRoundBets;
 	std::array<std::string, opt::MAX_PLAYERS> mLastActions;
-	std::array<uint32_t, opt::MAX_PLAYERS> mLastBets{};
+	std::array<chips, opt::MAX_PLAYERS> mLastBets{};
 	Round mPrevActionRound;
 	uint8_t mPrevActing;
 
