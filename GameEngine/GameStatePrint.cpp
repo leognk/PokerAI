@@ -41,7 +41,7 @@ void GameStatePrint::startNewHand(uint8_t dealerIdx)
 void GameStatePrint::nextState(uint32_t bet)
 {
     // We went to the next round.
-    if (mPrevActionRound != mRound) {
+    if (mPrevActionRound != round) {
         // Reset mLastActions.
         for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i) {
             if (mLastActions[i] != "fold"
@@ -66,7 +66,7 @@ void GameStatePrint::nextState(uint32_t bet)
     else
         mLastActions[actingPlayer] = "raise";
     mLastBets[actingPlayer] = bet;
-    mPrevActionRound = mRound;
+    mPrevActionRound = round;
     mPrevActing = mCurrentActing;
     mRoundBets[actingPlayer] += bet;
 
@@ -84,7 +84,7 @@ uint8_t& GameStatePrint::nextActiveInGame(uint8_t& i) const
 
 std::ostream& GameStatePrint::printState(std::ostream& os) const
 {
-    os << "Round: " << mRound;
+    os << "Round: " << round;
     os << " | Board: " << mBoardCards;
     os << " | Pot: " << mPot << std::endl << std::endl;
 

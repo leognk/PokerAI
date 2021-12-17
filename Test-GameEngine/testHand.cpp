@@ -51,7 +51,7 @@ TEST_F(HandTest, StrInitWorks)
 		EXPECT_EQ(singleHandsStr[i], singleHandsInt[i]);
 }
 
-TEST_F(HandTest, GetStrWorkds)
+TEST_F(HandTest, GetStrWorks)
 {
 	// Test empty hand.
 	std::ostringstream os;

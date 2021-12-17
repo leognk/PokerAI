@@ -2,6 +2,8 @@
 #include <json/json.h>
 #include "HandData.h"
 
+namespace hdt {
+
 std::string extractInfo(
     const std::string& text, const std::string& pattern,
     int matchIdx, bool findSecondMatch)
@@ -169,8 +171,11 @@ std::istream& operator>>(std::istream& is, HandHistory& hist)
 
             // Read action type.
             std::string actionStr = extractInfo(line, R"(: (\S+))", 1);
-            // All-in
-            if (extractInfo(line, " is all-in", 0).size())
+            // Raise
+            if (actionStr == "bets" || actionStr == "raises")
+                action.action = egn::Action::raise;
+                // All-in
+            else if (extractInfo(line, " is all-in", 0).size())
                 action.action = egn::Action::allin;
             // Fold
             else if (actionStr == "folds")
@@ -178,9 +183,6 @@ std::istream& operator>>(std::istream& is, HandHistory& hist)
             // Call
             else if (actionStr == "checks" || actionStr == "calls")
                 action.action = egn::Action::call;
-            // Raise
-            else if (actionStr == "bets" || actionStr == "raises")
-                action.action = egn::Action::raise;
             else
                 throw std::runtime_error("Found unknown action type: " + actionStr);
 
@@ -427,15 +429,15 @@ std::istream& readCompressedData(std::istream& is, HandHistory& hist)
     }
 
     // Read forcedBets.
-    for (const Json::Value& x : histJs["at"])
+    for (const Json::Value& x : histJs["frB"]["at"])
         hist.forcedBets.antes.push_back(x.asUInt());
-    hist.forcedBets.sbPlayer = histJs["sbP"].asUInt();
-    hist.forcedBets.bbPlayer = histJs["bbP"].asUInt();
-    hist.forcedBets.sb = histJs["sb"].asUInt();
-    hist.forcedBets.bb = histJs["bb"].asUInt();
+    hist.forcedBets.sbPlayer = histJs["frB"]["sbP"].asUInt();
+    hist.forcedBets.bbPlayer = histJs["frB"]["bbP"].asUInt();
+    hist.forcedBets.sb = histJs["frB"]["sb"].asUInt();
+    hist.forcedBets.bb = histJs["frB"]["bb"].asUInt();
 
     // Read actions.
-    for (const Json::Value& roundActionsJs : histJs["actions"]) {
+    for (const Json::Value& roundActionsJs : histJs["a"]) {
         hist.actions.push_back({});
         for (const Json::Value& aJs : roundActionsJs) {
             Action a;
@@ -454,3 +456,5 @@ std::istream& readCompressedData(std::istream& is, HandHistory& hist)
 
     return is;
 }
+
+} // hdt

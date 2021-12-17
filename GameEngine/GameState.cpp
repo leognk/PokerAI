@@ -29,20 +29,15 @@ void GameState::setBigBlind(uint32_t bigBlind)
     mSB = mBB / 2;
 }
 
-void GameState::startNewHand(uint8_t dealerIdx)
+void GameState::startNewHand(uint8_t dealerIdx, bool dealRandomCards)
 {
     mDealer = dealerIdx;
-    mRound = Round::preflop;
+    round = Round::preflop;
     finished = false;
     mAllInFlag = false;
 
     resetPlayers();
     resetBoard();
-
-    // Deal cards.
-    uint64_t usedCardsMask = 0;
-    dealHoleCards(usedCardsMask);
-    dealBoardCards(usedCardsMask);
 
     // Charge antes and blinds.
     finished = chargeAnte();
@@ -50,6 +45,13 @@ void GameState::startNewHand(uint8_t dealerIdx)
         finished = chargeBlinds();
     if (finished)
         setRewards();
+
+    // Deal cards.
+    if (dealRandomCards) {
+        uint64_t usedCardsMask = 0;
+        dealHoleCards(usedCardsMask);
+        dealBoardCards(usedCardsMask);
+    }
 }
 
 void GameState::resetPlayers()
@@ -92,8 +94,8 @@ void GameState::dealHoleCards(uint64_t& usedCardsMask)
 {
     uint8_t i = mFirstAlive;
     do {
-        std::array<uint8_t, 2> hand;
-        for (unsigned j = 0; j < 2; ++j) {
+        std::array<uint8_t, omp::HOLE_CARDS> hand;
+        for (unsigned j = 0; j < omp::HOLE_CARDS; ++j) {
             uint8_t card;
             uint64_t cardMask;
             do {
@@ -119,6 +121,16 @@ void GameState::dealBoardCards(uint64_t& usedCardsMask)
         usedCardsMask |= cardMask;
         mBoardCards += Hand(card);
     }
+}
+
+void GameState::setHoleCards(uint8_t player, const Hand& hand)
+{
+    mHands[player] = hand;
+}
+
+void GameState::setBoardCards(const Hand& boardCards)
+{
+    mBoardCards = boardCards;
 }
 
 bool GameState::chargeAnte()
@@ -336,7 +348,7 @@ void GameState::nextState(uint32_t bet)
     if (mActed[mCurrentActing] && mBets[mCurrentActing] == mToCall) {
 
         // Showdown
-        if (mRound == Round::river || mNActing == 1) {
+        if (round == Round::river || mNActing == 1) {
             showdown();
             finished = true;
             setRewards();
@@ -345,7 +357,7 @@ void GameState::nextState(uint32_t bet)
 
         // Go to the next round.
         else {
-            ++mRound;
+            ++round;
             mLargestRaise = mBB;
             uint8_t i = mFirstActing;
             do {

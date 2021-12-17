@@ -21,10 +21,10 @@ namespace fs = std::filesystem;
 int main()
 {
     auto t1 = std::chrono::steady_clock::now();
-    std::ifstream file(compressedHandDataFile);
+    std::ifstream file(hdt::compressedHandDataFile);
     while (true) {
-        HandHistory hist;
-        if (!(readCompressedData(file, hist))) break;
+        hdt::HandHistory hist;
+        if (!(hdt::readCompressedData(file, hist))) break;
     }
     auto t2 = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count();

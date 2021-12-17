@@ -8,7 +8,7 @@ int main()
 {
     // Count files.
     uint64_t nFiles = 0;
-    for (const auto& folder : fs::directory_iterator(handDataRoot)) {
+    for (const auto& folder : fs::directory_iterator(hdt::handDataRoot)) {
         for (const auto& filePath : fs::directory_iterator(folder))
             ++nFiles;
     }
@@ -18,11 +18,11 @@ int main()
     uint64_t fileCount = 0;
     uint64_t nValid = 0;
     uint64_t nInvalid = 0;
-    std::ofstream compressedDataFile(compressedHandDataFile);
+    std::ofstream compressedDataFile(hdt::compressedHandDataFile);
     auto t1 = std::chrono::steady_clock::now();
 
     // Loop over folders.
-    for (const auto& folder : fs::directory_iterator(handDataRoot)) {
+    for (const auto& folder : fs::directory_iterator(hdt::handDataRoot)) {
 
         // Loop over files.
         for (const auto& filePath : fs::directory_iterator(folder)) {
@@ -30,10 +30,10 @@ int main()
 
             while (true) {
                 // Read a hand.
-                HandHistory hist;
+                hdt::HandHistory hist;
                 if (is >> hist) {
                     // Save the hand in a compressed form.
-                    writeCompressedData(compressedDataFile, hist);
+                    hdt::writeCompressedData(compressedDataFile, hist);
                     ++nValid;
                 }
                 else if (is.bad())

@@ -5,7 +5,7 @@
 
 namespace opt {
 
-static const uint8_t MAX_PLAYERS = 6;
+static const uint8_t MAX_PLAYERS = 9;
 
 }
 

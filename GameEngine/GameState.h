@@ -70,7 +70,9 @@ public:
 
 	// The game could have finished if there was less than 2 acting players
 	// left after charging the antes and the blinds.
-	void startNewHand(uint8_t dealerIdx);
+	void startNewHand(uint8_t dealerIdx, bool dealRandomCards = true);
+	void setHoleCards(uint8_t player, const Hand& hand);
+	void setBoardCards(const Hand& boardCards);
 	// bet is the action made by the current acting player.
 	// It must be equal to 0 for a check or fold. It the player
 	// has the possibility to check, we force him to do so (no fold).
@@ -94,10 +96,12 @@ public:
 	std::array<Action, 3> actions{};
 	uint8_t nActions;
 
+	// Current round.
+	Round round;
 	// Whether the hand is finished.
 	bool finished;
 	// Rewards obtained by each player after the end of the hand.
-	std::array<int64_t, opt::MAX_PLAYERS> rewards;
+	std::array<int64_t, opt::MAX_PLAYERS> rewards{};
 
 protected:
 	typedef omp::XoroShiro128Plus Rng;
@@ -127,8 +131,6 @@ protected:
 	CardDist mCardDist;
 
 	uint32_t mAnte, mSB, mBB;
-
-	Round mRound;
 
 	// Players
 	std::array<uint32_t, opt::MAX_PLAYERS> mInitialStakes{};
