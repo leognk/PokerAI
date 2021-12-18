@@ -14,7 +14,7 @@ typedef uint32_t chips;
 typedef int32_t dchips;
 
 // A check is simply a null call.
-enum class Action { fold, call, raise, allin };
+enum class Action { fold, call, raise };
 
 inline std::ostream& operator<<(std::ostream& os, const Action& a)
 {
@@ -25,10 +25,8 @@ inline std::ostream& operator<<(std::ostream& os, const Action& a)
 		return os << "call";
 	case Action::raise:
 		return os << "raise";
-	case Action::allin:
-		return os << "all-in";
 	default:
-		return os;
+		throw std::runtime_error("Unknown action.");
 	}
 }
 
@@ -76,10 +74,8 @@ public:
 	void startNewHand(uint8_t dealerIdx, bool dealRandomCards = true);
 	void setHoleCards(uint8_t player, const Hand& hand);
 	void setBoardCards(const Hand& boardCards);
-	// bet is the action made by the current acting player.
-	// It must be equal to 0 for a check or fold. It the player
-	// has the possibility to check, we force him to do so (no fold).
-	void nextState(chips bet);
+	// bet must be specified for a raise.
+	void nextState(Action action, chips bet = 0);
 	// Next active player, ie. non-zero stake player
 	// (to set the dealer of the next hand).
 	// Do not use it when a hand is running (because of all-in players).
@@ -89,13 +85,11 @@ public:
 
 	// Legal actions for actingPlayer are given in the array actions
 	// from index 0 to nActions excluded (always 2 or 3).
-	// If the chosen action is of type fold, call or allin,
-	// the bet to pass to nextState is the value of the variables
-	// fold (always 0), call or allin respectively.
-	// If the chosen action is of type raise, the bet must be
-	// between minRaise and allin.
+	// If the chosen action is of type raise, a bet
+	// between minRaise and allin must be specified.
+	// If allin <= minRaise, the only possible bet is allin.
 	uint8_t actingPlayer;
-	chips fold = 0, call, minRaise, allin;
+	chips call, minRaise, allin;
 	std::array<Action, 3> actions{};
 	uint8_t nActions;
 

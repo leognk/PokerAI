@@ -276,55 +276,62 @@ void GameState::eraseActing(uint8_t& i)
         nextActing(mFirstActing);
 }
 
-void GameState::nextState(chips bet)
+void GameState::nextState(Action action, chips bet)
 {
-    mActed[mCurrentActing] = true;
+    switch (action) {
 
-    // Current player checks or folds.
-    if (!bet) {
-        // Current player folds.
-        if (mBets[mCurrentActing] != mToCall) {
-            eraseAlive(mCurrentActing);
-            eraseActing(mCurrentActing);
+    case Action::fold:
+        eraseAlive(mCurrentActing);
+        eraseActing(mCurrentActing);
+        break;
+
+    case Action::call:
+        if (call) {
+
+            mPot += call;
+            mBets[mCurrentActing] += call;
+            stakes[mCurrentActing] -= call;
+
+            // All-in
+            if (!stakes[mCurrentActing]) {
+                // Incomplete call
+                if (mBets[mCurrentActing] != mToCall)
+                    mOnePot = false;
+                mAllInFlag = true;
+                eraseActing(mCurrentActing);
+            }
         }
-    }
+        break;
 
-    // Current player calls or raises.
-    else {
+    case Action::raise:
+
         mPot += bet;
         mBets[mCurrentActing] += bet;
         stakes[mCurrentActing] -= bet;
 
-        dchips raise = dchips(mBets[mCurrentActing]) - dchips(mToCall);
-
-        // If someone has gone all-in before and the bet is not a call,
+        // If someone has gone all-in before,
         // it means we have to use side pots.
-        if (mAllInFlag && raise)
+        if (mAllInFlag)
             mOnePot = false;
 
-        // Raise
-        if (raise >= dchips(mLargestRaise)) {
-            mToCall = mBets[mCurrentActing];
-            mLargestRaise = raise;
-        }
-        // All-in not full raise
-        else if (!stakes[mCurrentActing]) {
-            // Incomplete call
-            if (raise < 0) {
-                mOnePot = false;
-            }
-            // Incomplete raise
-            else if (raise) {
-                mToCall = mBets[mCurrentActing];
-            }
-        }
-
-        // Go all-in.
-        if (!stakes[mCurrentActing]) {
+        // Not all-in
+        if (stakes[mCurrentActing])
+            mLargestRaise = dchips(mBets[mCurrentActing]) - dchips(mToCall);
+        // All-in
+        else {
             mAllInFlag = true;
             eraseActing(mCurrentActing);
         }
+        mToCall = mBets[mCurrentActing];
+
+        break;
+
+    default:
+        throw std::runtime_error("Unknow action.");
+
     }
+
+    mActed[mCurrentActing] = true;
 
     // Everybody folded but one.
     if (mNAlive == 1) {
@@ -374,38 +381,20 @@ void GameState::setLegalActions()
 {
     actingPlayer = mCurrentActing;
 
-    call = mToCall - mBets[mCurrentActing];
-    minRaise = call + mLargestRaise;
-    allin = stakes[mCurrentActing];
-
-    // Determine legal actions.
-    if (allin <= call) {
-        actions[0] = Action::fold;
-        actions[1] = Action::allin;
-        nActions = 2;
-    }
-    // Not facing a full raise.
-    // (someone went all-in and made an incomplete raise)
-    else if (mActed[mCurrentActing] && call && call < mLargestRaise) {
+    chips legalCall = mToCall - mBets[mCurrentActing];
+    call = std::min(stakes[mCurrentActing], legalCall);
+    
+    // Stake less than a complete call
+    // or not facing a full raise.
+    if (stakes[mCurrentActing] <= legalCall
+        || (mActed[mCurrentActing]
+            && legalCall && legalCall < mLargestRaise)) {
         actions[0] = Action::fold;
         actions[1] = Action::call;
         nActions = 2;
     }
-    else if (allin <= minRaise) {
-        if (call) {
-            actions[0] = Action::fold;
-            actions[1] = Action::call;
-            actions[2] = Action::allin;
-            nActions = 3;
-        }
-        else {
-            actions[0] = Action::call;
-            actions[1] = Action::allin;
-            nActions = 2;
-        }
-    }
     else {
-        if (call) {
+        if (legalCall) {
             actions[0] = Action::fold;
             actions[1] = Action::call;
             actions[2] = Action::raise;
@@ -416,6 +405,8 @@ void GameState::setLegalActions()
             actions[1] = Action::raise;
             nActions = 2;
         }
+        minRaise = call + mLargestRaise;
+        allin = stakes[mCurrentActing];
     }
 }
 
