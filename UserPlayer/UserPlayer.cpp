@@ -9,13 +9,13 @@ UserPlayer::UserPlayer(std::string separatorLine) :
 {
 }
 
-egn::chips UserPlayer::act(const egn::GameState& state)
+std::pair<egn::Action, egn::chips> UserPlayer::act(const egn::GameState& state)
 {
 	std::vector<char> legalInputs = printLegalActions(state);
 	egn::Action action = charToAction(getInputAction(legalInputs));
 	egn::chips bet = getInputBet(action, state);
 	std::cout << mSeparatorLine;
-	return bet;
+	return std::make_pair(action, bet);
 }
 
 std::vector<char> UserPlayer::printLegalActions(const egn::GameState& state) const
@@ -37,12 +37,8 @@ std::vector<char> UserPlayer::printLegalActions(const egn::GameState& state) con
 				<< state.minRaise << " to " << state.allin;
 			legalInputs[i] = 'r';
 			break;
-		case egn::Action::allin:
-			std::cout << "a: all-in " << state.allin;
-			legalInputs[i] = 'a';
-			break;
 		default:
-			break;
+			throw std::runtime_error("Unknown action.");
 		}
 		std::cout << std::endl;
 	}
@@ -66,7 +62,6 @@ egn::Action UserPlayer::charToAction(char c) const
 	case 'f': return egn::Action::fold;
 	case 'c': return egn::Action::call;
 	case 'r': return egn::Action::raise;
-	case 'a': return egn::Action::allin;
 	default:
 		throw std::runtime_error("Character not convertible to Action.");
 	}
@@ -86,18 +81,10 @@ egn::chips UserPlayer::getInputRaise(egn::chips minRaise, egn::chips allin) cons
 
 egn::chips UserPlayer::getInputBet(egn::Action action, const egn::GameState& state) const
 {
-	switch (action) {
-	case egn::Action::fold:
-		return state.fold;
-	case egn::Action::call:
-		return state.call;
-	case egn::Action::raise:
+	if (action == egn::Action::raise)
 		return getInputRaise(state.minRaise, state.allin);
-	case egn::Action::allin:
-		return state.allin;
-	default:
-		throw std::runtime_error("Not a valid action.");
-	}
+	else
+		return 0;
 }
 
 char getInputChar(const std::string& message)

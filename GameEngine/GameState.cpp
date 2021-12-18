@@ -309,20 +309,18 @@ void GameState::nextState(Action action, chips bet)
         mBets[mCurrentActing] += bet;
         stakes[mCurrentActing] -= bet;
 
+        mLargestRaise = std::max(mBets[mCurrentActing] - mToCall, mLargestRaise);
+        mToCall = mBets[mCurrentActing];
+
         // If someone has gone all-in before,
         // it means we have to use side pots.
-        if (mAllInFlag)
-            mOnePot = false;
+        if (mAllInFlag) mOnePot = false;
 
-        // Not all-in
-        if (stakes[mCurrentActing])
-            mLargestRaise = dchips(mBets[mCurrentActing]) - dchips(mToCall);
         // All-in
-        else {
+        if (!stakes[mCurrentActing]) {
             mAllInFlag = true;
             eraseActing(mCurrentActing);
         }
-        mToCall = mBets[mCurrentActing];
 
         break;
 
@@ -382,7 +380,9 @@ void GameState::setLegalActions()
     actingPlayer = mCurrentActing;
 
     chips legalCall = mToCall - mBets[mCurrentActing];
-    call = std::min(stakes[mCurrentActing], legalCall);
+    call = std::min(legalCall, stakes[mCurrentActing]);
+    minRaise = legalCall + mLargestRaise;
+    allin = stakes[mCurrentActing];
     
     // Stake less than a complete call
     // or not facing a full raise.
@@ -393,20 +393,16 @@ void GameState::setLegalActions()
         actions[1] = Action::call;
         nActions = 2;
     }
+    else if (legalCall) {
+        actions[0] = Action::fold;
+        actions[1] = Action::call;
+        actions[2] = Action::raise;
+        nActions = 3;
+    }
     else {
-        if (legalCall) {
-            actions[0] = Action::fold;
-            actions[1] = Action::call;
-            actions[2] = Action::raise;
-            nActions = 3;
-        }
-        else {
-            actions[0] = Action::call;
-            actions[1] = Action::raise;
-            nActions = 2;
-        }
-        minRaise = call + mLargestRaise;
-        allin = stakes[mCurrentActing];
+        actions[0] = Action::call;
+        actions[1] = Action::raise;
+        nActions = 2;
     }
 }
 

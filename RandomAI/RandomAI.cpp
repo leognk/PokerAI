@@ -16,7 +16,7 @@ RandomAI::RandomAI(
 	assert(0 <= callProba && callProba <= 1);
 }
 
-egn::chips RandomAI::act(const egn::GameState& state)
+std::pair<egn::Action, egn::chips> RandomAI::act(const egn::GameState& state)
 {
 	// Build the distribution over legal actions.
 	std::vector<double> proba(state.nActions);
@@ -31,9 +31,8 @@ egn::chips RandomAI::act(const egn::GameState& state)
 		case egn::Action::raise:
 			proba[i] = mRaiseProba;
 			break;
-		case egn::Action::allin:
-			proba[i] = mRaiseProba;
-			break;
+		default:
+			throw std::runtime_error("Unknown action.");
 		}
 	}
 	// Renormalize the distribution if the number of actions is not 3.
@@ -46,24 +45,12 @@ egn::chips RandomAI::act(const egn::GameState& state)
 	// Pick a random action using the distribution.
 	egn::Action action = state.actions[mRandChoice(proba, mRng)];
 
-	switch (action) {
-
-	case egn::Action::fold:
-		return state.fold;
-
-	case egn::Action::call:
-		return state.call;
-
-	case egn::Action::allin:
-		return state.allin;
-
-	case egn::Action::raise:
+	if (action == egn::Action::raise) {
 		mRaiseDist.init(state.minRaise, state.allin);
-		return mRaiseDist(mRng);
-
-	default:
-		return 0;
+		return std::make_pair(action, mRaiseDist(mRng));
 	}
+	else
+		return std::make_pair(action, 0);
 }
 
 } // opt

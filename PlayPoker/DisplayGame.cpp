@@ -32,7 +32,8 @@ int main()
             state.startNewHand(dealer);
             state.printState(std::cout);
             while (!state.finished) {
-                state.nextState(players[state.actingPlayer]->act(state));
+                auto [action, bet] = players[state.actingPlayer]->act(state);
+                state.nextState(action, bet);
                 state.printState(std::cout);
             }
             state.printRewards(std::cout);
@@ -45,7 +46,8 @@ int main()
         state.startNewHand(dealer);
         state.printState(std::cout);
         while (!state.finished) {
-            state.nextState(players[state.actingPlayer]->act(state));
+            auto [action, bet] = players[state.actingPlayer]->act(state);
+            state.nextState(action, bet);
             state.printState(std::cout);
         }
         state.printRewards(std::cout);

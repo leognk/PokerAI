@@ -10,7 +10,7 @@ class UserPlayer : public egn::Player
 {
 public:
 	UserPlayer(std::string separtorLine = "");
-	egn::chips act(const egn::GameState& state) override;
+	std::pair<egn::Action, egn::chips> act(const egn::GameState& state) override;
 
 private:
 	std::vector<char> printLegalActions(const egn::GameState& state) const;

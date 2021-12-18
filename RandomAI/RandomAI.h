@@ -15,7 +15,7 @@ public:
 	RandomAI(
 		double foldProba = 1./3, double callProba = 1./3,
 		unsigned rngSeed = 0);
-	egn::chips act(const egn::GameState& state) override;
+	std::pair<egn::Action, egn::chips> act(const egn::GameState& state) override;
 
 private:
 	typedef omp::XoroShiro128Plus Rng;

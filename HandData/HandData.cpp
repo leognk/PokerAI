@@ -173,18 +173,15 @@ std::istream& operator>>(std::istream& is, HandHistory& hist)
 
             // Read action type.
             std::string actionStr = extractInfo(line, R"(: (\S+))", 1);
-            // All-in
-            if (extractInfo(line, " is all-in", 0).size())
-                action.action = egn::Action::allin;
-            // Raise
-            else if (actionStr == "bets" || actionStr == "raises")
-                action.action = egn::Action::raise;
             // Fold
-            else if (actionStr == "folds")
+            if (actionStr == "folds")
                 action.action = egn::Action::fold;
             // Call
             else if (actionStr == "checks" || actionStr == "calls")
                 action.action = egn::Action::call;
+            // Raise
+            else if (actionStr == "bets" || actionStr == "raises")
+                action.action = egn::Action::raise;
             else
                 throw std::runtime_error("Found unknown action type: " + actionStr);
 

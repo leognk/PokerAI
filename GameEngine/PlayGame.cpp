@@ -42,7 +42,8 @@ void PlayGame::playOneHand()
 {
 	mState.startNewHand(mDealer);
 	while (!mState.finished) {
-		mState.nextState(mPlayers[mState.actingPlayer]->act(mState));
+		auto [action, bet] = mPlayers[mState.actingPlayer]->act(mState);
+		mState.nextState(action, bet);
 	}
 }
 

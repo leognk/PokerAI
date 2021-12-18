@@ -47,10 +47,7 @@ TEST(GameStateTest, CoherentWithData)
                 // Verify that a.action is in state.actions.
                 bool actionInList = false;
                 for (uint8_t i = 0; i < state.nActions; ++i) {
-                    if (state.actions[i] == a.action
-                        || (a.action == egn::Action::allin
-                            && state.actions[i] == egn::Action::raise
-                            && a.bet == state.allin)) {
+                    if (state.actions[i] == a.action) {
                         actionInList = true;
                         break;
                     }
@@ -60,23 +57,23 @@ TEST(GameStateTest, CoherentWithData)
                 // Verify that the bet value is correct.
                 switch (a.action) {
                 case egn::Action::fold:
-                    EXPECT_EQ(a.bet, state.fold);
                     break;
                 case egn::Action::call:
                     EXPECT_EQ(a.bet, state.call);
                     break;
                 case egn::Action::raise:
-                    EXPECT_LE(state.minRaise, a.bet);
-                    EXPECT_LE(a.bet, state.allin);
-                    break;
-                case egn::Action::allin:
-                    EXPECT_EQ(a.bet, state.allin);
+                    if (a.bet < state.minRaise) {
+                        EXPECT_EQ(a.bet, state.allin);
+                        EXPECT_GT(a.bet, state.call);
+                    }
+                    else
+                        EXPECT_LE(a.bet, state.allin);
                     break;
                 default:
                     throw std::runtime_error("Unknown action.");
                 }
 
-                state.nextState(a.bet);
+                state.nextState(a.action, a.bet);
             }
         }
         EXPECT_TRUE(state.finished);

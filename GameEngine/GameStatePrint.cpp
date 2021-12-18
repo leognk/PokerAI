@@ -38,7 +38,7 @@ void GameStatePrint::startNewHand(uint8_t dealerIdx)
     }
 }
 
-void GameStatePrint::nextState(chips bet)
+void GameStatePrint::nextState(Action action, chips bet)
 {
     // We went to the next round.
     if (mPrevActionRound != round) {
@@ -48,29 +48,45 @@ void GameStatePrint::nextState(chips bet)
                 && mLastActions[i] != "all-in")
                 mLastActions[i] = "";
         }
-        for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i) {
+        for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i)
             mRoundBets[i] = 0;
-        }
     }
 
-    if (bet == allin)
-        mLastActions[actingPlayer] = "all-in";
-    else if (bet == call) {
-        if (call)
+    switch (action) {
+
+    case Action::fold:
+        mLastActions[actingPlayer] = "fold";
+        mLastBets[actingPlayer] = 0;
+        break;
+
+    case Action::call:
+        if (call == allin)
+            mLastActions[actingPlayer] = "all-in";
+        else if (call)
             mLastActions[actingPlayer] = "call";
         else
             mLastActions[actingPlayer] = "check";
+        mLastBets[actingPlayer] = call;
+        break;
+
+    case Action::raise:
+        if (bet == allin)
+            mLastActions[actingPlayer] = "all-in";
+        else
+            mLastActions[actingPlayer] = "raise";
+        mLastBets[actingPlayer] = bet;
+        break;
+
+    default:
+        throw std::runtime_error("Unknow action.");
+
     }
-    else if (bet == fold)
-        mLastActions[actingPlayer] = "fold";
-    else
-        mLastActions[actingPlayer] = "raise";
-    mLastBets[actingPlayer] = bet;
+
     mPrevActionRound = round;
     mPrevActing = mCurrentActing;
-    mRoundBets[actingPlayer] += bet;
+    mRoundBets[actingPlayer] += mLastBets[actingPlayer];
 
-    GameState::nextState(bet);
+    GameState::nextState(action, bet);
 }
 
 // Do not skip all-in players.
