@@ -172,12 +172,12 @@ std::istream& operator>>(std::istream& is, HandHistory& hist)
 
             // Read action type.
             std::string actionStr = extractInfo(line, R"(: (\S+))", 1);
-            // Raise
-            if (actionStr == "bets" || actionStr == "raises")
-                action.action = egn::Action::raise;
-                // All-in
-            else if (extractInfo(line, " is all-in", 0).size())
+            // All-in
+            if (extractInfo(line, " is all-in", 0).size())
                 action.action = egn::Action::allin;
+            // Raise
+            else if (actionStr == "bets" || actionStr == "raises")
+                action.action = egn::Action::raise;
             // Fold
             else if (actionStr == "folds")
                 action.action = egn::Action::fold;
@@ -288,20 +288,20 @@ std::ostream& operator<<(std::ostream& os, const HandHistory& hist)
     // Print general info.
     os << "Blinds: " << hist.sb << "/" << hist.bb << "\n"
         << "Max players: " << int(hist.maxPlayers) << "\n"
-        << "Dealer: " << std::to_string(hist.dealer + 1) << "\n\n";
+        << "Dealer: " << std::to_string(hist.dealer) << "\n\n";
 
     // Print player names and stakes.
     os << "Stakes:\n\n";
     for (uint8_t i = 0; i < hist.maxPlayers; ++i) {
         if (hist.initialStakes[i])
-            os << std::to_string(i + 1) << ": " << hist.initialStakes[i] << "\n";
+            os << std::to_string(i) << ": " << hist.initialStakes[i] << "\n";
     }
     os << "\n";
 
     // Print posted forced bets.
-    os << "SB: " << std::to_string(hist.forcedBets.sbPlayer + 1)
+    os << "SB: " << std::to_string(hist.forcedBets.sbPlayer)
         << " posted " << hist.forcedBets.sb << "\n";
-    os << "BB: " << std::to_string(hist.forcedBets.bbPlayer + 1)
+    os << "BB: " << std::to_string(hist.forcedBets.bbPlayer)
         << " posted " << hist.forcedBets.bb << "\n";
 
     // Print actions.
@@ -309,7 +309,7 @@ std::ostream& operator<<(std::ostream& os, const HandHistory& hist)
         os << "\n*** " << egn::Round(i) << " ***\n\n";
         for (size_t j = 0; j < hist.actions[i].size(); ++j) {
             Action a = hist.actions[i][j];
-            os << std::to_string(a.player + 1) << ": " << a.action;
+            os << std::to_string(a.player) << ": " << a.action;
             if (a.action != egn::Action::fold)
                 os << " " << a.bet;
             os << "\n";
@@ -321,14 +321,14 @@ std::ostream& operator<<(std::ostream& os, const HandHistory& hist)
         os << "\nBoard cards: " << hist.boardCards << "\n";
     for (uint8_t i = 0; i < hist.maxPlayers; ++i) {
         if (hist.hands[i] != egn::Hand::empty())
-            os << std::to_string(i + 1) << ": " << hist.hands[i] << "\n";
+            os << std::to_string(i) << ": " << hist.hands[i] << "\n";
     }
 
     // Print rewards.
     os << "\nRewards:\n\n";
     for (uint8_t i = 0; i < hist.maxPlayers; ++i) {
         if (hist.initialStakes[i]) {
-            os << std::to_string(i + 1) << ": " << hist.rewards[i];
+            os << std::to_string(i) << ": " << hist.rewards[i];
             if (hist.collectedPot[i])
                 os << " (won)";
             os << "\n";
@@ -431,12 +431,14 @@ std::istream& readCompressedData(std::istream& is, HandHistory& hist)
         hist.initialStakes.push_back(x.asUInt());
 
     // Read cards.
-    hist.boardCards = egn::Hand::empty();
     if (histJs["bd"].asString().size())
-        hist.boardCards += egn::Hand(histJs["bd"].asString());
+        hist.boardCards = egn::Hand(histJs["bd"].asString());
+    else
+        hist.boardCards = egn::Hand::empty();
     for (const Json::Value& h : histJs["hd"]) {
         if (h.asString().size())
-            hist.hands.push_back(egn::Hand(h.asString()));
+            hist.hands.push_back(
+                egn::Hand::empty() + egn::Hand(h.asString()));
         else
             hist.hands.push_back(egn::Hand::empty());
     }

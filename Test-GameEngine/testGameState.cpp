@@ -8,11 +8,19 @@ TEST(GameStateTest, CoherentWithData)
     std::ifstream file(hdt::compressedHandDataFile);
 
     // Loop over data of hands.
+    //################################################
+    unsigned id = 1;
+    unsigned id0 = 267;
+    //////////////////////////////////////////////////
     while (true) {
 
         // Retrieve hand data.
         hdt::HandHistory hist;
         if (!(hdt::readCompressedData(file, hist))) break;
+        //################################################
+        if (id == id0)
+            std::cout << hist << "\n\n";
+        //////////////////////////////////////////////////
 
         EXPECT_LE(hist.maxPlayers, opt::MAX_PLAYERS);
 
@@ -39,7 +47,10 @@ TEST(GameStateTest, CoherentWithData)
                 // Verify that a.action is in state.actions.
                 bool actionInList = false;
                 for (uint8_t i = 0; i < state.nActions; ++i) {
-                    if (state.actions[i] == a.action) {
+                    if (state.actions[i] == a.action
+                        || (a.action == egn::Action::allin
+                            && state.actions[i] == egn::Action::raise
+                            && a.bet == state.allin)) {
                         actionInList = true;
                         break;
                     }
@@ -70,8 +81,6 @@ TEST(GameStateTest, CoherentWithData)
         }
         EXPECT_TRUE(state.finished);
 
-        bool x = hist.initialStakes == std::vector<egn::chips>{ 11822, 10140, 10000, 11468, 10000, 10000 };
-
         // Verify that the rewards are correct.
         egn::dchips rake = 0;
         for (uint8_t i = 0; i < hist.maxPlayers; ++i) {
@@ -83,5 +92,6 @@ TEST(GameStateTest, CoherentWithData)
                 EXPECT_EQ(hist.rewards[i], state.rewards[i]);
         }
         EXPECT_EQ(hist.rake, rake);
+        ++id; //////////////////////////////////////////////////
     }
 }

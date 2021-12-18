@@ -385,7 +385,8 @@ void GameState::setLegalActions()
         nActions = 2;
     }
     // Not facing a full raise.
-    else if (call && call < mLargestRaise) {
+    // (someone went all-in and made an incomplete raise)
+    else if (mActed[mCurrentActing] && call && call < mLargestRaise) {
         actions[0] = Action::fold;
         actions[1] = Action::call;
         nActions = 2;
