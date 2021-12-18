@@ -459,14 +459,15 @@ void GameState::showdown()
         // One winner for this pot
         // (deal with this specific case to speed up the computation)
         if (sameRankPlayers.size() == 1) {
-            if (!mBets[sameRankPlayers[0]])
+            chips winnerBet = mBets[sameRankPlayers[0]];
+            if (!winnerBet)
                 continue;
             // Build the pot corresponding to the winner's bet.
             chips pot = 0;
             for (uint8_t player = 0; player < opt::MAX_PLAYERS; ++player) {
                 if (!mBets[player])
                     continue;
-                chips due = std::min(mBets[sameRankPlayers[0]], mBets[player]);
+                chips due = std::min(winnerBet, mBets[player]);
                 pot += due;
                 mPot -= due;
                 mBets[player] -= due;

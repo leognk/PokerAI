@@ -10,7 +10,7 @@ TEST(GameStateTest, CoherentWithData)
     // Loop over data of hands.
     //################################################
     unsigned id = 1;
-    unsigned id0 = 307;
+    unsigned id0 = 1994;
     //////////////////////////////////////////////////
     while (true) {
 
