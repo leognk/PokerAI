@@ -151,6 +151,7 @@ std::istream& operator>>(std::istream& is, HandHistory& hist)
     hist.collectedPot = std::vector(hist.maxPlayers, false);
 
     // Read actions.
+    bool cashedOut = false;
     while (line != "*** SUMMARY ***") {
 
         // A new round begins.
@@ -231,6 +232,10 @@ std::istream& operator>>(std::istream& is, HandHistory& hist)
             hist.hands[nameToId[player_name]] = egn::Hand(cards);
         }
 
+        // Detect cash out.
+        else if (extractInfo(line, " cashed out the hand for ", 0).size())
+            cashedOut = true;
+
         // Bizarre case of two hands dealt (I haven't heard of it).
         else if (extractInfo(line, R"(\*\*\* FIRST (FLOP|TURN|RIVER) \*\*\*)", 0).size()) {
             is.clear(std::ios_base::failbit);
@@ -245,7 +250,6 @@ std::istream& operator>>(std::istream& is, HandHistory& hist)
             && !extractInfo(line, " leaves the table", 0).size()
             && !extractInfo(line, " has timed out", 0).size()
             && !extractInfo(line, " was removed from the table for failing to post", 0).size()
-            && !extractInfo(line, " cashed out the hand for ", 0).size()
             && !extractInfo(line, " is disconnected", 0).size()
             && !extractInfo(line, " said, ", 0).size()
             && !extractInfo(line, " is connected", 0).size()
@@ -271,6 +275,28 @@ std::istream& operator>>(std::istream& is, HandHistory& hist)
     if (extractInfo(line, "Board ", 0).size()) {
         std::string cards = extractInfo(line, R"(Board \[(.+)\])", 1);
         hist.boardCards += egn::Hand(cards);
+    }
+
+    // Read rewards for the case where someone cashed out.
+    if (cashedOut) {
+
+        line = "";
+        std::getline(is, line);
+
+        while (line != "") {
+
+            // Read reward.
+            if (extractInfo(line, "pot not awarded as player cashed out", 0).size()) {
+                std::string seat = extractInfo(line, R"(^Seat ((\d)+):)", 1);
+                std::string reward = extractInfo(line, R"(won \()" + currency + R"(((\d|\.)+)\))", 1);
+                uint8_t id = std::stoi(seat) - 1;
+                stakes[id] += std::round(100 * std::stod(reward));
+                hist.collectedPot[id] = true;
+            }
+
+            line = "";
+            std::getline(is, line);
+        }
     }
 
     // Compute rewards.
