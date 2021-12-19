@@ -41,8 +41,7 @@ struct HandHistory
 #pragma warning(pop)
 
 std::string extractInfo(
-    const std::string& text, const std::string& pattern,
-    int matchIdx, bool findSecondMatch = false);
+    const std::string& text, const std::string& pattern, int matchIdx);
 
 std::istream& operator>>(std::istream& is, HandHistory& hist);
 std::ostream& operator<<(std::ostream& os, const HandHistory& hist);

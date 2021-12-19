@@ -8,19 +8,11 @@ TEST(GameStateTest, CoherentWithData)
     std::ifstream file(hdt::compressedHandDataFile);
 
     // Loop over data of hands.
-    //################################################
-    unsigned id = 1;
-    unsigned id0 = 1994;
-    //////////////////////////////////////////////////
     while (true) {
 
         // Retrieve hand data.
         hdt::HandHistory hist;
         if (!(hdt::readCompressedData(file, hist))) break;
-        //################################################
-        if (id == id0)
-            std::cout << hist << "\n\n";
-        //////////////////////////////////////////////////
 
         EXPECT_LE(hist.maxPlayers, opt::MAX_PLAYERS);
 
@@ -45,14 +37,19 @@ TEST(GameStateTest, CoherentWithData)
                 EXPECT_EQ(a.player, state.actingPlayer);
 
                 // Verify that a.action is in state.actions.
-                bool actionInList = false;
-                for (uint8_t i = 0; i < state.nActions; ++i) {
-                    if (state.actions[i] == a.action) {
-                        actionInList = true;
-                        break;
+                // As we always give the possibility to fold
+                // (if a player leaves the table) and to call,
+                // we just need to test for the raise.
+                if (a.action == egn::Action::raise) {
+                    bool raiseInList = false;
+                    for (uint8_t i = 0; i < state.nActions; ++i) {
+                        if (state.actions[i] == egn::Action::raise) {
+                            raiseInList = true;
+                            break;
+                        }
                     }
+                    EXPECT_TRUE(raiseInList);
                 }
-                EXPECT_TRUE(actionInList);
 
                 // Verify that the bet value is correct.
                 switch (a.action) {
@@ -89,6 +86,5 @@ TEST(GameStateTest, CoherentWithData)
                 EXPECT_EQ(hist.rewards[i], state.rewards[i]);
         }
         EXPECT_EQ(hist.rake, rake);
-        ++id; //////////////////////////////////////////////////
     }
 }

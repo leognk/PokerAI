@@ -21,22 +21,25 @@ namespace fs = std::filesystem;
 int main()
 {
     unsigned id = 1;
-    unsigned id0 = 1994;
+    unsigned id0 = 89135;
     for (const auto& folder : fs::directory_iterator(hdt::handDataRoot)) {
         for (const auto& filePath : fs::directory_iterator(folder)) {
             std::ifstream is(filePath);
             while (true) {
                 hdt::HandHistory hist;
-                is >> hist;
-                if (is.bad()) throw std::runtime_error("Error while reading file.");
-                else if (is.eof()) break;
-                else if (is.fail()) is.clear();
-
-                if (id == id0) {
-                    std::cout << filePath << "\n\n";
-                    return 0;
+                if (is >> hist) {
+                    if (id == id0) {
+                        std::cout << filePath << "\n\n";
+                        return 0;
+                    }
+                    ++id;
                 }
-                ++id;
+                else if (is.bad())
+                    throw std::runtime_error("Error while reading file.");
+                else if (is.eof())
+                    break;
+                else if (is.fail())
+                    is.clear();
             }
         }
     }

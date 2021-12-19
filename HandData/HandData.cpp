@@ -5,16 +5,12 @@
 namespace hdt {
 
 std::string extractInfo(
-    const std::string& text, const std::string& pattern,
-    int matchIdx, bool findSecondMatch)
+    const std::string& text, const std::string& pattern, int matchIdx)
 {
     boost::u32regex pat = boost::make_u32regex(pattern);
     boost::smatch matches;
     if (boost::u32regex_search(text, matches, pat)) {
-        if (!findSecondMatch)
-            return matches.str(matchIdx);
-        return extractInfo(matches.suffix().str(),
-            pattern, matchIdx);
+        return matches.str(matchIdx);
     }
     else
         return "";
@@ -75,7 +71,7 @@ std::istream& operator>>(std::istream& is, HandHistory& hist)
         nameToId[playerName] = id;
 
         // Read player's stake.
-        std::string stake = extractInfo(line, currency + R"(((\d|\.)+))", 1);
+        std::string stake = extractInfo(line, currency + R"(((\d|\.)+) in chips)", 1);
         hist.initialStakes[id] = std::round(100 * std::stod(stake));
 
         line = "";
@@ -96,10 +92,12 @@ std::istream& operator>>(std::istream& is, HandHistory& hist)
         // Read sb.
         if (extractInfo(line, ": posts small blind", 0).size()) {
             // Read sb player.
-            std::string sbPlayer = extractInfo(line, R"(([^:]+):)", 1);
+            std::string sbPlayer = extractInfo(
+                line, R"(^(.+): posts small blind)", 1);
             hist.forcedBets.sbPlayer = nameToId[sbPlayer];
             // Read sb.
-            std::string postedSb = extractInfo(line, currency + R"(((\d|\.)+))", 1);
+            std::string postedSb = extractInfo(line,
+                "small blind " + currency + R"(((\d|\.)+))", 1);
             hist.forcedBets.sb = std::round(100 * std::stod(postedSb));
             roundBets[hist.forcedBets.sbPlayer] += hist.forcedBets.sb;
             stakes[hist.forcedBets.sbPlayer] -= hist.forcedBets.sb;
@@ -109,10 +107,12 @@ std::istream& operator>>(std::istream& is, HandHistory& hist)
         // Read bb.
         else if (extractInfo(line, ": posts big blind", 0).size()) {
             // Read bb player.
-            std::string bbPlayer = extractInfo(line, R"(([^:]+):)", 1);
+            std::string bbPlayer = extractInfo(
+                line, R"(^(.+): posts big blind)", 1);
             hist.forcedBets.bbPlayer = nameToId[bbPlayer];
             // Read bb.
-            std::string postedBb = extractInfo(line, currency + R"(((\d|\.)+))", 1);
+            std::string postedBb = extractInfo(line,
+                "big blind " + currency + R"(((\d|\.)+))", 1);
             hist.forcedBets.bb = std::round(100 * std::stod(postedBb));
             roundBets[hist.forcedBets.bbPlayer] += hist.forcedBets.bb;
             stakes[hist.forcedBets.bbPlayer] -= hist.forcedBets.bb;
@@ -168,11 +168,13 @@ std::istream& operator>>(std::istream& is, HandHistory& hist)
             Action action;
 
             // Read player.
-            std::string playerName = extractInfo(line, R"(([^:]+):)", 1);
+            std::string playerName = extractInfo(
+                line, R"((.+): (folds|checks|calls|bets|raises))", 1);
             action.player = nameToId[playerName];
 
             // Read action type.
-            std::string actionStr = extractInfo(line, R"(: (\S+))", 1);
+            std::string actionStr = extractInfo(
+                line, R"((folds|checks|calls|bets|raises))", 1);
             // Fold
             if (actionStr == "folds")
                 action.action = egn::Action::fold;
@@ -192,8 +194,7 @@ std::istream& operator>>(std::istream& is, HandHistory& hist)
             // Non-zero bet.
             else {
                 std::string bet = extractInfo(
-                    line, currency + R"(((\d|\.)+))", 1,
-                    actionStr == "raises");
+                    line, currency + R"(((\d|\.)+)($| and is all-in))", 1);
                 action.bet = std::round(100 * std::stod(bet));
                 // Get the number of chips added to the pot for a raise.
                 if (actionStr == "raises")
@@ -210,21 +211,21 @@ std::istream& operator>>(std::istream& is, HandHistory& hist)
         else if (extractInfo(line, "returned to ", 0).size()) {
             std::string player = extractInfo(line, R"(returned to (.+))", 1);
             std::string cash = extractInfo(
-                line, R"(\()" + currency + R"(((\d|\.)+)\))", 1);
+                line, R"(\()" + currency + R"(((\d|\.)+)\) returned to)", 1);
             stakes[nameToId[player]] += std::round(100 * std::stod(cash));
         }
 
         // Read reward.
         else if (extractInfo(line, " collected", 0).size()) {
-            std::string player = extractInfo(line, R"((.+) collected)", 1);
-            std::string reward = extractInfo(line, currency + R"(((\d|\.)+))", 1);
+            std::string player = extractInfo(line, R"(^(.+) collected)", 1);
+            std::string reward = extractInfo(line, "collected " + currency + R"(((\d|\.)+))", 1);
             stakes[nameToId[player]] += std::round(100 * std::stod(reward));
             hist.collectedPot[nameToId[player]] = true;
         }
 
         // Read hole cards.
         else if (extractInfo(line, R"(: shows \[.. ..\])", 0).size()) {
-            std::string player_name = extractInfo(line, R"(([^:]+): shows)", 1);
+            std::string player_name = extractInfo(line, R"(^(.+): shows)", 1);
             std::string cards = extractInfo(line, R"(: shows \[(.. ..)\])", 1);
             hist.hands[nameToId[player_name]] = egn::Hand(cards);
         }

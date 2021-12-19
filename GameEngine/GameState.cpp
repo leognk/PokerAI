@@ -483,6 +483,10 @@ void GameState::showdown()
             orderedBets.end()
         );
 
+        // Build adjacent differences of ordered bets.
+        std::vector<chips> dOrderedBets(orderedBets.size(), 0);
+        std::adjacent_difference(orderedBets.begin(), orderedBets.end(), dOrderedBets.begin());
+
         // Flag for winners eligible for a gain.
         std::vector<bool> giveGain(sameRankPlayers.size(), true);
 #pragma warning(suppress: 4267)
@@ -490,7 +494,7 @@ void GameState::showdown()
 
         // Each winnerBet will correspond to one pot for the flagged players
         // of the current rank's bracket to share.
-        for (chips winnerBet : orderedBets) {
+        for (chips winnerBet : dOrderedBets) {
             // Unflag winners who are not eligible for the current pot.
             for (uint8_t i = 0; i < sameRankPlayers.size(); ++i) {
                 if (giveGain[i] && !mBets[sameRankPlayers[i]]) {
