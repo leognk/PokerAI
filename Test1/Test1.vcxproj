@@ -152,6 +152,9 @@
     <ProjectReference Include="..\HandData\HandData.vcxproj">
       <Project>{84e3a460-8d80-44f6-91cf-6d7105b3d933}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\Test-GameEngine\Test-GameEngine.vcxproj">
+      <Project>{6077ba04-e4d6-4930-866f-694784539d2e}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

@@ -30,6 +30,18 @@ inline std::ostream& operator<<(std::ostream& os, const Action& a)
 	}
 }
 
+inline Action actionFromString(const std::string& actionStr)
+{
+	if (actionStr == "fold")
+		return Action::fold;
+	else if (actionStr == "call")
+		return Action::call;
+	else if (actionStr == "raise")
+		return Action::raise;
+	else
+		throw std::runtime_error("String does not represent an Action.");
+}
+
 enum class Round { preflop, flop, turn, river };
 
 inline Round& operator++(Round& r)
@@ -52,6 +64,20 @@ inline std::ostream& operator<<(std::ostream& os, const Round& r)
 	default:
 		return os;
 	}
+}
+
+inline Round roundFromString(const std::string& roundStr)
+{
+	if (roundStr == "preflop")
+		return Round::preflop;
+	else if (roundStr == "flop")
+		return Round::flop;
+	else if (roundStr == "turn")
+		return Round::turn;
+	else if (roundStr == "river")
+		return Round::river;
+	else
+		throw std::runtime_error("String does not represent a Round.");
 }
 
 // Class defining a state of the poker game.

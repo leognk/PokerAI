@@ -1,3 +1,6 @@
+#ifndef HANDDATA_H
+#define HANDDATA_H
+
 #include "../GameEngine/GameState.h"
 
 namespace hdt {
@@ -49,3 +52,5 @@ std::ostream& writeCompressedData(std::ostream& os, const HandHistory& hist);
 std::istream& readCompressedData(std::istream& is, HandHistory& hist);
 
 } // hdt
+
+#endif // HANDDATA_H

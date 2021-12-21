@@ -7,6 +7,11 @@ namespace egn {
 
 Hand::Hand(const std::string& cardStr)
 {
+    if (cardStr == "") {
+        *this = Hand::empty();
+        return;
+    }
+
     // Ignore whitespaces and turn to lowercase.
     std::string s;
     for (char c : cardStr) {

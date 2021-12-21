@@ -33,6 +33,7 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
+    <ClInclude Include="CustomStates.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
@@ -54,6 +55,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="CustomStates.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemDefinitionGroup />

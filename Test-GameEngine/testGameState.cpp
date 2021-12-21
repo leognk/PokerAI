@@ -1,8 +1,14 @@
 #include "pch.h"
 #include "../GameEngine/GameState.h"
 #include "../HandData/HandData.h"
+#include "CustomStates.h"
 #include <fstream>
 
+// Verify that the GameState is coherent at each step
+// with hands data retrieved from online poker rooms.
+// This test allows GameState to confront with real data
+// but it cannot be thoroughly inspected at each step
+// (we only have hand histories, not the complete states).
 TEST(GameStateTest, CoherentWithData)
 {
     std::ifstream file(hdt::compressedHandDataFile);
@@ -86,5 +92,52 @@ TEST(GameStateTest, CoherentWithData)
                 EXPECT_EQ(hist.rewards[i], state.rewards[i]);
         }
         EXPECT_EQ(hist.rake, rake);
+    }
+}
+
+// Verify that the GameState is equal at each step
+// to the handcrafted states.
+// This test allows GameState to be thoroughly inspected
+// at each step and with some twisted situations,
+// but not to confront with real data.
+TEST(GameStateTest, VerifyWithCustomStates)
+{
+    std::ifstream file(cus::customStatesPath);
+    std::vector<cus::History> listHist;
+    file >> listHist;
+
+    for (const cus::History& hist : listHist) {
+
+        // Initialize GameState.
+        egn::GameState state(hist.ante, hist.bb, hist.initialStakes);
+        state.startNewHand(hist.dealer, false);
+        for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i)
+            state.setHoleCards(i, hist.hands[i]);
+        state.setBoardCards(hist.boardCards);
+
+        // Loop over states.
+        for (const cus::State& cState : hist.states) {
+            if (cState.finished) break;
+
+            for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i)
+                EXPECT_EQ(state.stakes[i], cState.stakes[i]);
+            EXPECT_EQ(state.actingPlayer, cState.actingPlayer);
+            EXPECT_EQ(state.call, cState.call);
+            EXPECT_EQ(state.minRaise, cState.minRaise);
+            EXPECT_EQ(state.allin, cState.allin);
+            EXPECT_EQ(state.nActions, cState.nActions);
+            for (uint8_t i = 0; i < state.nActions; ++i)
+                EXPECT_EQ(state.actions[i], cState.actions[i]);
+            EXPECT_EQ(state.round, cState.round);
+            EXPECT_EQ(state.finished, cState.finished);
+
+            state.nextState(cState.nextAction, cState.nextBet);
+        }
+
+        for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i)
+            EXPECT_EQ(state.stakes[i], hist.states.back().stakes[i]);
+        EXPECT_EQ(state.finished, hist.states.back().finished);
+        for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i)
+            EXPECT_EQ(state.rewards[i], hist.rewards[i]);
     }
 }
