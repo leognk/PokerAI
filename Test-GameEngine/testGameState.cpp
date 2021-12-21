@@ -9,7 +9,7 @@
 // This test allows GameState to confront with real data
 // but it cannot be thoroughly inspected at each step
 // (we only have hand histories, not the complete states).
-TEST(GameStateTest, CoherentWithData)
+/*TEST(GameStateTest, CoherentWithData)
 {
     std::ifstream file(hdt::compressedHandDataFile);
 
@@ -93,7 +93,7 @@ TEST(GameStateTest, CoherentWithData)
         }
         EXPECT_EQ(hist.rake, rake);
     }
-}
+}*/
 
 // Verify that the GameState is equal at each step
 // to the handcrafted states.
