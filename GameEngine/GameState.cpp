@@ -34,7 +34,6 @@ void GameState::startNewHand(uint8_t dealerIdx, bool dealRandomCards)
     mDealer = dealerIdx;
     round = Round::preflop;
     finished = false;
-    mAllInFlag = false;
 
     resetPlayers();
     resetBoard();
@@ -61,7 +60,7 @@ void GameState::resetPlayers()
     mNActing = 0;
     // The first acting player after the preflop is always
     // the player following the dealer.
-    uint8_t firstPlayer = (mDealer + 1) % opt::MAX_PLAYERS;
+    const uint8_t firstPlayer = (mDealer + 1) % opt::MAX_PLAYERS;
     uint8_t i = firstPlayer;
     do {
         // Ignore inactive players.
@@ -87,7 +86,6 @@ void GameState::resetBoard()
 {
     mBoardCards = Hand::empty();
     mPot = 0;
-    mOnePot = true;
 }
 
 void GameState::dealHoleCards(uint64_t& usedCardsMask)
@@ -135,7 +133,7 @@ void GameState::setBoardCards(const Hand& boardCards)
 
 bool GameState::chargeAnte()
 {
-    uint8_t i = mFirstActing;
+    uint8_t i = mFirstAlive;
     do {
         // The player must all-in on the ante.
         if (stakes[i] <= mAnte) {
@@ -156,7 +154,7 @@ bool GameState::chargeAnte()
             mBets[i] += mAnte;
             stakes[i] -= mAnte;
         }
-    } while (nextActing(i) != mFirstActing);
+    } while (nextAlive(i) != mFirstAlive);
 
     // Only one player did not went all-in.
     if (mNActing == 1) {
@@ -293,13 +291,8 @@ void GameState::nextState(Action action, chips bet)
             stakes[mCurrentActing] -= call;
 
             // All-in
-            if (!stakes[mCurrentActing]) {
-                // Incomplete call
-                if (mBets[mCurrentActing] != mToCall)
-                    mOnePot = false;
-                mAllInFlag = true;
+            if (!stakes[mCurrentActing])
                 eraseActing(mCurrentActing);
-            }
         }
         break;
 
@@ -312,15 +305,9 @@ void GameState::nextState(Action action, chips bet)
         mLargestRaise = std::max(mBets[mCurrentActing] - mToCall, mLargestRaise);
         mToCall = mBets[mCurrentActing];
 
-        // If someone has gone all-in before,
-        // it means we have to use side pots.
-        if (mAllInFlag) mOnePot = false;
-
         // All-in
-        if (!stakes[mCurrentActing]) {
-            mAllInFlag = true;
+        if (!stakes[mCurrentActing])
             eraseActing(mCurrentActing);
-        }
 
         break;
 
@@ -350,7 +337,8 @@ void GameState::nextState(Action action, chips bet)
     }
 
     // End of the round (we went around the table)
-    if (mActed[mCurrentActing] && mBets[mCurrentActing] == mToCall) {
+    if ((mActed[mCurrentActing] || mNActing == 1)
+        && mBets[mCurrentActing] == mToCall) {
 
         // Showdown
         if (round == Round::river || mNActing == 1) {
@@ -408,18 +396,19 @@ void GameState::setLegalActions()
 
 void GameState::showdown()
 {
-    std::vector<std::vector<uint8_t>> rankings = getRankings();
+    bool onePot = onePotUsed();
+    std::vector<std::vector<uint8_t>> rankings = getRankings(onePot);
 
     // One pot and one winner
     // (deal with this specific case to speed up the computation)
-    if (mOnePot && rankings[0].size() == 1) {
+    if (onePot && rankings[0].size() == 1) {
         stakes[rankings[0][0]] += mPot;
         return;
     }
 
     // One pot and multiple winners
     // (deal with this specific case to speed up the computation)
-    else if (mOnePot) {
+    else if (onePot) {
         // Distribute the gains to each winner.
 #pragma warning(suppress: 4267)
         chips gain = mPot / rankings[0].size();
@@ -487,7 +476,7 @@ void GameState::showdown()
         std::vector<chips> dOrderedBets(orderedBets.size(), 0);
         std::adjacent_difference(orderedBets.begin(), orderedBets.end(), dOrderedBets.begin());
 
-        // Flag for winners eligible for a gain.
+        // Flags for winners eligible for a gain.
         std::vector<bool> giveGain(sameRankPlayers.size(), true);
 #pragma warning(suppress: 4267)
         uint8_t nWinners = sameRankPlayers.size();
@@ -530,11 +519,22 @@ void GameState::showdown()
     return;
 }
 
-std::vector<std::vector<uint8_t>> GameState::getRankings() const
+bool GameState::onePotUsed() const
+{
+    chips prevBet = mBets[mFirstAlive];
+    uint8_t i = mFirstAlive;
+    nextAlive(i);
+    do {
+        if (mBets[i] != prevBet) return false;
+    } while (nextAlive(i) != mFirstAlive);
+    return true;
+}
+
+std::vector<std::vector<uint8_t>> GameState::getRankings(bool onePot) const
 {
     // One pot
     // (deal with this specific case to speed up the computation)
-    if (mOnePot) {
+    if (onePot) {
         uint16_t bestRank = 0;
         std::vector<uint8_t> winners;
         uint8_t i = mFirstAlive;

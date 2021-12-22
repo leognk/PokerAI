@@ -147,7 +147,8 @@ protected:
 	void setLegalActions();
 
 	void showdown();
-	std::vector<std::vector<uint8_t>> getRankings() const;
+	bool onePotUsed() const;
+	std::vector<std::vector<uint8_t>> getRankings(bool onePot) const;
 	void setRewards();
 
 	Rng mRng;
@@ -175,8 +176,6 @@ protected:
 	Hand mBoardCards;
 	// Sum of all pots
 	chips mPot;
-	// Using only one pot
-	bool mOnePot;
 
 	uint8_t mDealer;
 	// Player making the action passed to nextState.
@@ -185,7 +184,6 @@ protected:
 	chips mToCall;
 	// Largest raise (by) of the current round
 	chips mLargestRaise;
-	bool mAllInFlag;
 
 	omp::HandEvaluator mEval;
 

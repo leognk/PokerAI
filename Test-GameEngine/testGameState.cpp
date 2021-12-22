@@ -105,6 +105,10 @@ TEST(GameStateTest, VerifyWithCustomStates)
     std::ifstream file(cus::customStatesPath);
     std::vector<cus::History> listHist;
     file >> listHist;
+    ////////////////////////////////////////////////////////////
+    unsigned id0 = 11;
+    unsigned idx0 = 1;
+    //##########################################################
 
     for (const cus::History& hist : listHist) {
 
