@@ -312,7 +312,7 @@ void GameState::nextState(Action action, chips bet)
         break;
 
     default:
-        throw std::runtime_error("Unknow action.");
+        throw std::runtime_error("Unknown action.");
 
     }
 
@@ -320,7 +320,13 @@ void GameState::nextState(Action action, chips bet)
 
     // Everybody folded but one.
     if (mNAlive == 1) {
-        stakes[mFirstAlive] += mPot;
+        // This case happens when the BB went all-in
+        // on the BB with less than a SB and everybody
+        // folded. In this case, the BB cannot earn the posted SB.
+        if (mBets[mFirstAlive] < mAnte + mSB)
+            giveDueGainToBB();
+        else
+            stakes[mFirstAlive] += mPot;
         finished = true;
         setRewards();
         return;
@@ -585,6 +591,17 @@ std::vector<std::vector<uint8_t>> GameState::getRankings(bool onePot) const
     }
 
     return rankings;
+}
+
+void GameState::giveDueGainToBB()
+{
+    for (uint8_t player = 0; player < opt::MAX_PLAYERS; ++player) {
+        if (!mBets[player])
+            continue;
+        chips due = std::min(mBets[mFirstAlive], mBets[player]);
+        stakes[mFirstAlive] += due;
+        stakes[player] += mBets[player] - due;
+    }
 }
 
 void GameState::setRewards()

@@ -149,6 +149,7 @@ protected:
 	void showdown();
 	bool onePotUsed() const;
 	std::vector<std::vector<uint8_t>> getRankings(bool onePot) const;
+	void giveDueGainToBB();
 	void setRewards();
 
 	Rng mRng;

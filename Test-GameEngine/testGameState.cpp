@@ -106,7 +106,7 @@ TEST(GameStateTest, VerifyWithCustomStates)
     std::vector<cus::History> listHist;
     file >> listHist;
     ////////////////////////////////////////////////////////////
-    unsigned id0 = 11;
+    unsigned id0 = 12;
     unsigned idx0 = 1;
     //##########################################################
 

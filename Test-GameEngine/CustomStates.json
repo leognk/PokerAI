@@ -1769,10 +1769,116 @@
       }
     ],
     "rewards": [ 18, -8, -10 ]
+  },
+  // 3 players
+  // BB all-in on the ante (complete ante)
+  {
+    "id": 12,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 2,
+    "hands": [ "Ts Tc", "9h 9d", "4h Jh" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 10010, 10, 10010 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 9950, 0, 10000 ],
+        "actingPlayer": 2,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "fold",
+        "nextBet": 0
+      },
+      {
+        "idx": 1,
+        "stakes": [ 9950, 0, 10000 ],
+        "actingPlayer": 0,
+        "call": 50,
+        "minRaise": 150,
+        "allin": 9950,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "fold",
+        "nextBet": 0
+      },
+      {
+        "idx": 2,
+        "stakes": [ 10000, 30, 10000 ],
+        "actingPlayer": 0,
+        "call": 50,
+        "minRaise": 150,
+        "allin": 9950,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "fold",
+        "nextBet": 0
+      }
+    ],
+    "rewards": [ -10, 20, -10 ]
+  },
+  // 3 players
+  // SB & BB all-in on the ante (complete & incomplete antes)
+  {
+    "id": 13,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 2,
+    "hands": [ "Ts Tc", "9h 9d", "4h Jh" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 10010, 10, 10010 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 9950, 0, 10000 ],
+        "actingPlayer": 2,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "fold",
+        "nextBet": 0
+      },
+      {
+        "idx": 1,
+        "stakes": [ 9950, 0, 10000 ],
+        "actingPlayer": 0,
+        "call": 50,
+        "minRaise": 150,
+        "allin": 9950,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "fold",
+        "nextBet": 0
+      },
+      {
+        "idx": 2,
+        "stakes": [ 10000, 30, 10000 ],
+        "actingPlayer": 0,
+        "call": 50,
+        "minRaise": 150,
+        "allin": 9950,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "fold",
+        "nextBet": 0
+      }
+    ],
+    "rewards": [ -10, 20, -10 ]
   }
   // 3 players:
-  // The small blind all-in before the ante (incomplete ante)
-  // The big blind all-in before the ante (complete ante)
+  // *The small blind all-in before the ante (incomplete ante)
+  // *The big blind all-in before the ante (complete ante)
   // The small blind and the big blind all-in before the ante (complete and incomplete antes)
   // All players all-in before the ante (incomplete and complete antes)
   //
