@@ -106,25 +106,28 @@ TEST(GameStateTest, VerifyWithCustomStates)
     std::vector<cus::History> listHist;
     file >> listHist;
     ////////////////////////////////////////////////////////////
-    unsigned id0 = 12;
-    unsigned idx0 = 1;
+    unsigned id0 = 2;
+    unsigned idx0 = 2;
     //##########################################################
 
     for (const cus::History& hist : listHist) {
 
         // Initialize GameState.
         egn::GameState state(hist.ante, hist.bb, hist.initialStakes);
-        state.startNewHand(hist.dealer, false);
         for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i)
             state.setHoleCards(i, hist.hands[i]);
         state.setBoardCards(hist.boardCards);
+        state.startNewHand(hist.dealer, false);
 
         // Loop over states.
         for (const cus::State& cState : hist.states) {
-            if (cState.finished) break;
 
+            EXPECT_EQ(state.finished, cState.finished);
             for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i)
                 EXPECT_EQ(state.stakes[i], cState.stakes[i]);
+
+            if (cState.finished) break;
+
             EXPECT_EQ(state.actingPlayer, cState.actingPlayer);
             EXPECT_EQ(state.call, cState.call);
             EXPECT_EQ(state.minRaise, cState.minRaise);
@@ -133,14 +136,10 @@ TEST(GameStateTest, VerifyWithCustomStates)
             for (uint8_t i = 0; i < state.nActions; ++i)
                 EXPECT_EQ(state.actions[i], cState.actions[i]);
             EXPECT_EQ(state.round, cState.round);
-            EXPECT_EQ(state.finished, cState.finished);
 
             state.nextState(cState.nextAction, cState.nextBet);
         }
 
-        for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i)
-            EXPECT_EQ(state.stakes[i], hist.states.back().stakes[i]);
-        EXPECT_EQ(state.finished, hist.states.back().finished);
         for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i)
             EXPECT_EQ(state.rewards[i], hist.rewards[i]);
     }

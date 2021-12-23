@@ -34,16 +34,8 @@ void GameState::startNewHand(uint8_t dealerIdx, bool dealRandomCards)
     mDealer = dealerIdx;
     round = Round::preflop;
     finished = false;
-
+    mPot = 0;
     resetPlayers();
-    resetBoard();
-
-    // Charge antes and blinds.
-    finished = chargeAnte();
-    if (!finished)
-        finished = chargeBlinds();
-    if (finished)
-        setRewards();
 
     // Deal cards.
     if (dealRandomCards) {
@@ -51,6 +43,11 @@ void GameState::startNewHand(uint8_t dealerIdx, bool dealRandomCards)
         dealHoleCards(usedCardsMask);
         dealBoardCards(usedCardsMask);
     }
+
+    // Charge antes and blinds.
+    chargeAnte();
+    if (finished) return;
+    chargeBlinds();
 }
 
 void GameState::resetPlayers()
@@ -82,12 +79,6 @@ void GameState::resetPlayers()
     mFirstActing = mFirstAlive;
 }
 
-void GameState::resetBoard()
-{
-    mBoardCards = Hand::empty();
-    mPot = 0;
-}
-
 void GameState::dealHoleCards(uint64_t& usedCardsMask)
 {
     uint8_t i = mFirstAlive;
@@ -109,6 +100,7 @@ void GameState::dealHoleCards(uint64_t& usedCardsMask)
 
 void GameState::dealBoardCards(uint64_t& usedCardsMask)
 {
+    mBoardCards = Hand::empty();
     for (unsigned i = 0; i < omp::BOARD_CARDS; ++i) {
         unsigned card;
         uint64_t cardMask;
@@ -131,7 +123,7 @@ void GameState::setBoardCards(const Hand& boardCards)
     mBoardCards = boardCards;
 }
 
-bool GameState::chargeAnte()
+void GameState::chargeAnte()
 {
     uint8_t i = mFirstAlive;
     do {
@@ -145,8 +137,8 @@ bool GameState::chargeAnte()
             // We deal with this case here to
             // avoid infinite loop.
             if (!mNActing) {
-                showdown();
-                return true;
+                endGame();
+                return;
             }
         }
         else {
@@ -156,16 +148,12 @@ bool GameState::chargeAnte()
         }
     } while (nextAlive(i) != mFirstAlive);
 
-    // Only one player did not went all-in.
-    if (mNActing == 1) {
-        showdown();
-        return true;
-    }
-
-    return false;
+    // Only one player did not went all-in on the ante.
+    if (mNActing == 1)
+        endGame();
 }
 
-bool GameState::chargeBlinds()
+void GameState::chargeBlinds()
 {
     // Find out the sb and bb players.
     mCurrentActing = mFirstAlive;
@@ -215,19 +203,25 @@ bool GameState::chargeBlinds()
         }
     }
 
-    // Less than 2 players did not go all-in.
-    if (mNActing <= 1) {
-        showdown();
-        return true;
+    // Everybody went all-in.
+    if (!mNActing) {
+        endGame();
+        return;
     }
 
     // Even if the bb was incomplete, the amount
     // to call is still the bb.
     mToCall = mAnte + mBB;
     mLargestRaise = mBB;
+    mMaxBet = std::max(std::max(mBets[sbPlayer], mBets[bbPlayer]), mAnte);
+
+    // Everybody went all-in but one.
+    if (mNActing == 1 && mBets[mFirstActing] == mMaxBet) {
+        endGame();
+        return;
+    }
 
     setLegalActions();
-    return false;
 }
 
 uint8_t& GameState::nextActive(uint8_t& i) const
@@ -285,11 +279,9 @@ void GameState::nextState(Action action, chips bet)
 
     case Action::call:
         if (call) {
-
             mPot += call;
             mBets[mCurrentActing] += call;
             stakes[mCurrentActing] -= call;
-
             // All-in
             if (!stakes[mCurrentActing])
                 eraseActing(mCurrentActing);
@@ -297,60 +289,51 @@ void GameState::nextState(Action action, chips bet)
         break;
 
     case Action::raise:
-
         mPot += bet;
         mBets[mCurrentActing] += bet;
         stakes[mCurrentActing] -= bet;
 
         mLargestRaise = std::max(mBets[mCurrentActing] - mToCall, mLargestRaise);
         mToCall = mBets[mCurrentActing];
-
+        mMaxBet = mToCall;
         // All-in
         if (!stakes[mCurrentActing])
             eraseActing(mCurrentActing);
-
         break;
 
     default:
         throw std::runtime_error("Unknown action.");
-
     }
-
-    mActed[mCurrentActing] = true;
 
     // Everybody folded but one.
     if (mNAlive == 1) {
-        // This case happens when the BB went all-in
-        // on the BB with less than a SB and everybody
-        // folded. In this case, the BB cannot earn the posted SB.
-        if (mBets[mFirstAlive] < mAnte + mSB)
-            giveDueGainToBB();
-        else
-            stakes[mFirstAlive] += mPot;
+        stakes[mFirstAlive] += mPot;
         finished = true;
         setRewards();
         return;
     }
 
-    if (mNActing)
-        nextActing(mCurrentActing);
     // Everybody went all-in.
-    else {
-        showdown();
-        finished = true;
-        setRewards();
+    if (!mNActing) {
+        endGame();
+        return;
+    }
+
+    mActed[mCurrentActing] = true;
+    nextActing(mCurrentActing);
+
+    // Everybody folded but one.
+    if (mNActing == 1 && mBets[mCurrentActing] == mMaxBet) {
+        endGame();
         return;
     }
 
     // End of the round (we went around the table)
-    if ((mActed[mCurrentActing] || mNActing == 1)
-        && mBets[mCurrentActing] == mToCall) {
+    if (mActed[mCurrentActing] && mBets[mCurrentActing] == mMaxBet) {
 
         // Showdown
-        if (round == Round::river || mNActing == 1) {
-            showdown();
-            finished = true;
-            setRewards();
+        if (round == Round::river) {
+            endGame();
             return;
         }
 
@@ -365,7 +348,6 @@ void GameState::nextState(Action action, chips bet)
             mCurrentActing = mFirstActing;
         }
     }
-
     setLegalActions();
 }
 
@@ -398,6 +380,13 @@ void GameState::setLegalActions()
         actions[1] = Action::raise;
         nActions = 2;
     }
+}
+
+void GameState::endGame()
+{
+    showdown();
+    finished = true;
+    setRewards();
 }
 
 void GameState::showdown()
@@ -566,6 +555,7 @@ std::vector<std::vector<uint8_t>> GameState::getRankings(bool onePot) const
     uint8_t player = mFirstAlive;
     for (uint8_t i = 0; i < mNAlive; ++i) {
         Hand hand = mBoardCards + mHands[player];
+        std::string s = hand.getStr();
         ranks[i] = mEval.evaluate(hand);
         players[i] = player;
         nextAlive(player);
@@ -591,17 +581,6 @@ std::vector<std::vector<uint8_t>> GameState::getRankings(bool onePot) const
     }
 
     return rankings;
-}
-
-void GameState::giveDueGainToBB()
-{
-    for (uint8_t player = 0; player < opt::MAX_PLAYERS; ++player) {
-        if (!mBets[player])
-            continue;
-        chips due = std::min(mBets[mFirstAlive], mBets[player]);
-        stakes[mFirstAlive] += due;
-        stakes[player] += mBets[player] - due;
-    }
 }
 
 void GameState::setRewards()

@@ -95,11 +95,13 @@ public:
 	// Small blind is set to half the big blind.
 	void setBigBlind(chips bigBlind);
 
+	// Call them BEFORE calling startNewHand.
+	void setHoleCards(uint8_t player, const Hand& hand);
+	void setBoardCards(const Hand& boardCards);
+
 	// The game could have finished if there was less than 2 acting players
 	// left after charging the antes and the blinds.
 	void startNewHand(uint8_t dealerIdx, bool dealRandomCards = true);
-	void setHoleCards(uint8_t player, const Hand& hand);
-	void setBoardCards(const Hand& boardCards);
 	// bet must be specified for a raise.
 	void nextState(Action action, chips bet = 0);
 	// Next active player, ie. non-zero stake player
@@ -131,13 +133,10 @@ protected:
 	typedef omp::FastUniformIntDistribution<unsigned, 16> CardDist;
 
 	void resetPlayers();
-	void resetBoard();
 	void dealHoleCards(uint64_t& usedCardsMask);
 	void dealBoardCards(uint64_t& usedCardsMask);
-	// Return whether the hand finished.
-	bool chargeAnte();
-	// Return whether the hand finished.
-	bool chargeBlinds();
+	void chargeAnte();
+	void chargeBlinds();
 
 	uint8_t& nextAlive(uint8_t& i) const;
 	uint8_t& nextActing(uint8_t& i) const;
@@ -146,10 +145,10 @@ protected:
 
 	void setLegalActions();
 
+	void endGame();
 	void showdown();
 	bool onePotUsed() const;
 	std::vector<std::vector<uint8_t>> getRankings(bool onePot) const;
-	void giveDueGainToBB();
 	void setRewards();
 
 	Rng mRng;
@@ -183,6 +182,9 @@ protected:
 	uint8_t mCurrentActing;
 	// Current number of chips to call (counting from the start of the hand)
 	chips mToCall;
+	// Similar to mToCall, but it can be different at the beginning
+	// if the posted BB is incomplete.
+	chips mMaxBet;
 	// Largest raise (by) of the current round
 	chips mLargestRaise;
 

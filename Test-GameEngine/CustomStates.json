@@ -1731,7 +1731,7 @@
     "rewards": [ -2000, -7500, -4000, 0, 13500 ]
   },
   // 3 players
-  // SB all-in on the ante (incomplete ante)
+  // SB all-in on the ante
   {
     "id": 11,
     "ante": 10,
@@ -1771,13 +1771,13 @@
     "rewards": [ 18, -8, -10 ]
   },
   // 3 players
-  // BB all-in on the ante (complete ante)
+  // BB all-in on the ante
   {
     "id": 12,
     "ante": 10,
     "bb": 100,
     "dealer": 2,
-    "hands": [ "Ts Tc", "9h 9d", "4h Jh" ],
+    "hands": [ "9h 9d", "Ts Tc", "4h Jh" ],
     "boardCards": "8h Kc 5s Js 5c",
     "initialStakes": [ 10010, 10, 10010 ],
     "states": [
@@ -1796,24 +1796,11 @@
       },
       {
         "idx": 1,
-        "stakes": [ 9950, 0, 10000 ],
-        "actingPlayer": 0,
-        "call": 50,
-        "minRaise": 150,
-        "allin": 9950,
-        "actions": [ "fold", "call", "raise" ],
-        "round": "preflop",
-        "finished": false,
-        "nextAction": "fold",
-        "nextBet": 0
-      },
-      {
-        "idx": 2,
         "stakes": [ 10000, 30, 10000 ],
-        "actingPlayer": 0,
-        "call": 50,
-        "minRaise": 150,
-        "allin": 9950,
+        "actingPlayer": 2,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
         "actions": [ "fold", "call", "raise" ],
         "round": "preflop",
         "finished": true,
@@ -1824,49 +1811,23 @@
     "rewards": [ -10, 20, -10 ]
   },
   // 3 players
-  // SB & BB all-in on the ante (complete & incomplete antes)
+  // SB & BB all-in on the ante
   {
     "id": 13,
     "ante": 10,
     "bb": 100,
     "dealer": 2,
-    "hands": [ "Ts Tc", "9h 9d", "4h Jh" ],
+    "hands": [ "4h Jh", "9h 9d", "Ts Tc" ],
     "boardCards": "8h Kc 5s Js 5c",
-    "initialStakes": [ 10010, 10, 10010 ],
+    "initialStakes": [ 2, 8, 10010 ],
     "states": [
       {
         "idx": 0,
-        "stakes": [ 9950, 0, 10000 ],
+        "stakes": [ 6, 0, 10014 ],
         "actingPlayer": 2,
         "call": 100,
         "minRaise": 200,
         "allin": 10000,
-        "actions": [ "fold", "call", "raise" ],
-        "round": "preflop",
-        "finished": false,
-        "nextAction": "fold",
-        "nextBet": 0
-      },
-      {
-        "idx": 1,
-        "stakes": [ 9950, 0, 10000 ],
-        "actingPlayer": 0,
-        "call": 50,
-        "minRaise": 150,
-        "allin": 9950,
-        "actions": [ "fold", "call", "raise" ],
-        "round": "preflop",
-        "finished": false,
-        "nextAction": "fold",
-        "nextBet": 0
-      },
-      {
-        "idx": 2,
-        "stakes": [ 10000, 30, 10000 ],
-        "actingPlayer": 0,
-        "call": 50,
-        "minRaise": 150,
-        "allin": 9950,
         "actions": [ "fold", "call", "raise" ],
         "round": "preflop",
         "finished": true,
@@ -1874,26 +1835,52 @@
         "nextBet": 0
       }
     ],
-    "rewards": [ -10, 20, -10 ]
+    "rewards": [ 4, -8, 4 ]
+  },
+  // 3 players
+  // Everyone all-in on the ante
+  {
+    "id": 14,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 2,
+    "hands": [ "4h Jh", "9h 9d", "Ts Tc" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 10, 8, 6 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 24, 0, 0 ],
+        "actingPlayer": 2,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "fold",
+        "nextBet": 0
+      }
+    ],
+    "rewards": [ 14, -8, -6 ]
   }
   // 3 players:
   // *The small blind all-in before the ante (incomplete ante)
   // *The big blind all-in before the ante (complete ante)
-  // The small blind and the big blind all-in before the ante (complete and incomplete antes)
-  // All players all-in before the ante (incomplete and complete antes)
+  // *The small blind and the big blind all-in before the ante (incomplete antes)
+  // *All players all-in before the ante (incomplete and complete antes)
   //
   // Heads-up:
   // The small blind all-in before the ante (complete ante)
   // The big blind all-in before the ante (incomplete ante)
   // All players all-in before the ante (incomplete antes)
   // 
-  // 
   // 3 players:
   // The small blind all-in on the sb (incomplete sb)
   // The small blind all-in on the sb (complete sb)
   // The big blind all-in on the bb (incomplete bb)
   // The big blind all-in on the bb (complete bb)
-  // The small blind & the big blind all-in (complete blinds)
+  // The small blind & the big blind all-in (incomplete blinds)
   // 
   // Heads-up: 
   // The small blind all-in on the sb (incomplete sb)
