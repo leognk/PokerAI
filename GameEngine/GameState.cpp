@@ -285,6 +285,11 @@ void GameState::nextState(Action action, chips bet)
             // All-in
             if (!stakes[mCurrentActing])
                 eraseActing(mCurrentActing);
+            else
+                // mMaxBet might have to be updated if there is only
+                // one acting player remaining and the legal call is
+                // larger than the posted all-ins.
+                mMaxBet = mBets[mCurrentActing];
         }
         break;
 

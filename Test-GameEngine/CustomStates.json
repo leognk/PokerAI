@@ -1863,67 +1863,1740 @@
       }
     ],
     "rewards": [ 14, -8, -6 ]
-  }
-  // 3 players:
-  // *The small blind all-in before the ante (incomplete ante)
-  // *The big blind all-in before the ante (complete ante)
-  // *The small blind and the big blind all-in before the ante (incomplete antes)
-  // *All players all-in before the ante (incomplete and complete antes)
-  //
-  // Heads-up:
-  // The small blind all-in before the ante (complete ante)
-  // The big blind all-in before the ante (incomplete ante)
-  // All players all-in before the ante (incomplete antes)
-  // 
-  // 3 players:
-  // The small blind all-in on the sb (incomplete sb)
-  // The small blind all-in on the sb (complete sb)
-  // The big blind all-in on the bb (incomplete bb)
-  // The big blind all-in on the bb (complete bb)
-  // The small blind & the big blind all-in (incomplete blinds)
-  // 
-  // Heads-up: 
-  // The small blind all-in on the sb (incomplete sb)
-  // The small blind all-in on the sb (complete sb)
-  // The big blind all-in on the bb (incomplete bb)
-  // The big blind all-in on the bb (complete bb)
-  // The small blind & the big blind all-in (incomplete blinds)
-  //
-  // 5 players:
-  // One incomplete raise & two incomplete calls on the preflop
-  //
-  // 4 players:
-  // Two incomplete raises & one incomplete call on the preflop
-  //
-  // Heads-up:
-  // One incomplete raise & one incomplete call on the preflop
-  //
-  // Heads-up:
+  },
+  // 2 players
+  // SB all-in on the ante
+  {
+    "id": 15,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 0,
+    "hands": [ "4h Jh", "9h 9d" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 10, 10010 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 20, 10000 ],
+        "actingPlayer": 0,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "fold",
+        "nextBet": 0
+      }
+    ],
+    "rewards": [ 10, -10 ]
+  },
+  // 2 players
+  // BB all-in on the ante
+  {
+    "id": 16,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 0,
+    "hands": [ "9h 9d", "4h Jh" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 10010, 3 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 10007, 6 ],
+        "actingPlayer": 0,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "fold",
+        "nextBet": 0
+      }
+    ],
+    "rewards": [ -3, 3 ]
+  },
+  // 2 players
+  // Everyone all-in on the ante
+  {
+    "id": 17,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 0,
+    "hands": [ "9h 9d", "4h Jh" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 7, 3 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 4, 6 ],
+        "actingPlayer": 0,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "fold",
+        "nextBet": 0
+      }
+    ],
+    "rewards": [ -3, 3 ]
+  },
+  // 3 players
+  // SB all-in on the SB (incomplete)
+  {
+    "id": 18,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 2,
+    "hands": [ "4h Jh", "9h 9d", "Ts Tc" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 30, 10010, 10010 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 0, 9900, 10000 ],
+        "actingPlayer": 2,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "fold",
+        "nextBet": 0
+      },
+      {
+        "idx": 1,
+        "stakes": [ 70, 9980, 10000 ],
+        "actingPlayer": 2,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "fold",
+        "nextBet": 0
+      }
+    ],
+    "rewards": [ 40, -30, -10 ]
+  },
+  // 3 players
+  // SB all-in on the SB (complete)
+  {
+    "id": 19,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 2,
+    "hands": [ "4h Jh", "9h 9d", "Ts Tc" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 60, 10010, 10010 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 0, 9900, 10000 ],
+        "actingPlayer": 2,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 200
+      },
+      {
+        "idx": 1,
+        "stakes": [ 0, 9900, 9800 ],
+        "actingPlayer": 1,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 9900,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "fold",
+        "nextBet": 0
+      },
+      {
+        "idx": 2,
+        "stakes": [ 180, 9900, 10000 ],
+        "actingPlayer": 1,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "fold",
+        "nextBet": 0
+      }
+    ],
+    "rewards": [ 120, -110, -10 ]
+  },
+  // 3 players
+  // BB all-in on the BB (incomplete)
+  {
+    "id": 20,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 2,
+    "hands": [ "9h 9d", "4h Jh", "Ts Tc" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 10010, 20, 10010 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 9950, 0, 10000 ],
+        "actingPlayer": 2,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "fold",
+        "nextBet": 0
+      },
+      {
+        "idx": 1,
+        "stakes": [ 9990, 50, 10000 ],
+        "actingPlayer": 2,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "fold",
+        "nextBet": 0
+      }
+    ],
+    "rewards": [ -20, 30, -10 ]
+  },
+  // 3 players
+  // BB all-in on the BB (complete)
+  {
+    "id": 21,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 2,
+    "hands": [ "9h 9d", "4h Jh", "Ts Tc" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 10010, 110, 10010 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 9950, 0, 10000 ],
+        "actingPlayer": 2,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 200
+      },
+      {
+        "idx": 1,
+        "stakes": [ 9950, 0, 9800 ],
+        "actingPlayer": 0,
+        "call": 150,
+        "minRaise": 250,
+        "allin": 9950,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "fold",
+        "nextBet": 0
+      },
+      {
+        "idx": 2,
+        "stakes": [ 9950, 280, 9900 ],
+        "actingPlayer": 0,
+        "call": 150,
+        "minRaise": 250,
+        "allin": 9950,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "fold",
+        "nextBet": 0
+      }
+    ],
+    "rewards": [ -60, 170, -110 ]
+  },
+  // 3 players
+  // SB & BB all-in on the SB & BB (incomplete)
+  {
+    "id": 22,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 2,
+    "hands": [ "9h 9d", "4h Jh", "Ts Tc" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 50, 30, 10010 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 0, 0, 10000 ],
+        "actingPlayer": 2,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 100
+      },
+      {
+        "idx": 1,
+        "stakes": [ 0, 90, 10000 ],
+        "actingPlayer": 2,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "call",
+        "nextBet": 100
+      }
+    ],
+    "rewards": [ -50, 60, -10 ]
+  },
+  // 2 players
+  // SB all-in on the SB (incomplete)
+  {
+    "id": 23,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 0,
+    "hands": [ "4h Jh", "9h 9d" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 30, 10010 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 60, 9980 ],
+        "actingPlayer": 0,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "fold",
+        "nextBet": 0
+      }
+    ],
+    "rewards": [ 30, -30 ]
+  },
+  // 2 players
+  // SB all-in on the SB (complete)
+  {
+    "id": 24,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 0,
+    "hands": [ "9h 9d", "4h Jh" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 60, 10010 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 0, 10070 ],
+        "actingPlayer": 0,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "fold",
+        "nextBet": 0
+      }
+    ],
+    "rewards": [ -60, 60 ]
+  },
+  // 2 players
+  // BB all-in on the BB (incomplete)
+  {
+    "id": 25,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 0,
+    "hands": [ "4h Jh", "9h 9d" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 10010, 80 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 9950, 0 ],
+        "actingPlayer": 0,
+        "call": 50,
+        "minRaise": 150,
+        "allin": 9950,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 9950
+      },
+      {
+        "idx": 1,
+        "stakes": [ 10090, 0 ],
+        "actingPlayer": 0,
+        "call": 50,
+        "minRaise": 150,
+        "allin": 9950,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "raise",
+        "nextBet": 9950
+      }
+    ],
+    "rewards": [ 80, -80 ]
+  },
+  // 2 players
+  // BB all-in on the BB (complete)
+  {
+    "id": 26,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 0,
+    "hands": [ "9h 9d", "4h Jh" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 10010, 110 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 9950, 0 ],
+        "actingPlayer": 0,
+        "call": 50,
+        "minRaise": 150,
+        "allin": 9950,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 150
+      },
+      {
+        "idx": 1,
+        "stakes": [ 9900, 220 ],
+        "actingPlayer": 0,
+        "call": 50,
+        "minRaise": 150,
+        "allin": 9950,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "raise",
+        "nextBet": 150
+      }
+    ],
+    "rewards": [ -110, 110 ]
+  },
+  // 2 players
+  // SB & BB all-in on the SB & BB (incomplete)
+  {
+    "id": 27,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 0,
+    "hands": [ "9h 9d", "4h Jh" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 20, 80 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 0, 100 ],
+        "actingPlayer": 0,
+        "call": 50,
+        "minRaise": 150,
+        "allin": 9950,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "raise",
+        "nextBet": 150
+      }
+    ],
+    "rewards": [ -20, 20 ]
+  },
+  // 5 players
+  // 1 incomplete raise & 2 incomplete calls
+  {
+    "id": 28,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 4,
+    "hands": [ "9h 9d", "4h Jh", "Ts Tc", "3h Ks", "2c 6c" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 10010, 190, 160, 10010, 140 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 9950, 80, 150, 10000, 130 ],
+        "actingPlayer": 2,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 150,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 100
+      },
+      {
+        "idx": 1,
+        "stakes": [ 9950, 80, 50, 10000, 130 ],
+        "actingPlayer": 3,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 100
+      },
+      {
+        "idx": 2,
+        "stakes": [ 9950, 80, 50, 9900, 130 ],
+        "actingPlayer": 4,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 130,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 100
+      },
+      {
+        "idx": 3,
+        "stakes": [ 9950, 80, 50, 9900, 30 ],
+        "actingPlayer": 0,
+        "call": 50,
+        "minRaise": 150,
+        "allin": 9950,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 50
+      },
+      {
+        "idx": 4,
+        "stakes": [ 9900, 80, 50, 9900, 30 ],
+        "actingPlayer": 1,
+        "call": 0,
+        "minRaise": 100,
+        "allin": 80,
+        "actions": [ "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 0
+      },
+      {
+        "idx": 5,
+        "stakes": [ 9900, 80, 50, 9900, 30 ],
+        "actingPlayer": 0,
+        "call": 0,
+        "minRaise": 100,
+        "allin": 9900,
+        "actions": [ "call", "raise" ],
+        "round": "flop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 0
+      },
+      {
+        "idx": 6,
+        "stakes": [ 9900, 80, 50, 9900, 30 ],
+        "actingPlayer": 1,
+        "call": 0,
+        "minRaise": 100,
+        "allin": 80,
+        "actions": [ "call", "raise" ],
+        "round": "flop",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 80
+      },
+      {
+        "idx": 7,
+        "stakes": [ 9900, 0, 50, 9900, 30 ],
+        "actingPlayer": 2,
+        "call": 50,
+        "minRaise": 180,
+        "allin": 50,
+        "actions": [ "fold", "call" ],
+        "round": "flop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 50
+      },
+      {
+        "idx": 8,
+        "stakes": [ 9900, 0, 0, 9900, 30 ],
+        "actingPlayer": 3,
+        "call": 80,
+        "minRaise": 180,
+        "allin": 9900,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "flop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 80
+      },
+      {
+        "idx": 9,
+        "stakes": [ 9900, 0, 0, 9820, 30 ],
+        "actingPlayer": 4,
+        "call": 30,
+        "minRaise": 180,
+        "allin": 30,
+        "actions": [ "fold", "call" ],
+        "round": "flop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 30
+      },
+      {
+        "idx": 10,
+        "stakes": [ 9900, 0, 0, 9820, 0 ],
+        "actingPlayer": 0,
+        "call": 80,
+        "minRaise": 180,
+        "allin": 9900,
+        "actions": [ "fold", "call" ],
+        "round": "flop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 80
+      },
+      {
+        "idx": 11,
+        "stakes": [ 9820, 0, 0, 9820, 0 ],
+        "actingPlayer": 0,
+        "call": 0,
+        "minRaise": 100,
+        "allin": 9820,
+        "actions": [ "call", "raise" ],
+        "round": "turn",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 100
+      },
+      {
+        "idx": 12,
+        "stakes": [ 9720, 0, 0, 9820, 0 ],
+        "actingPlayer": 3,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 9820,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "turn",
+        "finished": false,
+        "nextAction": "fold",
+        "nextBet": 0
+      },
+      {
+        "idx": 13,
+        "stakes": [ 9820, 870, 0, 9820, 0 ],
+        "actingPlayer": 3,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 9820,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "turn",
+        "finished": true,
+        "nextAction": "fold",
+        "nextBet": 0
+      }
+    ],
+    "rewards": [ -190, 680, -160, -190, -140 ]
+  },
+  // 4 players
+  // 2 incomplete raises & 1 incomplete call
+  {
+    "id": 29,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 4,
+    "hands": [ "9h 9d", "4h Jh", "Ts Tc", "3h Ks" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 160, 120, 130, 10010 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 100, 10, 120, 10000 ],
+        "actingPlayer": 2,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 120,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 120
+      },
+      {
+        "idx": 1,
+        "stakes": [ 100, 10, 0, 10000 ],
+        "actingPlayer": 3,
+        "call": 120,
+        "minRaise": 220,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "fold",
+        "nextBet": 0
+      },
+      {
+        "idx": 2,
+        "stakes": [ 100, 10, 0, 10000 ],
+        "actingPlayer": 0,
+        "call": 70,
+        "minRaise": 170,
+        "allin": 100,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 100
+      },
+      {
+        "idx": 3,
+        "stakes": [ 0, 10, 0, 10000 ],
+        "actingPlayer": 1,
+        "call": 10,
+        "minRaise": 150,
+        "allin": 10,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 10
+      },
+      {
+        "idx": 4,
+        "stakes": [ 30, 370, 20, 10000 ],
+        "actingPlayer": 1,
+        "call": 20,
+        "minRaise": 120,
+        "allin": 10,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "call",
+        "nextBet": 10
+      }
+    ],
+    "rewards": [ -130, 250, -110, -10 ]
+  },
+  // 4 players
+  // Everybody all-in
+  {
+    "id": 30,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 4,
+    "hands": [ "9h 9d", "4h Jh", "Ts Tc", "3h Ks" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 160, 120, 130, 10010 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 100, 10, 120, 10000 ],
+        "actingPlayer": 2,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 120,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 120
+      },
+      {
+        "idx": 1,
+        "stakes": [ 100, 10, 0, 10000 ],
+        "actingPlayer": 3,
+        "call": 120,
+        "minRaise": 220,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 10000
+      },
+      {
+        "idx": 2,
+        "stakes": [ 100, 10, 0, 0 ],
+        "actingPlayer": 0,
+        "call": 100,
+        "minRaise": 19830,
+        "allin": 100,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 100
+      },
+      {
+        "idx": 3,
+        "stakes": [ 0, 10, 0, 0 ],
+        "actingPlayer": 1,
+        "call": 10,
+        "minRaise": 19780,
+        "allin": 10,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 10
+      },
+      {
+        "idx": 4,
+        "stakes": [ 0, 0, 0, 10420 ],
+        "actingPlayer": 1,
+        "call": 20,
+        "minRaise": 120,
+        "allin": 10,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "call",
+        "nextBet": 10
+      }
+    ],
+    "rewards": [ -160, -120, -130, 410 ]
+  },
+  // 2 players
+  // 1 incomplete raise & 1 incomplete call
+  {
+    "id": 31,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 0,
+    "hands": [ "9h 9d", "4h Jh" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 130, 120 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 70, 10 ],
+        "actingPlayer": 0,
+        "call": 50,
+        "minRaise": 150,
+        "allin": 70,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 70
+      },
+      {
+        "idx": 1,
+        "stakes": [ 0, 10 ],
+        "actingPlayer": 1,
+        "call": 10,
+        "minRaise": 120,
+        "allin": 10,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 10
+      },
+      {
+        "idx": 2,
+        "stakes": [ 10, 240 ],
+        "actingPlayer": 1,
+        "call": 10,
+        "minRaise": 120,
+        "allin": 10,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "call",
+        "nextBet": 10
+      }
+    ],
+    "rewards": [ -120, 120 ]
+  },
+  // 2 players
   // Pot 1: 2 winners
-  //
-  // 3 players:
+  {
+    "id": 32,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 1,
+    "hands": [ "9h 9d", "9c 9s" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 10010, 10010 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 9900, 9950 ],
+        "actingPlayer": 1,
+        "call": 50,
+        "minRaise": 150,
+        "allin": 9950,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 50
+      },
+      {
+        "idx": 1,
+        "stakes": [ 9900, 9900 ],
+        "actingPlayer": 0,
+        "call": 0,
+        "minRaise": 100,
+        "allin": 9900,
+        "actions": [ "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 0
+      },
+      {
+        "idx": 2,
+        "stakes": [ 9900, 9900 ],
+        "actingPlayer": 0,
+        "call": 0,
+        "minRaise": 100,
+        "allin": 9900,
+        "actions": [ "call", "raise" ],
+        "round": "flop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 0
+      },
+      {
+        "idx": 3,
+        "stakes": [ 9900, 9900 ],
+        "actingPlayer": 1,
+        "call": 0,
+        "minRaise": 100,
+        "allin": 9900,
+        "actions": [ "call", "raise" ],
+        "round": "flop",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 500
+      },
+      {
+        "idx": 4,
+        "stakes": [ 9900, 9400 ],
+        "actingPlayer": 0,
+        "call": 500,
+        "minRaise": 1000,
+        "allin": 9900,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "flop",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 2000
+      },
+      {
+        "idx": 5,
+        "stakes": [ 7900, 9400 ],
+        "actingPlayer": 1,
+        "call": 1500,
+        "minRaise": 3000,
+        "allin": 9400,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "flop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 1500
+      },
+      {
+        "idx": 6,
+        "stakes": [ 7900, 7900 ],
+        "actingPlayer": 0,
+        "call": 0,
+        "minRaise": 100,
+        "allin": 7900,
+        "actions": [ "call", "raise" ],
+        "round": "turn",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 0
+      },
+      {
+        "idx": 7,
+        "stakes": [ 7900, 7900 ],
+        "actingPlayer": 1,
+        "call": 0,
+        "minRaise": 100,
+        "allin": 7900,
+        "actions": [ "call", "raise" ],
+        "round": "turn",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 0
+      },
+      {
+        "idx": 8,
+        "stakes": [ 7900, 7900 ],
+        "actingPlayer": 0,
+        "call": 0,
+        "minRaise": 100,
+        "allin": 7900,
+        "actions": [ "call", "raise" ],
+        "round": "river",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 100
+      },
+      {
+        "idx": 9,
+        "stakes": [ 7800, 7900 ],
+        "actingPlayer": 1,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 7900,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "river",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 100
+      },
+      {
+        "idx": 10,
+        "stakes": [ 10010, 10010 ],
+        "actingPlayer": 1,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 7900,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "river",
+        "finished": true,
+        "nextAction": "call",
+        "nextBet": 100
+      }
+    ],
+    "rewards": [ 0, 0 ]
+  },
+  // 3 players
   // Pot 1: 3 winners
-  //
-  // 3 players:
+  {
+    "id": 33,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 2,
+    "hands": [ "9h 9d", "9c 9s", "5c 6s" ],
+    "boardCards": "Kh Qh Th Jh Ah",
+    "initialStakes": [ 10010, 10010, 10010 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 9950, 9900, 10000 ],
+        "actingPlayer": 2,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 100
+      },
+      {
+        "idx": 1,
+        "stakes": [ 9950, 9900, 9900 ],
+        "actingPlayer": 0,
+        "call": 50,
+        "minRaise": 150,
+        "allin": 9950,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 50
+      },
+      {
+        "idx": 2,
+        "stakes": [ 9900, 9900, 9900 ],
+        "actingPlayer": 1,
+        "call": 0,
+        "minRaise": 100,
+        "allin": 9900,
+        "actions": [ "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 0
+      },
+      {
+        "idx": 3,
+        "stakes": [ 9900, 9900, 9900 ],
+        "actingPlayer": 0,
+        "call": 0,
+        "minRaise": 100,
+        "allin": 9900,
+        "actions": [ "call", "raise" ],
+        "round": "flop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 0
+      },
+      {
+        "idx": 4,
+        "stakes": [ 9900, 9900, 9900 ],
+        "actingPlayer": 1,
+        "call": 0,
+        "minRaise": 100,
+        "allin": 9900,
+        "actions": [ "call", "raise" ],
+        "round": "flop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 0
+      },
+      {
+        "idx": 5,
+        "stakes": [ 9900, 9900, 9900 ],
+        "actingPlayer": 2,
+        "call": 0,
+        "minRaise": 100,
+        "allin": 9900,
+        "actions": [ "call", "raise" ],
+        "round": "flop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 0
+      },
+      {
+        "idx": 6,
+        "stakes": [ 9900, 9900, 9900 ],
+        "actingPlayer": 0,
+        "call": 0,
+        "minRaise": 100,
+        "allin": 9900,
+        "actions": [ "call", "raise" ],
+        "round": "turn",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 0
+      },
+      {
+        "idx": 7,
+        "stakes": [ 9900, 9900, 9900 ],
+        "actingPlayer": 1,
+        "call": 0,
+        "minRaise": 100,
+        "allin": 9900,
+        "actions": [ "call", "raise" ],
+        "round": "turn",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 0
+      },
+      {
+        "idx": 8,
+        "stakes": [ 9900, 9900, 9900 ],
+        "actingPlayer": 2,
+        "call": 0,
+        "minRaise": 100,
+        "allin": 9900,
+        "actions": [ "call", "raise" ],
+        "round": "turn",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 0
+      },
+      {
+        "idx": 9,
+        "stakes": [ 9900, 9900, 9900 ],
+        "actingPlayer": 0,
+        "call": 0,
+        "minRaise": 100,
+        "allin": 9900,
+        "actions": [ "call", "raise" ],
+        "round": "river",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 0
+      },
+      {
+        "idx": 10,
+        "stakes": [ 9900, 9900, 9900 ],
+        "actingPlayer": 1,
+        "call": 0,
+        "minRaise": 100,
+        "allin": 9900,
+        "actions": [ "call", "raise" ],
+        "round": "river",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 0
+      },
+      {
+        "idx": 11,
+        "stakes": [ 9900, 9900, 9900 ],
+        "actingPlayer": 2,
+        "call": 0,
+        "minRaise": 100,
+        "allin": 9900,
+        "actions": [ "call", "raise" ],
+        "round": "river",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 0
+      },
+      {
+        "idx": 12,
+        "stakes": [ 10010, 10010, 10010 ],
+        "actingPlayer": 2,
+        "call": 0,
+        "minRaise": 100,
+        "allin": 9900,
+        "actions": [ "call", "raise" ],
+        "round": "river",
+        "finished": true,
+        "nextAction": "call",
+        "nextBet": 0
+      }
+    ],
+    "rewards": [ 0, 0, 0 ]
+  },
+  // 3 players
   // Pot 1: 2 winners
-  //
-  // 5 players:
+  {
+    "id": 34,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 2,
+    "hands": [ "9h 9d", "9c 9s", "2h 3d" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 10010, 10010, 10009 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 9950, 9900, 9999 ],
+        "actingPlayer": 2,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 9999,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 9999
+      },
+      {
+        "idx": 1,
+        "stakes": [ 9950, 9900, 0 ],
+        "actingPlayer": 0,
+        "call": 9949,
+        "minRaise": 19848,
+        "allin": 9950,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 9950
+      },
+      {
+        "idx": 2,
+        "stakes": [ 0, 9900, 0 ],
+        "actingPlayer": 1,
+        "call": 9900,
+        "minRaise": 19799,
+        "allin": 9900,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 9900
+      },
+      {
+        "idx": 3,
+        "stakes": [ 15015, 15014, 0 ],
+        "actingPlayer": 1,
+        "call": 9900,
+        "minRaise": 18900,
+        "allin": 9900,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "call",
+        "nextBet": 9900
+      }
+    ],
+    "rewards": [ 5005, 5004, -10009 ]
+  },
+  // 5 players
   // Pot 1: 1 winner
   // Pot 2: 1 winner
   // Pot 3: 1 winner
   // Pot 4: 1 winner
   // Pot 5: 1 winner
-  //
-  // 6 players:
+  {
+    "id": 35,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 4,
+    "hands": [ "9h 9d", "Ac As", "2h 2d", "6h 6c", "3d 3s" ],
+    "boardCards": "8h Kc 5s Js 5c",
+    "initialStakes": [ 320, 200, 10010, 530, 670 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 260, 90, 10000, 520, 660 ],
+        "actingPlayer": 2,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 10000
+      },
+      {
+        "idx": 1,
+        "stakes": [ 260, 90, 0, 520, 660 ],
+        "actingPlayer": 3,
+        "call": 520,
+        "minRaise": 19900,
+        "allin": 520,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 520
+      },
+      {
+        "idx": 2,
+        "stakes": [ 260, 90, 0, 0, 660 ],
+        "actingPlayer": 4,
+        "call": 660,
+        "minRaise": 19900,
+        "allin": 660,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 660
+      },
+      {
+        "idx": 3,
+        "stakes": [ 260, 90, 0, 0, 0 ],
+        "actingPlayer": 0,
+        "call": 260,
+        "minRaise": 19850,
+        "allin": 260,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 260
+      },
+      {
+        "idx": 4,
+        "stakes": [ 0, 90, 0, 0, 0 ],
+        "actingPlayer": 1,
+        "call": 90,
+        "minRaise": 19800,
+        "allin": 90,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 90
+      },
+      {
+        "idx": 5,
+        "stakes": [ 480, 1000, 9340, 630, 280 ],
+        "actingPlayer": 1,
+        "call": 90,
+        "minRaise": 19800,
+        "allin": 90,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "call",
+        "nextBet": 90
+      }
+    ],
+    "rewards": [ 160, 800, -670, 100, -390 ]
+  },
+  // 6 players
   // Pot 1: 3 winners
   // Pot 2: 3 winners
-  //
-  // 6 players:
+  {
+    "id": 36,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 5,
+    "hands": [ "Kh 6d", "4h Kd", "2c Qd", "8d Qc", "Ks 8c", "Qs Jc" ],
+    "boardCards": "Ah Ac As 5s Ad",
+    "initialStakes": [ 810, 810, 10010, 10010, 810, 10010 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 750, 700, 10000, 10000, 800, 10000 ],
+        "actingPlayer": 2,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 100
+      },
+      {
+        "idx": 1,
+        "stakes": [ 750, 700, 9900, 10000, 800, 10000 ],
+        "actingPlayer": 3,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 100
+      },
+      {
+        "idx": 2,
+        "stakes": [ 750, 700, 9900, 9900, 800, 10000 ],
+        "actingPlayer": 4,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 800,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 800
+      },
+      {
+        "idx": 3,
+        "stakes": [ 750, 700, 9900, 9900, 0, 10000 ],
+        "actingPlayer": 5,
+        "call": 800,
+        "minRaise": 1500,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 800
+      },
+      {
+        "idx": 4,
+        "stakes": [ 750, 700, 9900, 9900, 0, 9200 ],
+        "actingPlayer": 0,
+        "call": 750,
+        "minRaise": 1450,
+        "allin": 750,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 750
+      },
+      {
+        "idx": 5,
+        "stakes": [ 0, 700, 9900, 9900, 0, 9200 ],
+        "actingPlayer": 1,
+        "call": 700,
+        "minRaise": 1400,
+        "allin": 700,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 700
+      },
+      {
+        "idx": 6,
+        "stakes": [ 0, 0, 9900, 9900, 0, 9200 ],
+        "actingPlayer": 2,
+        "call": 700,
+        "minRaise": 1400,
+        "allin": 9900,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 9900
+      },
+      {
+        "idx": 7,
+        "stakes": [ 0, 0, 0, 9900, 0, 9200 ],
+        "actingPlayer": 3,
+        "call": 9900,
+        "minRaise": 19100,
+        "allin": 9900,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 9900
+      },
+      {
+        "idx": 8,
+        "stakes": [ 0, 0, 0, 0, 0, 9200 ],
+        "actingPlayer": 5,
+        "call": 9200,
+        "minRaise": 18400,
+        "allin": 9200,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 9200
+      },
+      {
+        "idx": 9,
+        "stakes": [ 1620, 1620, 9200, 9200, 1620, 9200 ],
+        "actingPlayer": 5,
+        "call": 9200,
+        "minRaise": 18400,
+        "allin": 9200,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "call",
+        "nextBet": 9200
+      }
+    ],
+    "rewards": [ 810, 810, -810, -810, 810, -810 ]
+  },
+  // 6 players
   // Pot 1: 4 winners
   // Pot 2: 1 winner
-  //
-  // 6 players:
+  {
+    "id": 37,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 5,
+    "hands": [ "Kh 6d", "4h Kd", "2c Qd", "8d Qc", "Ks 8c", "Ks Jc" ],
+    "boardCards": "Ah Ac As 5s Ad",
+    "initialStakes": [ 910, 710, 10010, 10010, 810, 910 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 850, 600, 10000, 10000, 800, 900 ],
+        "actingPlayer": 2,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "fold",
+        "nextBet": 0
+      },
+      {
+        "idx": 1,
+        "stakes": [ 850, 600, 10000, 10000, 800, 900 ],
+        "actingPlayer": 3,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 10000
+      },
+      {
+        "idx": 2,
+        "stakes": [ 850, 600, 10000, 0, 800, 900 ],
+        "actingPlayer": 4,
+        "call": 800,
+        "minRaise": 19900,
+        "allin": 800,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 800
+      },
+      {
+        "idx": 3,
+        "stakes": [ 850, 600, 10000, 0, 0, 900 ],
+        "actingPlayer": 5,
+        "call": 900,
+        "minRaise": 19900,
+        "allin": 900,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 900
+      },
+      {
+        "idx": 4,
+        "stakes": [ 850, 600, 10000, 0, 0, 0 ],
+        "actingPlayer": 0,
+        "call": 850,
+        "minRaise": 19850,
+        "allin": 850,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 850
+      },
+      {
+        "idx": 5,
+        "stakes": [ 0, 600, 10000, 0, 0, 0 ],
+        "actingPlayer": 1,
+        "call": 600,
+        "minRaise": 19800,
+        "allin": 600,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 600
+      },
+      {
+        "idx": 6,
+        "stakes": [ 1174, 890, 10000, 9100, 1023, 1173 ],
+        "actingPlayer": 1,
+        "call": 600,
+        "minRaise": 19800,
+        "allin": 600,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "call",
+        "nextBet": 600
+      }
+    ],
+    "rewards": [ 264, 180, -10, -910, 213, 263 ]
+  },
+  // 6 players
   // Pot 1: 1 winner
   // Pot 2: 3 winners
   // Pot 3: 2 winners
+  {
+    "id": 38,
+    "ante": 10,
+    "bb": 100,
+    "dealer": 5,
+    "hands": [ "Kh 6d", "4h Kd", "2c Qd", "8d Qc", "Ks 8c", "Ks Jc" ],
+    "boardCards": "Ah Ac As 5s Ad",
+    "initialStakes": [ 910, 810, 10010, 10010, 910, 910 ],
+    "states": [
+      {
+        "idx": 0,
+        "stakes": [ 850, 700, 10000, 10000, 900, 900 ],
+        "actingPlayer": 2,
+        "call": 100,
+        "minRaise": 200,
+        "allin": 10000,
+        "actions": [ "fold", "call", "raise" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "raise",
+        "nextBet": 10000
+      },
+      {
+        "idx": 1,
+        "stakes": [ 850, 700, 0, 10000, 900, 900 ],
+        "actingPlayer": 3,
+        "call": 10000,
+        "minRaise": 19900,
+        "allin": 10000,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 10000
+      },
+      {
+        "idx": 2,
+        "stakes": [ 850, 700, 0, 0, 900, 900 ],
+        "actingPlayer": 4,
+        "call": 900,
+        "minRaise": 19900,
+        "allin": 900,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 900
+      },
+      {
+        "idx": 3,
+        "stakes": [ 850, 700, 0, 0, 0, 900 ],
+        "actingPlayer": 5,
+        "call": 900,
+        "minRaise": 19900,
+        "allin": 900,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 900
+      },
+      {
+        "idx": 4,
+        "stakes": [ 850, 700, 0, 0, 0, 0 ],
+        "actingPlayer": 0,
+        "call": 850,
+        "minRaise": 19850,
+        "allin": 850,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 850
+      },
+      {
+        "idx": 5,
+        "stakes": [ 0, 700, 0, 0, 0, 0 ],
+        "actingPlayer": 1,
+        "call": 700,
+        "minRaise": 19800,
+        "allin": 700,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": false,
+        "nextAction": "call",
+        "nextBet": 700
+      },
+      {
+        "idx": 6,
+        "stakes": [ 1382, 1215, 9100, 9100, 1382, 1381 ],
+        "actingPlayer": 0,
+        "call": 700,
+        "minRaise": 19800,
+        "allin": 700,
+        "actions": [ "fold", "call" ],
+        "round": "preflop",
+        "finished": true,
+        "nextAction": "call",
+        "nextBet": 700
+      }
+    ],
+    "rewards": [ 472, 405, -910, -910, 472, 471 ]
+  }
 ]
