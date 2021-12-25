@@ -81,6 +81,7 @@ void GameState::resetPlayers()
 
 void GameState::dealHoleCards(uint64_t& usedCardsMask)
 {
+    ZoneScoped;
     uint8_t i = mFirstAlive;
     do {
         std::array<uint8_t, omp::HOLE_CARDS> hand;
@@ -100,6 +101,7 @@ void GameState::dealHoleCards(uint64_t& usedCardsMask)
 
 void GameState::dealBoardCards(uint64_t& usedCardsMask)
 {
+    ZoneScoped;
     mBoardCards = Hand::empty();
     for (unsigned i = 0; i < omp::BOARD_CARDS; ++i) {
         unsigned card;
@@ -125,6 +127,7 @@ void GameState::setBoardCards(const Hand& boardCards)
 
 void GameState::chargeAnte()
 {
+    ZoneScoped;
     uint8_t i = mFirstAlive;
     do {
         // The player must all-in on the ante.
@@ -155,6 +158,7 @@ void GameState::chargeAnte()
 
 void GameState::chargeBlinds()
 {
+    ZoneScoped;
     // Find out the sb and bb players.
     mCurrentActing = mFirstAlive;
     uint8_t sbPlayer, bbPlayer;
@@ -270,6 +274,7 @@ void GameState::eraseActing(uint8_t& i)
 
 void GameState::nextState(Action action, chips bet)
 {
+    ZoneScoped;
     switch (action) {
 
     case Action::fold:
@@ -358,6 +363,7 @@ void GameState::nextState(Action action, chips bet)
 
 void GameState::setLegalActions()
 {
+    ZoneScoped;
     actingPlayer = mCurrentActing;
 
     chips legalCall = mToCall - mBets[mCurrentActing];
@@ -396,6 +402,7 @@ void GameState::endGame()
 
 void GameState::showdown()
 {
+    ZoneScoped;
     bool onePot = onePotUsed();
     std::vector<std::vector<uint8_t>> rankings = getRankings(onePot);
 
@@ -532,6 +539,7 @@ bool GameState::onePotUsed() const
 
 std::vector<std::vector<uint8_t>> GameState::getRankings(bool onePot) const
 {
+    ZoneScoped;
     // One pot
     // (deal with this specific case to speed up the computation)
     if (onePot) {
@@ -560,7 +568,6 @@ std::vector<std::vector<uint8_t>> GameState::getRankings(bool onePot) const
     uint8_t player = mFirstAlive;
     for (uint8_t i = 0; i < mNAlive; ++i) {
         Hand hand = mBoardCards + mHands[player];
-        std::string s = hand.getStr();
         ranks[i] = mEval.evaluate(hand);
         players[i] = player;
         nextAlive(player);

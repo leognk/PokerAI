@@ -8,9 +8,9 @@ int main()
 {
     // Constants
     // In seconds
-    const double maxDuration = 2;
+    const double maxDuration = 1;
     const unsigned rngSeed = 1;
-    const egn::chips ante = 1, bigBlind = 10;
+    const egn::chips ante = 0, bigBlind = 10;
     const egn::chips stake = 1000;
     const double foldProba = 1. / 3;
     const double callProba = 1. / 3;

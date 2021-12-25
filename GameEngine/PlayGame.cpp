@@ -40,6 +40,7 @@ void PlayGame::playAndReset()
 
 void PlayGame::playOneHand()
 {
+	ZoneScoped;
 	mState.startNewHand(mDealer);
 	while (!mState.finished) {
 		auto [action, bet] = mPlayers[mState.actingPlayer]->act(mState);

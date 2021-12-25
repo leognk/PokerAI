@@ -18,6 +18,7 @@ RandomAI::RandomAI(
 
 std::pair<egn::Action, egn::chips> RandomAI::act(const egn::GameState& state)
 {
+	ZoneScoped;
 	// Build the distribution over legal actions.
 	std::vector<double> proba(state.nActions);
 	for (uint8_t i = 0; i < state.nActions; ++i) {

@@ -7,6 +7,7 @@
 #include "../Optimus/Constants.h"
 #include <vector>
 #include <iostream>
+#include "../tracy/Tracy.hpp"
 
 namespace egn {
 
