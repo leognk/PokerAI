@@ -409,12 +409,12 @@ void GameState::showdown()
 {
     //ZoneScoped;
     bool onePot = onePotUsed();
-    std::vector<std::vector<uint8_t>> rankings = getRankings(onePot);
+    setRankings(onePot);
 
     // One pot and one winner
     // (deal with this specific case to speed up the computation)
-    if (onePot && rankings[0].size() == 1) {
-        stakes[rankings[0][0]] += mPot;
+    if (onePot && mNSameRanks[0] == 1) {
+        stakes[mRankings[0][0]] += mPot;
         return;
     }
 
@@ -422,10 +422,10 @@ void GameState::showdown()
     // (deal with this specific case to speed up the computation)
     else if (onePot) {
         // Distribute the gains to each winner.
-        chips gain = mPot / rankings[0].size();
+        chips gain = mPot / mNSameRanks[0];
         // Remaining chips go to the first players after the dealer.
-        uint8_t extra = mPot % rankings[0].size();
-        for (uint8_t i : rankings[0]) {
+        uint8_t extra = mPot % mNSameRanks[0];
+        for (uint8_t i = 0; i < mNSameRanks[0]; ++i) {
             stakes[i] += gain;
             if (extra) {
                 ++stakes[i];
@@ -436,7 +436,7 @@ void GameState::showdown()
     }
 
     // General case: multiple pots
-    for (std::vector<uint8_t>& sameRankPlayers : rankings) {
+    for (uint8_t k = 0; k < mNRankings; ++k) {
 
         // If the sum of all pots has been emptied, exit.
         if (!mPot)
@@ -444,8 +444,8 @@ void GameState::showdown()
 
         // One winner for this pot
         // (deal with this specific case to speed up the computation)
-        if (sameRankPlayers.size() == 1) {
-            chips winnerBet = mBets[sameRankPlayers[0]];
+        if (mNSameRanks[k] == 1) {
+            chips winnerBet = mBets[mRankings[k][0]];
             if (!winnerBet)
                 continue;
             // Build the pot corresponding to the winner's bet.
@@ -458,7 +458,7 @@ void GameState::showdown()
                 mPot -= due;
                 mBets[player] -= due;
             }
-            stakes[sameRankPlayers[0]] += pot;
+            stakes[mRankings[k][0]] += pot;
             continue;
         }
 
@@ -540,62 +540,63 @@ bool GameState::onePotUsed() const
     return true;
 }
 
-std::vector<std::vector<uint8_t>> GameState::getRankings(bool onePot) const
+void GameState::setRankings(bool onePot)
 {
     //ZoneScoped;
     // One pot
     // (deal with this specific case to speed up the computation)
     if (onePot) {
+        mNRankings = 1;
         uint16_t bestRank = 0;
-        std::vector<uint8_t> winners;
         uint8_t i = mFirstAlive;
         do {
             Hand hand = mBoardCards + mHands[i];
             uint16_t rank = mEval.evaluate(hand);
             if (rank > bestRank) {
                 bestRank = rank;
-                winners = { i };
+                mRankings[0][0] = i;
+                mNSameRanks[0] = 1;
             }
             else if (rank == bestRank) {
-                winners.push_back(i);
+                mRankings[0][mNSameRanks[0]] = i;
+                ++mNSameRanks[0];
             }
         } while (nextAlive(i) != mFirstAlive);
-        return { winners };
+        return;
     }
 
     // General case of multiple pots
 
     // Compute players' ranks.
-    std::vector<uint16_t> ranks(mNAlive);
-    std::vector<uint8_t> players(mNAlive);
     uint8_t player = mFirstAlive;
     for (uint8_t i = 0; i < mNAlive; ++i) {
         Hand hand = mBoardCards + mHands[player];
-        ranks[i] = mEval.evaluate(hand);
-        players[i] = player;
+        mRanks[i] = mEval.evaluate(hand);
+        mRankedPlayers[i] = player;
         nextAlive(player);
     }
 
-    std::vector<uint8_t> range(mNAlive);
-    std::iota(range.begin(), range.end(), uint8_t(0));
+    std::iota(mRange.begin(), mRange.begin() + mNAlive, uint8_t(0));
     // stable_sort is needed to preserve the order of the players
     // with the same rank for the distribution of the extras
     // in clockwise order.
     std::stable_sort(
-        range.begin(), range.end(),
-        [&](uint8_t i, uint8_t j) { return ranks[i] > ranks[j]; }
+        mRange.begin(), mRange.begin() + mNAlive,
+        [&](uint8_t i, uint8_t j) { return mRanks[i] > mRanks[j]; }
     );
 
     // Build players' rankings.
-    std::vector<std::vector<uint8_t>> rankings{ { players[range[0]] } };
+    mRankings[0][0] = mRankedPlayers[mRange[0]];
+    mNRankings = 1;
+    mNSameRanks[0] = 1;
     for (uint8_t i = 1; i < mNAlive; ++i) {
-        if (ranks[range[i]] != ranks[range[i - 1]])
-            rankings.emplace_back(std::vector<uint8_t>{ players[range[i]] });
+        if (mRanks[mRange[i]] != mRanks[mRange[i - 1]])
+            mNSameRanks[mNRankings++] = 1;
         else
-            rankings.back().push_back(players[range[i]]);
+            ++mNSameRanks[mNRankings - 1];
+        mRankings[mNRankings - 1][mNSameRanks[mNRankings - 1] - 1] =
+            mRankedPlayers[mRange[i]];
     }
-
-    return rankings;
 }
 
 void GameState::setRewards()

@@ -163,7 +163,7 @@ protected:
 	void endGame();
 	void showdown();
 	bool onePotUsed() const;
-	std::vector<std::vector<uint8_t>> getRankings(bool onePot) const;
+	void setRankings(bool onePot);
 	void setRewards();
 
 	Rng mRng;
@@ -202,6 +202,16 @@ protected:
 	chips mMaxBet;
 	// Largest raise (by) of the current round
 	chips mLargestRaise;
+
+	// Used in setRankings.
+
+	std::array<std::array<uint8_t, opt::MAX_PLAYERS>, opt::MAX_PLAYERS> mRankings;
+	uint8_t mNRankings;
+	std::array<uint8_t, opt::MAX_PLAYERS> mNSameRanks;
+
+	std::array<uint16_t, opt::MAX_PLAYERS> mRanks;
+	std::array<uint8_t, opt::MAX_PLAYERS> mRankedPlayers;
+	std::array<uint8_t, opt::MAX_PLAYERS> mRange;
 
 	omp::HandEvaluator mEval;
 
