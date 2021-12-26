@@ -19,25 +19,26 @@
 
 namespace fs = std::filesystem;
 
+enum Round { preflop, flop, turn, river };
+
+std::ostream& operator<<(std::ostream& os, const Round& r)
+{
+	switch (r) {
+	case preflop:
+		return os << "preflop";
+	case flop:
+		return os << "flop";
+	case turn:
+		return os << "turn";
+	case river:
+		return os << "river";
+	default:
+		return os;
+	}
+}
+
 int main()
 {
-    std::ifstream file(cus::customStatesPath);
-    std::vector<cus::History> listHist;
-    file >> listHist;
-
-    for (const cus::History& hist : listHist) {
-
-        // Initialize GameState.
-        egn::GameState state(hist.ante, hist.bb, hist.initialStakes);
-        state.startNewHand(hist.dealer, false);
-        for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i)
-            state.setHoleCards(i, hist.hands[i]);
-        state.setBoardCards(hist.boardCards);
-
-        // Loop over states.
-        for (unsigned i = 0; i < hist.states.size() - 1; ++i) {
-            state.nextState(
-                hist.states[i].nextAction, hist.states[i].nextBet);
-        }
-    }
+    Round r = Round(preflop + 1);
+    std::cout << r << "\n";
 }

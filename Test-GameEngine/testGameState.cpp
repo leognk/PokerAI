@@ -46,10 +46,10 @@ TEST(GameStateTest, CoherentWithData)
                 // As we always give the possibility to fold
                 // (if a player leaves the table) and to call,
                 // we just need to test for the raise.
-                if (a.action == egn::Action::raise) {
+                if (a.action == egn::RAISE) {
                     bool raiseInList = false;
                     for (uint8_t i = 0; i < state.nActions; ++i) {
-                        if (state.actions[i] == egn::Action::raise) {
+                        if (state.actions[i] == egn::RAISE) {
                             raiseInList = true;
                             break;
                         }
@@ -59,12 +59,12 @@ TEST(GameStateTest, CoherentWithData)
 
                 // Verify that the bet value is correct.
                 switch (a.action) {
-                case egn::Action::fold:
+                case egn::FOLD:
                     break;
-                case egn::Action::call:
+                case egn::CALL:
                     EXPECT_EQ(a.bet, state.call);
                     break;
-                case egn::Action::raise:
+                case egn::RAISE:
                     if (a.bet < state.minRaise) {
                         EXPECT_EQ(a.bet, state.allin);
                         EXPECT_GT(a.bet, state.call);

@@ -32,7 +32,7 @@ void GameState::setBigBlind(chips bigBlind)
 void GameState::startNewHand(uint8_t dealerIdx, bool dealRandomCards)
 {
     mDealer = dealerIdx;
-    round = Round::preflop;
+    round = PREFLOP;
     finished = false;
     mPot = 0;
     resetPlayers();
@@ -81,7 +81,7 @@ void GameState::resetPlayers()
 
 void GameState::dealHoleCards(uint64_t& usedCardsMask)
 {
-    ZoneScoped;
+    //ZoneScoped;
     uint8_t i = mFirstAlive;
     do {
         std::array<uint8_t, omp::HOLE_CARDS> hand;
@@ -101,7 +101,7 @@ void GameState::dealHoleCards(uint64_t& usedCardsMask)
 
 void GameState::dealBoardCards(uint64_t& usedCardsMask)
 {
-    ZoneScoped;
+    //ZoneScoped;
     mBoardCards = Hand::empty();
     for (unsigned i = 0; i < omp::BOARD_CARDS; ++i) {
         unsigned card;
@@ -127,7 +127,7 @@ void GameState::setBoardCards(const Hand& boardCards)
 
 void GameState::chargeAnte()
 {
-    ZoneScoped;
+    //ZoneScoped;
     uint8_t i = mFirstAlive;
     do {
         // The player must all-in on the ante.
@@ -158,7 +158,7 @@ void GameState::chargeAnte()
 
 void GameState::chargeBlinds()
 {
-    ZoneScoped;
+    //ZoneScoped;
     // Find out the sb and bb players.
     mCurrentActing = mFirstAlive;
     uint8_t sbPlayer, bbPlayer;
@@ -274,15 +274,15 @@ void GameState::eraseActing(uint8_t& i)
 
 void GameState::nextState(Action action, chips bet)
 {
-    ZoneScoped;
+    //ZoneScoped;
     switch (action) {
 
-    case Action::fold:
+    case FOLD:
         eraseAlive(mCurrentActing);
         eraseActing(mCurrentActing);
         break;
 
-    case Action::call:
+    case CALL:
         if (call) {
             mPot += call;
             mBets[mCurrentActing] += call;
@@ -298,7 +298,7 @@ void GameState::nextState(Action action, chips bet)
         }
         break;
 
-    case Action::raise:
+    case RAISE:
         mPot += bet;
         mBets[mCurrentActing] += bet;
         stakes[mCurrentActing] -= bet;
@@ -342,7 +342,7 @@ void GameState::nextState(Action action, chips bet)
     if (mActed[mCurrentActing] && mBets[mCurrentActing] == mMaxBet) {
 
         // Showdown
-        if (round == Round::river) {
+        if (round == RIVER) {
             endGame();
             return;
         }
@@ -363,7 +363,7 @@ void GameState::nextState(Action action, chips bet)
 
 void GameState::setLegalActions()
 {
-    ZoneScoped;
+    //ZoneScoped;
     actingPlayer = mCurrentActing;
 
     chips legalCall = mToCall - mBets[mCurrentActing];
@@ -376,20 +376,23 @@ void GameState::setLegalActions()
     if (stakes[mCurrentActing] <= legalCall
         || (mActed[mCurrentActing]
             && legalCall && legalCall < mLargestRaise)) {
-        actions[0] = Action::fold;
-        actions[1] = Action::call;
+        actions[0] = FOLD;
+        actions[1] = CALL;
         nActions = 2;
+        legalCase = 0;
     }
-    else if (legalCall) {
-        actions[0] = Action::fold;
-        actions[1] = Action::call;
-        actions[2] = Action::raise;
-        nActions = 3;
+    else if (!legalCall) {
+        actions[0] = CALL;
+        actions[1] = RAISE;
+        nActions = 2;
+        legalCase = 1;
     }
     else {
-        actions[0] = Action::call;
-        actions[1] = Action::raise;
-        nActions = 2;
+        actions[0] = FOLD;
+        actions[1] = CALL;
+        actions[2] = RAISE;
+        nActions = 3;
+        legalCase = 2;
     }
 }
 
@@ -402,7 +405,7 @@ void GameState::endGame()
 
 void GameState::showdown()
 {
-    ZoneScoped;
+    //ZoneScoped;
     bool onePot = onePotUsed();
     std::vector<std::vector<uint8_t>> rankings = getRankings(onePot);
 
@@ -539,7 +542,7 @@ bool GameState::onePotUsed() const
 
 std::vector<std::vector<uint8_t>> GameState::getRankings(bool onePot) const
 {
-    ZoneScoped;
+    //ZoneScoped;
     // One pot
     // (deal with this specific case to speed up the computation)
     if (onePot) {

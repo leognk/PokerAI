@@ -17,15 +17,14 @@ namespace opt {
             mBufferUsesLeft = 0;
         }
 
-        template<class TRng>
-        size_t operator()(std::vector<double>& proba, TRng& rng)
+        template<class C, class TRng>
+        size_t operator()(C& proba, TRng& rng)
         {
             double x = rand(rng);
             size_t i = 0;
             double cumProba = proba[0];
-            while (cumProba <= x) {
+            while (cumProba <= x)
                 cumProba += proba[++i];
-            }
             return i;
         }
 

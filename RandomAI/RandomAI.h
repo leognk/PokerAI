@@ -20,11 +20,17 @@ public:
 private:
 	typedef omp::XoroShiro128Plus Rng;
 
+	std::array<std::array<double, egn::GameState::nLegalCases>,
+		egn::N_ACTIONS> makeActionProbas();
+
 	Rng mRng;
 	FastRandomChoice<16> mRandChoice;
 	omp::FastUniformIntDistribution<egn::chips, 32> mRaiseDist;
 
 	double mFoldProba, mCallProba, mRaiseProba;
+	// Probability distributions over all actions for each legal case.
+	const std::array<std::array<double, egn::GameState::nLegalCases>,
+		egn::N_ACTIONS> actionProbas;
 
 }; // RandomAI
 

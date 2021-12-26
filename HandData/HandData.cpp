@@ -177,13 +177,13 @@ std::istream& operator>>(std::istream& is, HandHistory& hist)
                 line, R"((folds|checks|calls|bets|raises))", 1);
             // Fold
             if (actionStr == "folds")
-                action.action = egn::Action::fold;
+                action.action = egn::FOLD;
             // Call
             else if (actionStr == "checks" || actionStr == "calls")
-                action.action = egn::Action::call;
+                action.action = egn::CALL;
             // Raise
             else if (actionStr == "bets" || actionStr == "raises")
-                action.action = egn::Action::raise;
+                action.action = egn::RAISE;
             else
                 throw std::runtime_error("Found unknown action type: " + actionStr);
 
@@ -334,7 +334,7 @@ std::ostream& operator<<(std::ostream& os, const HandHistory& hist)
         for (size_t j = 0; j < hist.actions[i].size(); ++j) {
             Action a = hist.actions[i][j];
             os << std::to_string(a.player) << ": " << a.action;
-            if (a.action != egn::Action::fold)
+            if (a.action != egn::FOLD)
                 os << " " << a.bet;
             os << "\n";
         }

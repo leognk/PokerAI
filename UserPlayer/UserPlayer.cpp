@@ -24,15 +24,15 @@ std::vector<char> UserPlayer::printLegalActions(const egn::GameState& state) con
 	std::vector<char> legalInputs(state.nActions);
 	for (uint8_t i = 0; i < state.nActions; ++i) {
 		switch (state.actions[i]) {
-		case egn::Action::fold:
+		case egn::FOLD:
 			std::cout << "f: fold";
 			legalInputs[i] = 'f';
 			break;
-		case egn::Action::call:
+		case egn::CALL:
 			std::cout << "c: call " << state.call;
 			legalInputs[i] = 'c';
 			break;
-		case egn::Action::raise:
+		case egn::RAISE:
 			std::cout << "r: raise "
 				<< state.minRaise << " to " << state.allin;
 			legalInputs[i] = 'r';
@@ -59,9 +59,9 @@ char UserPlayer::getInputAction(const std::vector<char>& legalInputs) const
 egn::Action UserPlayer::charToAction(char c) const
 {
 	switch (c) {
-	case 'f': return egn::Action::fold;
-	case 'c': return egn::Action::call;
-	case 'r': return egn::Action::raise;
+	case 'f': return egn::FOLD;
+	case 'c': return egn::CALL;
+	case 'r': return egn::RAISE;
 	default:
 		throw std::runtime_error("Character not convertible to Action.");
 	}
@@ -81,8 +81,12 @@ egn::chips UserPlayer::getInputRaise(egn::chips minRaise, egn::chips allin) cons
 
 egn::chips UserPlayer::getInputBet(egn::Action action, const egn::GameState& state) const
 {
-	if (action == egn::Action::raise)
-		return getInputRaise(state.minRaise, state.allin);
+	if (action == egn::RAISE) {
+		if (state.minRaise < state.allin)
+			return getInputRaise(state.minRaise, state.allin);
+		else
+			return state.allin;
+	}
 	else
 		return 0;
 }

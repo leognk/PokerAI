@@ -15,16 +15,18 @@ typedef uint32_t chips;
 typedef int32_t dchips;
 
 // A check is simply a null call.
-enum class Action { fold, call, raise };
+enum Action { FOLD, CALL, RAISE };
+static const uint8_t N_ACTIONS = 3;
 
+#pragma warning(suppress: 26812)
 inline std::ostream& operator<<(std::ostream& os, const Action& a)
 {
 	switch (a) {
-	case Action::fold:
+	case FOLD:
 		return os << "fold";
-	case Action::call:
+	case CALL:
 		return os << "call";
-	case Action::raise:
+	case RAISE:
 		return os << "raise";
 	default:
 		throw std::runtime_error("Unknown action.");
@@ -34,33 +36,34 @@ inline std::ostream& operator<<(std::ostream& os, const Action& a)
 inline Action actionFromString(const std::string& actionStr)
 {
 	if (actionStr == "fold")
-		return Action::fold;
+		return FOLD;
 	else if (actionStr == "call")
-		return Action::call;
+		return CALL;
 	else if (actionStr == "raise")
-		return Action::raise;
+		return RAISE;
 	else
 		throw std::runtime_error("String does not represent an Action.");
 }
 
-enum class Round { preflop, flop, turn, river };
+enum Round { PREFLOP, FLOP, TURN, RIVER };
 
+#pragma warning(suppress: 26812)
 inline Round& operator++(Round& r)
 {
-	r = Round(int(r) + 1);
+	r = Round(r + 1);
 	return r;
 }
 
 inline std::ostream& operator<<(std::ostream& os, const Round& r)
 {
 	switch (r) {
-	case Round::preflop:
+	case PREFLOP:
 		return os << "preflop";
-	case Round::flop:
+	case FLOP:
 		return os << "flop";
-	case Round::turn:
+	case TURN:
 		return os << "turn";
-	case Round::river:
+	case RIVER:
 		return os << "river";
 	default:
 		return os;
@@ -70,13 +73,13 @@ inline std::ostream& operator<<(std::ostream& os, const Round& r)
 inline Round roundFromString(const std::string& roundStr)
 {
 	if (roundStr == "preflop")
-		return Round::preflop;
+		return PREFLOP;
 	else if (roundStr == "flop")
-		return Round::flop;
+		return FLOP;
 	else if (roundStr == "turn")
-		return Round::turn;
+		return TURN;
 	else if (roundStr == "river")
-		return Round::river;
+		return RIVER;
 	else
 		throw std::runtime_error("String does not represent a Round.");
 }
@@ -119,8 +122,19 @@ public:
 	// If allin <= minRaise, the only possible bet is allin.
 	uint8_t actingPlayer;
 	chips call, minRaise, allin;
-	std::array<Action, 3> actions{};
+	std::array<Action, N_ACTIONS> actions{};
 	uint8_t nActions;
+
+	// Current situation in which the acting player is in
+	// to choose a legal action. There are 3 possible cases.
+	uint8_t legalCase;
+	static const uint8_t nLegalCases = 3;
+	// Masks giving the legal actions for each legal case.
+	static constexpr std::array<std::array<bool, nLegalCases>, N_ACTIONS> actionMasks = { {
+		{ true, true, false },
+		{ false, true, true },
+		{ true, true, true }
+	} };
 
 	// Current round.
 	Round round;

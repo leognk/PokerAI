@@ -24,7 +24,7 @@ void GameStatePrint::startNewHand(uint8_t dealerIdx)
     nextActive(mFirstActive);
     for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i)
         mLastActions[i] = "";
-    mPrevActionRound = Round::preflop;
+    mPrevActionRound = PREFLOP;
     mPrevActing = opt::MAX_PLAYERS + 1;
 
     GameState::startNewHand(dealerIdx);
@@ -54,12 +54,12 @@ void GameStatePrint::nextState(Action action, chips bet)
 
     switch (action) {
 
-    case Action::fold:
+    case FOLD:
         mLastActions[actingPlayer] = "fold";
         mLastBets[actingPlayer] = 0;
         break;
 
-    case Action::call:
+    case CALL:
         if (call == allin)
             mLastActions[actingPlayer] = "all-in";
         else if (call)
@@ -69,7 +69,7 @@ void GameStatePrint::nextState(Action action, chips bet)
         mLastBets[actingPlayer] = call;
         break;
 
-    case Action::raise:
+    case RAISE:
         if (bet == allin)
             mLastActions[actingPlayer] = "all-in";
         else
