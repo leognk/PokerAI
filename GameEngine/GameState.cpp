@@ -81,7 +81,7 @@ void GameState::resetPlayers()
 
 void GameState::dealHoleCards(uint64_t& usedCardsMask)
 {
-    ZoneScoped;
+    //ZoneScoped;
     uint8_t i = mFirstAlive;
     do {
         std::array<uint8_t, omp::HOLE_CARDS> hand;
@@ -101,7 +101,7 @@ void GameState::dealHoleCards(uint64_t& usedCardsMask)
 
 void GameState::dealBoardCards(uint64_t& usedCardsMask)
 {
-    ZoneScoped;
+    //ZoneScoped;
     mBoardCards = Hand::empty();
     for (unsigned i = 0; i < omp::BOARD_CARDS; ++i) {
         unsigned card;
@@ -127,7 +127,7 @@ void GameState::setBoardCards(const Hand& boardCards)
 
 void GameState::chargeAnte()
 {
-    ZoneScoped;
+    //ZoneScoped;
     uint8_t i = mFirstAlive;
     do {
         // The player must all-in on the ante.
@@ -158,7 +158,7 @@ void GameState::chargeAnte()
 
 void GameState::chargeBlinds()
 {
-    ZoneScoped;
+    //ZoneScoped;
     // Find out the sb and bb players.
     mCurrentActing = mFirstAlive;
     uint8_t sbPlayer, bbPlayer;
@@ -274,7 +274,7 @@ void GameState::eraseActing(uint8_t& i)
 
 void GameState::nextState(Action action, chips bet)
 {
-    ZoneScoped;
+    //ZoneScoped;
     switch (action) {
 
     case FOLD:
@@ -363,7 +363,7 @@ void GameState::nextState(Action action, chips bet)
 
 void GameState::setLegalActions()
 {
-    ZoneScoped;
+    //ZoneScoped;
     actingPlayer = mCurrentActing;
 
     chips legalCall = mToCall - mBets[mCurrentActing];
@@ -403,9 +403,11 @@ void GameState::endGame()
     setRewards();
 }
 
+#pragma warning(push)
+#pragma warning(disable: 4267)
 void GameState::showdown()
 {
-    ZoneScoped;
+    //ZoneScoped;
     bool onePot = onePotUsed();
     std::vector<std::vector<uint8_t>> rankings = getRankings(onePot);
 
@@ -420,10 +422,8 @@ void GameState::showdown()
     // (deal with this specific case to speed up the computation)
     else if (onePot) {
         // Distribute the gains to each winner.
-#pragma warning(suppress: 4267)
         chips gain = mPot / rankings[0].size();
         // Remaining chips go to the first players after the dealer.
-#pragma warning(suppress: 4267)
         uint8_t extra = mPot % rankings[0].size();
         for (uint8_t i : rankings[0]) {
             stakes[i] += gain;
@@ -488,7 +488,6 @@ void GameState::showdown()
 
         // Flags for winners eligible for a gain.
         std::vector<bool> giveGain(sameRankPlayers.size(), true);
-#pragma warning(suppress: 4267)
         uint8_t nWinners = sameRankPlayers.size();
 
         // Each winnerBet will correspond to one pot for the flagged players
@@ -528,6 +527,7 @@ void GameState::showdown()
     }
     return;
 }
+#pragma warning(pop)
 
 bool GameState::onePotUsed() const
 {
@@ -542,7 +542,7 @@ bool GameState::onePotUsed() const
 
 std::vector<std::vector<uint8_t>> GameState::getRankings(bool onePot) const
 {
-    ZoneScoped;
+    //ZoneScoped;
     // One pot
     // (deal with this specific case to speed up the computation)
     if (onePot) {
