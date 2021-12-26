@@ -42,7 +42,7 @@ std::array<std::array<double, egn::GameState::nLegalCases>,
 
 std::pair<egn::Action, egn::chips> RandomAI::act(const egn::GameState& state)
 {
-	//ZoneScoped;
+	ZoneScoped;
 	// Pick a random action using the distribution.
 	egn::Action action = egn::Action(mRandChoice(actionProbas[state.legalCase], mRng));
 
