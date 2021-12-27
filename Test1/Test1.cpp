@@ -19,26 +19,7 @@
 
 namespace fs = std::filesystem;
 
-enum Round { preflop, flop, turn, river };
-
-std::ostream& operator<<(std::ostream& os, const Round& r)
-{
-	switch (r) {
-	case preflop:
-		return os << "preflop";
-	case flop:
-		return os << "flop";
-	case turn:
-		return os << "turn";
-	case river:
-		return os << "river";
-	default:
-		return os;
-	}
-}
-
 int main()
 {
-    Round r = Round(preflop + 1);
-    std::cout << r << "\n";
+
 }

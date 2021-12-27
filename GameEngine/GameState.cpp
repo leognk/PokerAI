@@ -413,8 +413,8 @@ void GameState::showdown()
 
     // One pot and one winner
     // (deal with this specific case to speed up the computation)
-    if (onePot && mNSameRanks[0] == 1) {
-        stakes[mRankings[0][0]] += mPot;
+    if (onePot && mCumNSameRanks[1] == 1) {
+        stakes[mRankings[0]] += mPot;
         return;
     }
 
@@ -422,13 +422,13 @@ void GameState::showdown()
     // (deal with this specific case to speed up the computation)
     else if (onePot) {
         // Distribute the gains to each winner.
-        chips gain = mPot / mNSameRanks[0];
+        chips gain = mPot / mCumNSameRanks[1];
         // Remaining chips go to the first players after the dealer.
-        uint8_t extra = mPot % mNSameRanks[0];
-        for (uint8_t i = 0; i < mNSameRanks[0]; ++i) {
-            stakes[i] += gain;
+        uint8_t extra = mPot % mCumNSameRanks[1];
+        for (uint8_t i = 0; i < mCumNSameRanks[1]; ++i) {
+            stakes[mRankings[i]] += gain;
             if (extra) {
-                ++stakes[i];
+                ++stakes[mRankings[i]];
                 --extra;
             }
         }
@@ -436,16 +436,19 @@ void GameState::showdown()
     }
 
     // General case: multiple pots
-    for (uint8_t k = 0; k < mNRankings; ++k) {
+    for (uint8_t k = 1; k < mNRanks + 1; ++k) {
 
         // If the sum of all pots has been emptied, exit.
         if (!mPot)
             return;
 
+        uint8_t nSameRank = mCumNSameRanks[k] - mCumNSameRanks[k - 1];
+
         // One winner for this pot
         // (deal with this specific case to speed up the computation)
-        if (mNSameRanks[k] == 1) {
-            chips winnerBet = mBets[mRankings[k][0]];
+        if (nSameRank == 1) {
+            uint8_t winner = mRankings[mCumNSameRanks[k - 1]];
+            chips winnerBet = mBets[winner];
             if (!winnerBet)
                 continue;
             // Build the pot corresponding to the winner's bet.
@@ -458,45 +461,41 @@ void GameState::showdown()
                 mPot -= due;
                 mBets[player] -= due;
             }
-            stakes[mRankings[k][0]] += pot;
+            stakes[winner] += pot;
             continue;
         }
 
         // General case: multiple pots and multiple winners
 
-        // Build ordered bets of players of the same current rank.
-        std::vector<chips> orderedBets;
-        orderedBets.reserve(sameRankPlayers.size());
-        for (uint8_t i = 0; i < sameRankPlayers.size(); ++i) {
+        // Build sorted bets of players of the same current rank.
+        uint8_t nBets = 0;
+        for (uint8_t i = mCumNSameRanks[k - 1]; i < mCumNSameRanks[k]; ++i) {
             // Skip null bets.
-            if (mBets[sameRankPlayers[i]])
-                orderedBets.push_back(mBets[sameRankPlayers[i]]);
+            if (mBets[mRankings[i]])
+                mSortedBets[nBets++] = mBets[mRankings[i]];
         }
         // Skip if nobody in this bracket has a gain.
-        if (!orderedBets.size())
-            continue;
-        std::sort(orderedBets.begin(), orderedBets.end());
+        if (!nBets) continue;
+        std::sort(mSortedBets.begin(), mSortedBets.begin() + nBets);
         // Remove duplicates.
-        orderedBets.erase(
-            std::unique(orderedBets.begin(), orderedBets.end()),
-            orderedBets.end()
-        );
-
-        // Build adjacent differences of ordered bets.
-        std::vector<chips> dOrderedBets(orderedBets.size(), 0);
-        std::adjacent_difference(orderedBets.begin(), orderedBets.end(), dOrderedBets.begin());
+        nBets = std::unique(mSortedBets.begin(), mSortedBets.begin() + nBets)
+            - mSortedBets.begin();
+        // Build adjacent differences of sorted bets.
+        std::adjacent_difference(
+            mSortedBets.begin(), mSortedBets.begin() + nBets, mSortedBets.begin());
 
         // Flags for winners eligible for a gain.
-        std::vector<bool> giveGain(sameRankPlayers.size(), true);
-        uint8_t nWinners = sameRankPlayers.size();
+        for (uint8_t i = mCumNSameRanks[k - 1]; i < mCumNSameRanks[k]; ++i)
+            mGiveGain[mRankings[i]] = true;
+        uint8_t nWinners = nSameRank;
 
         // Each winnerBet will correspond to one pot for the flagged players
         // of the current rank's bracket to share.
-        for (chips winnerBet : dOrderedBets) {
+        for (uint8_t b = 0; b < nBets; ++b) {
             // Unflag winners who are not eligible for the current pot.
-            for (uint8_t i = 0; i < sameRankPlayers.size(); ++i) {
-                if (giveGain[i] && !mBets[sameRankPlayers[i]]) {
-                    giveGain[i] = false;
+            for (uint8_t i = mCumNSameRanks[k - 1]; i < mCumNSameRanks[k]; ++i) {
+                if (mGiveGain[mRankings[i]] && !mBets[mRankings[i]]) {
+                    mGiveGain[mRankings[i]] = false;
                     --nWinners;
                 }
             }
@@ -505,7 +504,7 @@ void GameState::showdown()
             for (uint8_t player = 0; player < opt::MAX_PLAYERS; ++player) {
                 if (!mBets[player])
                     continue;
-                chips due = std::min(winnerBet, mBets[player]);
+                chips due = std::min(mSortedBets[b], mBets[player]);
                 pot += due;
                 mPot -= due;
                 mBets[player] -= due;
@@ -514,18 +513,17 @@ void GameState::showdown()
             chips gain = pot / nWinners;
             // Remaining chips go to the first players after the dealer
             uint8_t extra = pot % nWinners;
-            for (uint8_t i = 0; i < sameRankPlayers.size(); ++i) {
-                if (giveGain[i]) {
-                    stakes[sameRankPlayers[i]] += gain;
+            for (uint8_t i = mCumNSameRanks[k - 1]; i < mCumNSameRanks[k]; ++i) {
+                if (mGiveGain[mRankings[i]]) {
+                    stakes[mRankings[i]] += gain;
                     if (extra) {
-                        ++stakes[sameRankPlayers[i]];
+                        ++stakes[mRankings[i]];
                         --extra;
                     }
                 }
             }
         }
     }
-    return;
 }
 #pragma warning(pop)
 
@@ -546,7 +544,7 @@ void GameState::setRankings(bool onePot)
     // One pot
     // (deal with this specific case to speed up the computation)
     if (onePot) {
-        mNRankings = 1;
+        mNRanks = 1;
         uint16_t bestRank = 0;
         uint8_t i = mFirstAlive;
         do {
@@ -554,13 +552,11 @@ void GameState::setRankings(bool onePot)
             uint16_t rank = mEval.evaluate(hand);
             if (rank > bestRank) {
                 bestRank = rank;
-                mRankings[0][0] = i;
-                mNSameRanks[0] = 1;
+                mRankings[0] = i;
+                mCumNSameRanks[1] = 1;
             }
-            else if (rank == bestRank) {
-                mRankings[0][mNSameRanks[0]] = i;
-                ++mNSameRanks[0];
-            }
+            else if (rank == bestRank)
+                mRankings[mCumNSameRanks[1]++] = i;
         } while (nextAlive(i) != mFirstAlive);
         return;
     }
@@ -571,31 +567,30 @@ void GameState::setRankings(bool onePot)
     uint8_t player = mFirstAlive;
     for (uint8_t i = 0; i < mNAlive; ++i) {
         Hand hand = mBoardCards + mHands[player];
-        mRanks[i] = mEval.evaluate(hand);
-        mRankedPlayers[i] = player;
+        mRanks[player] = mEval.evaluate(hand);
+        mRankings[i] = player;
         nextAlive(player);
     }
 
-    std::iota(mRange.begin(), mRange.begin() + mNAlive, uint8_t(0));
     // stable_sort is needed to preserve the order of the players
     // with the same rank for the distribution of the extras
     // in clockwise order.
     std::stable_sort(
-        mRange.begin(), mRange.begin() + mNAlive,
+        mRankings.begin(), mRankings.begin() + mNAlive,
         [&](uint8_t i, uint8_t j) { return mRanks[i] > mRanks[j]; }
     );
 
-    // Build players' rankings.
-    mRankings[0][0] = mRankedPlayers[mRange[0]];
-    mNRankings = 1;
-    mNSameRanks[0] = 1;
+    // Build mCumNSameRanks.
+    mNRanks = 1;
+    mCumNSameRanks[1] = 1;
     for (uint8_t i = 1; i < mNAlive; ++i) {
-        if (mRanks[mRange[i]] != mRanks[mRange[i - 1]])
-            mNSameRanks[mNRankings++] = 1;
+        if (mRanks[mRankings[i]] != mRanks[mRankings[i - 1]]) {
+#pragma warning(suppress: 26451)
+            mCumNSameRanks[mNRanks + 1] = mCumNSameRanks[mNRanks] + 1;
+            ++mNRanks;
+        }
         else
-            ++mNSameRanks[mNRankings - 1];
-        mRankings[mNRankings - 1][mNSameRanks[mNRankings - 1] - 1] =
-            mRankedPlayers[mRange[i]];
+            ++mCumNSameRanks[mNRanks];
     }
 }
 

@@ -5,7 +5,6 @@
 #include "../OMPEval/omp/Random.h"
 #include "../OMPEval/omp/HandEvaluator.h"
 #include "../Optimus/Constants.h"
-#include <vector>
 #include <iostream>
 #include "../tracy/Tracy.hpp"
 
@@ -203,16 +202,23 @@ protected:
 	// Largest raise (by) of the current round
 	chips mLargestRaise;
 
+	// Players ranked from best to worst hand (they are mNAlive).
+	std::array<uint8_t, opt::MAX_PLAYERS> mRankings{};
+	// Cumulated number of players with the same rank ordered
+	// from best to worst rank, such that players from
+	// mRankings[mCumNSameRanks[i-1]] to mRankings[mCumNSameRanks[i]]
+	// (excluded) are players with the i-th best rank.
+	// NB: mCumNSameRanks[0] = 0
+	std::array<uint8_t, opt::MAX_PLAYERS + 1> mCumNSameRanks{};
+	// Size of mCumNSameRanks - 1
+	uint8_t mNRanks;
+
+	// Used in showdown.
+	std::array<chips, opt::MAX_PLAYERS> mSortedBets{};
+	std::array<bool, opt::MAX_PLAYERS> mGiveGain{};
+
 	// Used in setRankings.
-
-	std::array<std::array<uint8_t, opt::MAX_PLAYERS>, opt::MAX_PLAYERS> mRankings;
-	uint8_t mNRankings;
-	std::array<uint8_t, opt::MAX_PLAYERS> mNSameRanks;
-
-	std::array<uint16_t, opt::MAX_PLAYERS> mRanks;
-	std::array<uint8_t, opt::MAX_PLAYERS> mRankedPlayers;
-	std::array<uint8_t, opt::MAX_PLAYERS> mRange;
-
+	std::array<uint16_t, opt::MAX_PLAYERS> mRanks{};
 	omp::HandEvaluator mEval;
 
 }; // GameState
