@@ -6,7 +6,7 @@
 namespace opt {
 
     // Generate a random index according to the given
-    // vector of probabilities. The precision is 1 / 2^tBits.
+    // array of probabilities. The precision is 1 / 2^tBits.
     template<unsigned tBits = 16>
     class FastRandomChoice
     {
@@ -41,11 +41,11 @@ namespace opt {
             double res = (unsigned)mBuffer & MASK;
             mBuffer >>= tBits;
             --mBufferUsesLeft;
-            // We divide by the range, which is MASK + 1.
-            return res / (MASK + 1);
+            return res / RANGE;
         }
 
         static const unsigned MASK = (1u << tBits) - 1;
+        static const unsigned RANGE = (1u << tBits);
 
         uint64_t mBuffer;
         unsigned mBufferUsesLeft;
