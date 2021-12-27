@@ -2,6 +2,7 @@
 #define OPT_USERPLAYER_H
 
 #include "../GameEngine/Player.h"
+#include <vector>
 
 namespace opt {
 
@@ -10,14 +11,14 @@ class UserPlayer : public egn::Player
 {
 public:
 	UserPlayer(std::string separtorLine = "");
-	std::pair<egn::Action, egn::chips> act(const egn::GameState& state) override;
+	void act(egn::GameState& state) override;
 
 private:
 	std::vector<char> printLegalActions(const egn::GameState& state) const;
 	char getInputAction(const std::vector<char>& legalInputs) const;
 	egn::Action charToAction(char c) const;
 	egn::chips getInputRaise(egn::chips minRaise, egn::chips allin) const;
-	egn::chips getInputBet(egn::Action action, const egn::GameState& state) const;
+	egn::chips getInputBet(const egn::GameState& state) const;
 
 	std::string mSeparatorLine;
 

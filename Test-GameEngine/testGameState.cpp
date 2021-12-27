@@ -76,7 +76,9 @@ TEST(GameStateTest, CoherentWithData)
                     throw std::runtime_error("Unknown action.");
                 }
 
-                state.nextState(a.action, a.bet);
+                state.action = a.action;
+                state.bet = a.bet;
+                state.nextState();
             }
         }
         EXPECT_TRUE(state.finished);
@@ -133,7 +135,9 @@ TEST(GameStateTest, VerifyWithCustomStates)
                 EXPECT_EQ(state.actions[i], cState.actions[i]);
             EXPECT_EQ(state.round, cState.round);
 
-            state.nextState(cState.nextAction, cState.nextBet);
+            state.action = cState.nextAction;
+            state.bet = cState.nextBet;
+            state.nextState();
         }
 
         for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i)

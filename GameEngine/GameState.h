@@ -105,14 +105,18 @@ public:
 	// The game could have finished if there was less than 2 acting players
 	// left after charging the antes and the blinds.
 	void startNewHand(uint8_t dealerIdx, bool dealRandomCards = true);
-	// bet must be specified for a raise.
-	void nextState(Action action, chips bet = 0);
+	void nextState();
 	// Next active player, ie. non-zero stake player
 	// (to set the dealer of the next hand).
 	// Do not use it when a hand is running (because of all-in players).
 	uint8_t& nextActive(uint8_t& i) const;
 
 	std::array<chips, opt::MAX_PLAYERS> stakes{};
+
+	// action must be set before calling nextState.
+	Action action;
+	// bet must also bet set if action is RAISE.
+	chips bet;
 
 	// Legal actions for actingPlayer are given in the array actions
 	// from index 0 to nActions excluded (always 2 or 3).

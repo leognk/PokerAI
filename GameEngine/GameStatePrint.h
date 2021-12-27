@@ -16,7 +16,7 @@ public:
 		std::string separatorLine = "");
 
 	void startNewHand(uint8_t dealerIdx);
-	void nextState(Action action, chips bet);
+	void nextState();
 	uint8_t& nextActiveInGame(uint8_t& i) const;
 
 	std::ostream& printState(std::ostream& os) const;

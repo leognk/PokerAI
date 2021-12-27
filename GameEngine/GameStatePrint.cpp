@@ -38,7 +38,7 @@ void GameStatePrint::startNewHand(uint8_t dealerIdx)
     }
 }
 
-void GameStatePrint::nextState(Action action, chips bet)
+void GameStatePrint::nextState()
 {
     // We went to the next round.
     if (mPrevActionRound != round) {
@@ -86,7 +86,7 @@ void GameStatePrint::nextState(Action action, chips bet)
     mPrevActing = mCurrentActing;
     mRoundBets[actingPlayer] += mLastBets[actingPlayer];
 
-    GameState::nextState(action, bet);
+    GameState::nextState();
 }
 
 // Do not skip all-in players.

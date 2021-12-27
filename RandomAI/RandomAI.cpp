@@ -40,22 +40,20 @@ std::array<std::array<double, egn::GameState::nLegalCases>,
 	return res;
 }
 
-std::pair<egn::Action, egn::chips> RandomAI::act(const egn::GameState& state)
+void RandomAI::act(egn::GameState& state)
 {
-	ZoneScoped;
+	//ZoneScoped;
 	// Pick a random action using the distribution.
-	egn::Action action = egn::Action(mRandChoice(actionProbas[state.legalCase], mRng));
+	state.action = egn::Action(mRandChoice(actionProbas[state.legalCase], mRng));
 
-	if (action == egn::RAISE) {
+	if (state.action == egn::RAISE) {
 		if (state.minRaise < state.allin) {
 			mRaiseDist.init(state.minRaise, state.allin);
-			return std::make_pair(action, mRaiseDist(mRng));
+			state.bet = mRaiseDist(mRng);
 		}
 		else
-			return std::make_pair(action, state.allin);
+			state.bet = state.allin;
 	}
-	else
-		return std::make_pair(action, 0);
 }
 
 } // opt

@@ -9,13 +9,12 @@ UserPlayer::UserPlayer(std::string separatorLine) :
 {
 }
 
-std::pair<egn::Action, egn::chips> UserPlayer::act(const egn::GameState& state)
+void UserPlayer::act(egn::GameState& state)
 {
 	std::vector<char> legalInputs = printLegalActions(state);
-	egn::Action action = charToAction(getInputAction(legalInputs));
-	egn::chips bet = getInputBet(action, state);
+	state.action = charToAction(getInputAction(legalInputs));
+	state.bet = getInputBet(state);
 	std::cout << mSeparatorLine;
-	return std::make_pair(action, bet);
 }
 
 std::vector<char> UserPlayer::printLegalActions(const egn::GameState& state) const
@@ -79,9 +78,9 @@ egn::chips UserPlayer::getInputRaise(egn::chips minRaise, egn::chips allin) cons
 	return raise;
 }
 
-egn::chips UserPlayer::getInputBet(egn::Action action, const egn::GameState& state) const
+egn::chips UserPlayer::getInputBet(const egn::GameState& state) const
 {
-	if (action == egn::RAISE) {
+	if (state.action == egn::RAISE) {
 		if (state.minRaise < state.allin)
 			return getInputRaise(state.minRaise, state.allin);
 		else

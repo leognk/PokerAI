@@ -9,8 +9,9 @@ namespace egn {
 class Player
 {
 public:
-	// Return an action and a bet (only useful for a raise).
-	virtual std::pair<Action, chips> act(const GameState& state) = 0;
+	// Set GameState's action and bet member variables
+	// (bet set only for a raise).
+	virtual void act(GameState& state) = 0;
 };
 
 } // egn
