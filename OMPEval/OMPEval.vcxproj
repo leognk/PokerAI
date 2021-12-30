@@ -24,6 +24,17 @@
     <ClCompile Include="omp\EquityCalculator.cpp" />
     <ClCompile Include="omp\HandEvaluator.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="omp\CardRange.h" />
+    <ClInclude Include="omp\CombinedRange.h" />
+    <ClInclude Include="omp\Constants.h" />
+    <ClInclude Include="omp\EquityCalculator.h" />
+    <ClInclude Include="omp\Hand.h" />
+    <ClInclude Include="omp\HandEvaluator.h" />
+    <ClInclude Include="omp\OffsetTable.hxx" />
+    <ClInclude Include="omp\Random.h" />
+    <ClInclude Include="omp\Util.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
