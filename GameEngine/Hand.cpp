@@ -7,34 +7,21 @@ namespace egn {
 
 Hand::Hand(const std::string& handStr)
 {
-    if (handStr == "") {
+    if (handStr == "")
         *this = Hand::empty();
-        return;
+
+    else {
+        // Ignore whitespaces and turn to lowercase.
+        std::string s;
+        for (char c : handStr) {
+            if (std::isgraph(c))
+                s += std::tolower(c);
+        }
+
+        *this = Hand(getIdx(s.substr(0, 2)));
+        for (size_t i = 2; i + 1 < s.size(); i += 2)
+            *this += Hand(getIdx(s.substr(i, 2)));
     }
-
-    // Ignore whitespaces and turn to lowercase.
-    std::string s;
-    for (char c : handStr) {
-        if (std::isgraph(c))
-            s += std::tolower(c);
-    }
-
-    *this = Hand(getIdx(s.substr(0, 2)));
-    for (size_t i = 2; i + 1 < s.size(); i += 2)
-        *this += Hand(getIdx(s.substr(i, 2)));
-}
-
-template<unsigned nCards>
-Hand::Hand(const std::array<uint8_t, nCards>& handArr)
-{
-    if (nCards == 0) {
-        *this = Hand::empty();
-        return;
-    }
-
-    *this = Hand(handArr[0]);
-    for (uint8_t i = 1; i < nCards; ++i)
-        *this += Hand(handArr[i]);
 }
 
 std::string Hand::getStr() const
@@ -55,24 +42,6 @@ std::string Hand::getStr() const
         }
     }
     return s;
-}
-
-template<unsigned nCards>
-std::array<uint8_t, nCards> Hand::getArr() const
-{
-    std::array<uint8_t, nCards> a;
-    uint8_t cardCount = 0;
-    uint64_t handMask = mask();
-    uint64_t cardMask;
-    unsigned rank, suit;
-    for (unsigned card = 0; card < omp::CARD_COUNT; ++card) {
-        rank = card / omp::SUIT_COUNT, suit = card % omp::SUIT_COUNT;
-        // cardMask as defined in omp::HandEvaluator::initCardConstants
-        cardMask = 1ull << ((3 - suit) * 16 + rank);
-        if (handMask & cardMask)
-            a[cardCount++] = card;
-    }
-    return a;
 }
 
 unsigned Hand::getIdx(const std::string& cardStr)

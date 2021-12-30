@@ -100,7 +100,7 @@ public:
 
 	// Call them BEFORE calling startNewHand.
 	void setHoleCards(uint8_t player, const Hand& hand);
-	void setBoardCards(const Hand& boardCards);
+	void setBoardCards(const Hand& boardCards0);
 
 	// The game could have finished if there was less than 2 acting players
 	// left after charging the antes and the blinds.

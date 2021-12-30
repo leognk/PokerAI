@@ -16,14 +16,39 @@ public:
     Hand() : omp::Hand() {}
     // Allows conversion from omp::Hand to egn::Hand.
     Hand(const omp::Hand& hand) : omp::Hand(hand) {}
-
     Hand(const std::string& handStr);
+
     template<unsigned nCards>
-    Hand(const std::array<uint8_t, nCards>& handArr);
+    Hand(const std::array<uint8_t, nCards>& handArr)
+    {
+        if (nCards == 0)
+            *this = Hand::empty();
+        else {
+            *this = Hand(handArr[0]);
+            for (uint8_t i = 1; i < nCards; ++i)
+                *this += Hand(handArr[i]);
+        }
+    };
 
     std::string getStr() const;
+
     template<unsigned nCards>
-    std::array<uint8_t, nCards> getArr() const;
+    std::array<uint8_t, nCards> getArr() const
+    {
+        std::array<uint8_t, nCards> a{};
+        uint8_t cardCount = 0;
+        uint64_t handMask = mask();
+        uint64_t cardMask;
+        unsigned rank, suit;
+        for (unsigned card = 0; card < omp::CARD_COUNT; ++card) {
+            rank = card / omp::SUIT_COUNT, suit = card % omp::SUIT_COUNT;
+            // cardMask as defined in omp::HandEvaluator::initCardConstants
+            cardMask = 1ull << ((3 - suit) * 16 + rank);
+            if (handMask & cardMask)
+                a[cardCount++] = card;
+        }
+        return a;
+    };
 
 private:
     static unsigned getIdx(const std::string& cardStr);
