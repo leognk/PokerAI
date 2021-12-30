@@ -5,8 +5,10 @@
 
 namespace opt {
 
-    // Generate a random index according to the given
-    // array of probabilities. The precision is 1 / 2^tBits.
+    // Generate a random index with the given
+    // array of cumulated weights (maximum weight is RANGE).
+    // The precision is 1 / 2^tBits.
+    // tBits must be less than 32 (excluded).
     template<unsigned tBits = 16>
     class FastRandomChoice
     {
@@ -18,34 +20,34 @@ namespace opt {
         }
 
         template<class C, class TRng>
-        size_t operator()(C& proba, TRng& rng)
+        unsigned operator()(C& cumWeights, TRng& rng)
         {
-            double x = rand(rng);
-            size_t i = 0;
-            double cumProba = proba[0];
-            while (cumProba <= x)
-                cumProba += proba[++i];
+            unsigned x = rand(rng);
+            unsigned i = 0;
+            while (cumWeights[i] <= x)
+                ++i;
             return i;
         }
 
+        static const unsigned RANGE = 1u << tBits;
+
     private:
-        // Generate a random real number between 0 and 1.
+        // Generate a random unsigned int between 0 and RANGE excluded.
         template<class TRng>
-        double rand(TRng& rng)
+        unsigned rand(TRng& rng)
         {
             static_assert(sizeof(typename TRng::result_type) == sizeof(uint64_t), "64-bit RNG required.");
             if (mBufferUsesLeft == 0) {
                 mBuffer = rng();
                 mBufferUsesLeft = sizeof(mBuffer) * CHAR_BIT / tBits;
             }
-            double res = (unsigned)mBuffer & MASK;
+            unsigned res = (unsigned)mBuffer & MASK;
             mBuffer >>= tBits;
             --mBufferUsesLeft;
-            return res / RANGE;
+            return res;
         }
 
         static const unsigned MASK = (1u << tBits) - 1;
-        static const unsigned RANGE = (1u << tBits);
 
         uint64_t mBuffer;
         unsigned mBufferUsesLeft;

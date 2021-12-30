@@ -20,17 +20,17 @@ public:
 private:
 	typedef omp::XoroShiro128Plus Rng;
 
-	std::array<std::array<double, egn::GameState::nLegalCases>,
-		egn::N_ACTIONS> makeActionProbas();
+	std::array<std::array<unsigned, egn::GameState::nLegalCases>,
+		egn::N_ACTIONS> makeActionCumWeights();
 
 	Rng mRng;
 	FastRandomChoice<16> mRandChoice;
 	omp::FastUniformIntDistribution<egn::chips, 32> mRaiseDist;
 
-	double mFoldProba, mCallProba, mRaiseProba;
-	// Probability distributions over all actions for each legal case.
-	const std::array<std::array<double, egn::GameState::nLegalCases>,
-		egn::N_ACTIONS> actionProbas;
+	unsigned mFoldWeight, mCallWeight, mRaiseWeight;
+	// Cumulated weight distributions over all actions for each legal case.
+	const std::array<std::array<unsigned, egn::GameState::nLegalCases>,
+		egn::N_ACTIONS> actionCumWeights;
 
 }; // RandomAI
 
