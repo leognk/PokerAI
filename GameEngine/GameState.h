@@ -112,6 +112,9 @@ public:
 	uint8_t& nextActive(uint8_t& i) const;
 
 	std::array<chips, opt::MAX_PLAYERS> stakes{};
+	std::array<std::array<uint8_t, omp::HOLE_CARDS>,
+		opt::MAX_PLAYERS> hands;
+	std::array<uint8_t, omp::BOARD_CARDS> boardCards;
 
 	// action must be set before calling nextState.
 	Action action;
@@ -176,7 +179,6 @@ protected:
 
 	// Players
 	std::array<chips, opt::MAX_PLAYERS> mInitialStakes{};
-	std::array<Hand, opt::MAX_PLAYERS> mHands{};
 	// Bets since the start of a hand.
 	std::array<chips, opt::MAX_PLAYERS> mBets{};
 	// Active players (were dealt cards and did not fold)
@@ -190,8 +192,6 @@ protected:
 	// Acted on the current round.
 	std::array<bool, opt::MAX_PLAYERS> mActed{};
 
-	// Board
-	Hand mBoardCards;
 	// Sum of all pots
 	chips mPot;
 

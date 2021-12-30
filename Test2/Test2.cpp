@@ -13,34 +13,20 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <json/json.h>
 
-#include "../GameEngine/GameState.h"
-#include "../HandData/HandData.h"
-
 namespace fs = std::filesystem;
+
+template<uint8_t size>
+std::array<uint8_t, size> getArr()
+{
+	std::array<uint8_t, size> a;
+	for (uint8_t i = 0; i < size; ++i)
+		a[i] = i;
+	return a;
+}
 
 int main()
 {
-    unsigned id = 1;
-    unsigned id0 = 89135;
-    for (const auto& folder : fs::directory_iterator(hdt::handDataRoot)) {
-        for (const auto& filePath : fs::directory_iterator(folder)) {
-            std::ifstream is(filePath);
-            while (true) {
-                hdt::HandHistory hist;
-                if (is >> hist) {
-                    if (id == id0) {
-                        std::cout << filePath << "\n\n";
-                        return 0;
-                    }
-                    ++id;
-                }
-                else if (is.bad())
-                    throw std::runtime_error("Error while reading file.");
-                else if (is.eof())
-                    break;
-                else if (is.fail())
-                    is.clear();
-            }
-        }
-    }
+	std::array<uint8_t, 6> a = getArr<6>();
+	for (uint8_t x : a)
+		std::cout << std::to_string(x) << "\n";
 }

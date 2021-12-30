@@ -101,7 +101,7 @@ uint8_t& GameStatePrint::nextActiveInGame(uint8_t& i) const
 std::ostream& GameStatePrint::printState(std::ostream& os) const
 {
     os << "Round: " << round;
-    os << " | Board: " << mBoardCards;
+    os << " | Board: " << Hand(boardCards);
     os << " | Pot: " << mPot << std::endl << std::endl;
 
     unsigned stakeMaxChars = maxChars(stakes);
@@ -118,7 +118,7 @@ std::ostream& GameStatePrint::printState(std::ostream& os) const
         else
             os << " ";
         os << unsigned(i);
-        os << " | cards: " << mHands[i];
+        os << " | cards: " << Hand(hands[i]);
         os << " | stake: " << std::setw(stakeMaxChars) << stakes[i];
         os << " | bet: " << std::setw(betMaxChars) << mRoundBets[i];
         // Print player's last action.
@@ -177,7 +177,8 @@ unsigned GameStatePrint::maxCharsString(Container c) const
 
 std::string GameStatePrint::handCategory(uint8_t player) const
 {
-    Hand hand = mBoardCards + mHands[player];
+    Hand hand = Hand::empty()
+        + Hand(boardCards) + Hand(hands[player]);
     uint16_t rank = mEval.evaluate(hand);
     switch (rank >> omp::HAND_CATEGORY_SHIFT) {
     case 1: return "High card";

@@ -16,9 +16,14 @@ public:
     Hand() : omp::Hand() {}
     // Allows conversion from omp::Hand to egn::Hand.
     Hand(const omp::Hand& hand) : omp::Hand(hand) {}
+
     Hand(const std::string& handStr);
+    template<unsigned nCards>
+    Hand(const std::array<uint8_t, nCards>& handArr);
 
     std::string getStr() const;
+    template<unsigned nCards>
+    std::array<uint8_t, nCards> getArr() const;
 
 private:
     static unsigned getIdx(const std::string& cardStr);
