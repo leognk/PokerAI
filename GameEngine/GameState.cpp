@@ -80,7 +80,7 @@ void GameState::resetPlayers()
 
 void GameState::dealHoleCards(uint64_t& usedCardsMask)
 {
-    //ZoneScoped;
+    ZoneScoped;
     uint8_t i = mFirstAlive;
     do {
         for (uint8_t j = 0; j < omp::HOLE_CARDS; ++j) {
@@ -98,7 +98,7 @@ void GameState::dealHoleCards(uint64_t& usedCardsMask)
 
 void GameState::dealBoardCards(uint64_t& usedCardsMask)
 {
-    //ZoneScoped;
+    ZoneScoped;
     for (uint8_t i = 0; i < omp::BOARD_CARDS; ++i) {
         uint8_t card;
         uint64_t cardMask;
@@ -123,7 +123,7 @@ void GameState::setBoardCards(const Hand& boardCards0)
 
 void GameState::chargeAnte()
 {
-    //ZoneScoped;
+    ZoneScoped;
     uint8_t i = mFirstAlive;
     do {
         // The player must all-in on the ante.
@@ -153,7 +153,7 @@ void GameState::chargeAnte()
 
 void GameState::chargeBlinds()
 {
-    //ZoneScoped;
+    ZoneScoped;
     // Find out the sb and bb players.
     actingPlayer = mFirstAlive;
     uint8_t sbPlayer, bbPlayer;
@@ -297,7 +297,7 @@ void GameState::eraseActing(uint8_t i)
 
 void GameState::nextState()
 {
-    //ZoneScoped;
+    ZoneScoped;
     switch (action) {
 
     case FOLD:
@@ -386,7 +386,7 @@ void GameState::nextState()
 
 void GameState::setLegalActions()
 {
-    //ZoneScoped;
+    ZoneScoped;
     chips legalCall = mToCall - mBets[actingPlayer];
     call = std::min(legalCall, stakes[actingPlayer]);
     minRaise = legalCall + mLargestRaise;
@@ -429,7 +429,7 @@ void GameState::endGame()
 #pragma warning(disable: 4244)
 void GameState::showdown()
 {
-    //ZoneScoped;
+    ZoneScoped;
     bool onePot = onePotUsed();
     setRankings(onePot);
 
@@ -562,7 +562,7 @@ bool GameState::onePotUsed() const
 
 void GameState::setRankings(bool onePot)
 {
-    //ZoneScoped;
+    ZoneScoped;
     // One pot
     // (deal with this specific case to speed up the computation)
     if (onePot) {
