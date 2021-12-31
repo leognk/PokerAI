@@ -461,8 +461,7 @@ std::istream& readCompressedData(std::istream& is, HandHistory& hist)
         hist.boardCards = egn::Hand::empty();
     for (const Json::Value& h : histJs["hd"]) {
         if (h.asString().size())
-            hist.hands.push_back(
-                egn::Hand::empty() + egn::Hand(h.asString()));
+            hist.hands.push_back(egn::Hand(h.asString()));
         else
             hist.hands.push_back(egn::Hand::empty());
     }

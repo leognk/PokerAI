@@ -4,6 +4,43 @@
 #include "CustomStates.h"
 #include <fstream>
 
+// Return hole cards with the worst rank when combined
+// with the given board cards.
+egn::Hand getWorstHand(const egn::Hand& boardCards)
+{
+    // Systematically try this hand before doing
+    // a complete search.
+    static const egn::Hand candidateHoleCards =
+        egn::Hand(uint8_t(0)) + egn::Hand(uint8_t(5));
+
+    omp::HandEvaluator eval;
+    uint16_t boardRank = eval.evaluate(
+        egn::Hand::empty() + boardCards);
+
+    egn::Hand hand = egn::Hand::empty()
+        + candidateHoleCards + boardCards;
+    uint16_t worstRank = eval.evaluate(hand);
+    if (worstRank == boardRank) return candidateHoleCards;
+
+    // Do a complete search.
+    egn::Hand worstHoleCards = candidateHoleCards;
+    for (uint8_t c1 = 1; c1 < omp::CARD_COUNT; ++c1) {
+        for (uint8_t c2 = 0; c2 < c1; ++c2) {
+            egn::Hand holeCards = egn::Hand(c1) + egn::Hand(c2);
+            egn::Hand hand = egn::Hand::empty()
+                + holeCards + boardCards;
+            uint16_t rank = eval.evaluate(hand);
+            if (rank == boardRank)
+                return holeCards;
+            else if (rank < worstRank) {
+                worstRank = rank;
+                worstHoleCards = holeCards;
+            }
+        }
+    }
+    return worstHoleCards;
+}
+
 // Verify that the GameState is coherent at each step
 // with hands data retrieved from online poker rooms.
 // This test allows GameState to confront with real data
@@ -29,10 +66,18 @@ TEST(GameStateTest, CoherentWithData)
 
         // Initialize GameState.
         egn::GameState state(hist.ante, hist.bb, stakes);
+        // Set cards.
+        if (hist.boardCards.countCards() == 5) {
+            state.setBoardCards(hist.boardCards);
+            egn::Hand worstHand = getWorstHand(hist.boardCards);
+            for (uint8_t i = 0; i < hist.maxPlayers; ++i) {
+                if (hist.hands[i] == egn::Hand::empty())
+                    state.setHoleCards(i, worstHand);
+                else
+                    state.setHoleCards(i, hist.hands[i]);
+            }
+        }
         state.startNewHand(hist.dealer, false);
-        for (uint8_t i = 0; i < hist.maxPlayers; ++i)
-            state.setHoleCards(i, hist.hands[i]);
-        state.setBoardCards(hist.boardCards);
 
         // Replay the hand with GameState.
         for (uint8_t i = 0; i < hist.actions.size(); ++i) {
@@ -112,9 +157,9 @@ TEST(GameStateTest, VerifyWithCustomStates)
 
         // Initialize GameState.
         egn::GameState state(hist.ante, hist.bb, hist.initialStakes);
+        state.setBoardCards(hist.boardCards);
         for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i)
             state.setHoleCards(i, hist.hands[i]);
-        state.setBoardCards(hist.boardCards);
         state.startNewHand(hist.dealer, false);
 
         // Loop over states.

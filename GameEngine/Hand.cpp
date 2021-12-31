@@ -44,6 +44,21 @@ std::string Hand::getStr() const
     return s;
 }
 
+uint8_t Hand::countCards() const
+{
+    uint8_t count = 0;
+    uint64_t handMask = mask();
+    uint64_t cardMask;
+    unsigned rank, suit;
+    for (unsigned card = 0; card < omp::CARD_COUNT; ++card) {
+        rank = card / omp::SUIT_COUNT, suit = card % omp::SUIT_COUNT;
+        // cardMask as defined in omp::HandEvaluator::initCardConstants
+        cardMask = 1ull << ((3 - suit) * 16 + rank);
+        if (handMask & cardMask) ++count;
+    }
+    return count;
+}
+
 unsigned Hand::getIdx(const std::string& cardStr)
 {
     unsigned rank = charToRank(cardStr[0]);

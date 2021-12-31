@@ -44,11 +44,15 @@ public:
             rank = card / omp::SUIT_COUNT, suit = card % omp::SUIT_COUNT;
             // cardMask as defined in omp::HandEvaluator::initCardConstants
             cardMask = 1ull << ((3 - suit) * 16 + rank);
-            if (handMask & cardMask)
+            if (handMask & cardMask) {
                 a[cardCount++] = card;
+                if (cardCount == nCards) return a;
+            }
         }
         return a;
     };
+
+    uint8_t countCards() const;
 
 private:
     static unsigned getIdx(const std::string& cardStr);

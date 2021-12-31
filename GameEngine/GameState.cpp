@@ -108,7 +108,7 @@ void GameState::dealBoardCards(uint64_t& usedCardsMask)
             cardMask = 1ull << card;
         } while (usedCardsMask & cardMask);
         usedCardsMask |= cardMask;
-        boardCards[i] += card;
+        boardCards[i] = card;
     }
 }
 
