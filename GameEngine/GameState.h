@@ -170,6 +170,7 @@ protected:
 	void showdown();
 	bool onePotUsed() const;
 	void setRankings(bool onePot);
+	omp::Hand getPlayerHand(uint8_t i) const;
 	void setRewards();
 
 	Rng mRng;

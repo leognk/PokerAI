@@ -546,10 +546,7 @@ void GameState::setRankings(bool onePot)
         uint16_t bestRank = 0;
         uint8_t i = mFirstAlive;
         do {
-            Hand hand = omp::Hand::empty();
-            hand += omp::Hand(hands[i]);
-            for (uint8_t c= 0; c < omp::BOARD_CARDS; ++c)
-                hand += omp::Hand(boardCards[c]);
+            omp::Hand hand = getPlayerHand(i);
             uint16_t rank = mEval.evaluate(hand);
             if (rank > bestRank) {
                 bestRank = rank;
@@ -567,10 +564,7 @@ void GameState::setRankings(bool onePot)
     // Compute players' ranks.
     uint8_t player = mFirstAlive;
     for (uint8_t i = 0; i < mNAlive; ++i) {
-        Hand hand = omp::Hand::empty();
-        hand += omp::Hand(hands[player]);
-        for (uint8_t c = 0; c < omp::BOARD_CARDS; ++c)
-            hand += omp::Hand(boardCards[c]);
+        omp::Hand hand = getPlayerHand(player);
         mRanks[player] = mEval.evaluate(hand);
         mRankings[i] = player;
         nextAlive(player);
@@ -596,6 +590,15 @@ void GameState::setRankings(bool onePot)
         else
             ++mCumNSameRanks[mNRanks];
     }
+}
+
+omp::Hand GameState::getPlayerHand(uint8_t i) const
+{
+    omp::Hand hand = omp::Hand::empty();
+    hand += omp::Hand(hands[i]);
+    for (uint8_t c = 0; c < omp::BOARD_CARDS; ++c)
+        hand += omp::Hand(boardCards[c]);
+    return hand;
 }
 
 void GameState::setRewards()
