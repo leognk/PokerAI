@@ -17,8 +17,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GameEnginePerf", "GameEngin
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Utils", "Utils\Utils.vcxproj", "{2B261B87-AB22-4819-A536-8F50FB66A682}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DisplayGame", "PlayPoker\PlayPoker.vcxproj", "{597035C1-02A6-48B1-B6B6-DA8E6146537C}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UserPlayer", "UserPlayer\UserPlayer.vcxproj", "{33622248-178B-4194-AA19-262D2EA83FB7}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test2", "Test2\Test2.vcxproj", "{A91A8FF4-009C-49A8-80B1-32859AFC620A}"
@@ -28,6 +26,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CompressHandData", "CompressHandData\CompressHandData.vcxproj", "{CA968352-6406-4551-9B8F-FC2151593A02}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HandData", "HandData\HandData.vcxproj", "{84E3A460-8D80-44F6-91CF-6D7105B3D933}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DisplayGame", "DisplayGame\DisplayGame.vcxproj", "{31DFE5E9-3C94-44B8-8998-2BCB931AADC7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -93,14 +93,6 @@ Global
 		{2B261B87-AB22-4819-A536-8F50FB66A682}.Release|x64.Build.0 = Release|x64
 		{2B261B87-AB22-4819-A536-8F50FB66A682}.Release|x86.ActiveCfg = Release|Win32
 		{2B261B87-AB22-4819-A536-8F50FB66A682}.Release|x86.Build.0 = Release|Win32
-		{597035C1-02A6-48B1-B6B6-DA8E6146537C}.Debug|x64.ActiveCfg = Debug|x64
-		{597035C1-02A6-48B1-B6B6-DA8E6146537C}.Debug|x64.Build.0 = Debug|x64
-		{597035C1-02A6-48B1-B6B6-DA8E6146537C}.Debug|x86.ActiveCfg = Debug|Win32
-		{597035C1-02A6-48B1-B6B6-DA8E6146537C}.Debug|x86.Build.0 = Debug|Win32
-		{597035C1-02A6-48B1-B6B6-DA8E6146537C}.Release|x64.ActiveCfg = Release|x64
-		{597035C1-02A6-48B1-B6B6-DA8E6146537C}.Release|x64.Build.0 = Release|x64
-		{597035C1-02A6-48B1-B6B6-DA8E6146537C}.Release|x86.ActiveCfg = Release|Win32
-		{597035C1-02A6-48B1-B6B6-DA8E6146537C}.Release|x86.Build.0 = Release|Win32
 		{33622248-178B-4194-AA19-262D2EA83FB7}.Debug|x64.ActiveCfg = Debug|x64
 		{33622248-178B-4194-AA19-262D2EA83FB7}.Debug|x64.Build.0 = Debug|x64
 		{33622248-178B-4194-AA19-262D2EA83FB7}.Debug|x86.ActiveCfg = Debug|Win32
@@ -141,6 +133,14 @@ Global
 		{84E3A460-8D80-44F6-91CF-6D7105B3D933}.Release|x64.Build.0 = Release|x64
 		{84E3A460-8D80-44F6-91CF-6D7105B3D933}.Release|x86.ActiveCfg = Release|Win32
 		{84E3A460-8D80-44F6-91CF-6D7105B3D933}.Release|x86.Build.0 = Release|Win32
+		{31DFE5E9-3C94-44B8-8998-2BCB931AADC7}.Debug|x64.ActiveCfg = Debug|x64
+		{31DFE5E9-3C94-44B8-8998-2BCB931AADC7}.Debug|x64.Build.0 = Debug|x64
+		{31DFE5E9-3C94-44B8-8998-2BCB931AADC7}.Debug|x86.ActiveCfg = Debug|Win32
+		{31DFE5E9-3C94-44B8-8998-2BCB931AADC7}.Debug|x86.Build.0 = Debug|Win32
+		{31DFE5E9-3C94-44B8-8998-2BCB931AADC7}.Release|x64.ActiveCfg = Release|x64
+		{31DFE5E9-3C94-44B8-8998-2BCB931AADC7}.Release|x64.Build.0 = Release|x64
+		{31DFE5E9-3C94-44B8-8998-2BCB931AADC7}.Release|x86.ActiveCfg = Release|Win32
+		{31DFE5E9-3C94-44B8-8998-2BCB931AADC7}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
