@@ -13,7 +13,7 @@ RandomAI::RandomAI(
 	mFoldWeight(foldProba * mRandChoice.RANGE),
 	mCallWeight(callProba * mRandChoice.RANGE),
 	mRaiseWeight(mRandChoice.RANGE - mFoldWeight - mCallWeight),
-	actionCumWeights(makeActionCumWeights()),
+	actionCumWeights(buildActionCumWeights()),
 	mRng{ (!rngSeed) ? std::random_device{}() : rngSeed }
 {
 	assert(0 <= foldProba && foldProba <= 1);
@@ -23,7 +23,7 @@ RandomAI::RandomAI(
 #pragma warning(pop)
 
 std::array<std::array<unsigned, egn::GameState::nLegalCases>,
-	egn::N_ACTIONS> RandomAI::makeActionCumWeights()
+	egn::N_ACTIONS> RandomAI::buildActionCumWeights()
 {
 	std::array<std::array<unsigned, egn::GameState::nLegalCases>,
 		egn::N_ACTIONS> res{};

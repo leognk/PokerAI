@@ -21,7 +21,7 @@ private:
 	typedef omp::XoroShiro128Plus Rng;
 
 	std::array<std::array<unsigned, egn::GameState::nLegalCases>,
-		egn::N_ACTIONS> makeActionCumWeights();
+		egn::N_ACTIONS> buildActionCumWeights();
 
 	Rng mRng;
 	FastRandomChoice<16> mRandChoice;

@@ -83,7 +83,7 @@ void GameStatePrint::nextState()
     }
 
     mPrevActionRound = round;
-    mPrevActing = mCurrentActing;
+    mPrevActing = actingPlayer;
     mRoundBets[actingPlayer] += mLastBets[actingPlayer];
 
     GameState::nextState();
@@ -94,7 +94,7 @@ uint8_t& GameStatePrint::nextActiveInGame(uint8_t& i) const
 {
     do {
         (++i) %= opt::MAX_PLAYERS;
-    } while (!stakes[i] && !mAlive[i]);
+    } while (!stakes[i] && !isAlive(i));
     return i;
 }
 

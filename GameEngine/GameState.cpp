@@ -4,6 +4,9 @@
 
 namespace egn {
 
+std::array<std::array<uint8_t, opt::MAX_PLAYERS>,
+    GameState::NEXT_LOOKUP_SIZE> GameState::NEXT_LOOKUP{};
+
 #pragma warning(suppress: 26495)
 GameState::GameState(
     chips ante, chips bigBlind,
@@ -14,6 +17,8 @@ GameState::GameState(
     mRng{ (!rngSeed) ? std::random_device{}() : rngSeed },
     mCardDist(0, omp::CARD_COUNT - 1)
 {
+    // Do one time initialization of static data NEXT_LOOKUP.
+    static bool initVar = (populateNextLookup(), true);
     setAnte(ante);
     setBigBlind(bigBlind);
 }
@@ -46,37 +51,31 @@ void GameState::startNewHand(uint8_t dealerIdx, bool dealRandomCards)
 
     // Charge antes and blinds.
     chargeAnte();
-    if (finished) return;
-    chargeBlinds();
+    if (!finished) chargeBlinds();
 }
 
 void GameState::resetPlayers()
 {
     mInitialStakes = stakes;
+
+    mAlive = 0;
+    mActing = 0;
     mNAlive = 0;
     mNActing = 0;
-    // The first acting player after the preflop is always
-    // the player following the dealer.
-    const uint8_t firstPlayer = (mDealer + 1) % opt::MAX_PLAYERS;
-    uint8_t i = firstPlayer;
-    do {
+    for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i) {
         // Ignore inactive players.
         if (stakes[i]) {
+            addAlive(i);
+            addActing(i);
             mBets[i] = 0;
-            mAlive[i] = true;
-            ++mNAlive;
-            mActing[i] = true;
-            ++mNActing;
             mActed[i] = false;
         }
-        else {
-            mAlive[i] = false;
-        }
-        (++i) %= opt::MAX_PLAYERS;
-    } while (i != firstPlayer);
+    }
+
+    // The first acting player after the preflop is always
+    // the player following the dealer.
     mFirstAlive = mDealer;
-    nextAlive(mFirstAlive);
-    mFirstActing = mFirstAlive;
+    mFirstActing = nextAlive(mFirstAlive);
 }
 
 void GameState::dealHoleCards(uint64_t& usedCardsMask)
@@ -149,30 +148,29 @@ void GameState::chargeAnte()
     } while (nextAlive(i) != mFirstAlive);
 
     // Only one player did not went all-in on the ante.
-    if (mNActing == 1)
-        endGame();
+    if (mNActing == 1) endGame();
 }
 
 void GameState::chargeBlinds()
 {
     //ZoneScoped;
     // Find out the sb and bb players.
-    mCurrentActing = mFirstAlive;
+    actingPlayer = mFirstAlive;
     uint8_t sbPlayer, bbPlayer;
     // Heads-up
     if (mNAlive == 2) {
-        bbPlayer = mCurrentActing;
-        sbPlayer = nextAlive(mCurrentActing);
+        bbPlayer = actingPlayer;
+        sbPlayer = nextAlive(actingPlayer);
     }
     else {
-        sbPlayer = mCurrentActing;
-        bbPlayer = nextAlive(mCurrentActing);
-        nextActing(mCurrentActing);
+        sbPlayer = actingPlayer;
+        bbPlayer = nextAlive(actingPlayer);
+        nextActing(actingPlayer);
     }
 
     // Charge the sb.
     // Verify that the sb did not all-in on the ante.
-    if (mActing[sbPlayer]) {
+    if (isActing(sbPlayer)) {
         // The player must all-in on the sb.
         if (stakes[sbPlayer] <= mSB) {
             mPot += stakes[sbPlayer];
@@ -189,7 +187,7 @@ void GameState::chargeBlinds()
 
     // Charge the bb.
     // Verify that the bb did not all-in on the ante.
-    if (mActing[bbPlayer]) {
+    if (isActing(bbPlayer)) {
         // The player must all-in on the bb.
         if (stakes[bbPlayer] <= mBB) {
             mPot += stakes[bbPlayer];
@@ -225,6 +223,30 @@ void GameState::chargeBlinds()
     setLegalActions();
 }
 
+void GameState::populateNextLookup()
+{
+    for (uint16_t playerMask = 1; playerMask < NEXT_LOOKUP_SIZE; ++playerMask) {
+        for (uint8_t current = 0; current < opt::MAX_PLAYERS; ++current) {
+            uint8_t next = current;
+            do {
+                (++next) %= opt::MAX_PLAYERS;
+            } while (!(opt::checkBit(playerMask, next)));
+#pragma warning(suppress: 28020)
+            NEXT_LOOKUP[playerMask][current] = next;
+        }
+    }
+}
+
+bool GameState::isAlive(uint8_t i) const
+{
+    return opt::checkBit(mAlive, i);
+}
+
+bool GameState::isActing(uint8_t i) const
+{
+    return opt::checkBit(mActing, i);
+}
+
 uint8_t& GameState::nextActive(uint8_t& i) const
 {
     do {
@@ -233,39 +255,43 @@ uint8_t& GameState::nextActive(uint8_t& i) const
     return i;
 }
 
-// mNAlive must be non-zero to avoid infinite loop.
 uint8_t& GameState::nextAlive(uint8_t& i) const
 {
-    do {
-        (++i) %= opt::MAX_PLAYERS;
-    } while (!mAlive[i]);
+    i = NEXT_LOOKUP[mAlive][i];
     return i;
 }
 
-// mNActing must be non-zero to avoid infinite loop.
 uint8_t& GameState::nextActing(uint8_t& i) const
 {
-    do {
-        (++i) %= opt::MAX_PLAYERS;
-    } while (!mActing[i]);
+    i = NEXT_LOOKUP[mActing][i];
     return i;
 }
 
-void GameState::eraseAlive(uint8_t& i)
+void GameState::addAlive(uint8_t i)
 {
-    mAlive[i] = false;
+    opt::setBit(mAlive, i);
+    ++mNAlive;
+}
+
+void GameState::addActing(uint8_t i)
+{
+    opt::setBit(mActing, i);
+    ++mNActing;
+}
+
+void GameState::eraseAlive(uint8_t i)
+{
+    opt::toggleBit(mAlive, i);
     --mNAlive;
     if (i == mFirstAlive)
         nextAlive(mFirstAlive);
 }
 
-void GameState::eraseActing(uint8_t& i)
+void GameState::eraseActing(uint8_t i)
 {
-    mActing[i] = false;
+    opt::toggleBit(mActing, i);
     --mNActing;
-    // If there is no acting player left,
-    // we leave mFirstActing as it is.
-    if (i == mFirstActing && mNActing)
+    if (i == mFirstActing)
         nextActing(mFirstActing);
 }
 
@@ -275,37 +301,37 @@ void GameState::nextState()
     switch (action) {
 
     case FOLD:
-        eraseAlive(mCurrentActing);
-        eraseActing(mCurrentActing);
+        eraseAlive(actingPlayer);
+        eraseActing(actingPlayer);
         break;
 
     case CALL:
         if (call) {
             mPot += call;
-            mBets[mCurrentActing] += call;
-            stakes[mCurrentActing] -= call;
+            mBets[actingPlayer] += call;
+            stakes[actingPlayer] -= call;
             // All-in
-            if (!stakes[mCurrentActing])
-                eraseActing(mCurrentActing);
+            if (!stakes[actingPlayer])
+                eraseActing(actingPlayer);
             else
-                // mMaxBet might have to be updated if there is only
+                // mMaxBet must be updated if there is only
                 // one acting player remaining and the legal call is
                 // larger than the posted all-ins.
-                mMaxBet = mBets[mCurrentActing];
+                mMaxBet = mBets[actingPlayer];
         }
         break;
 
     case RAISE:
         mPot += bet;
-        mBets[mCurrentActing] += bet;
-        stakes[mCurrentActing] -= bet;
+        mBets[actingPlayer] += bet;
+        stakes[actingPlayer] -= bet;
 
-        mLargestRaise = std::max(mBets[mCurrentActing] - mToCall, mLargestRaise);
-        mToCall = mBets[mCurrentActing];
+        mLargestRaise = std::max(mBets[actingPlayer] - mToCall, mLargestRaise);
+        mToCall = mBets[actingPlayer];
         mMaxBet = mToCall;
         // All-in
-        if (!stakes[mCurrentActing])
-            eraseActing(mCurrentActing);
+        if (!stakes[actingPlayer])
+            eraseActing(actingPlayer);
         break;
 
     default:
@@ -326,17 +352,17 @@ void GameState::nextState()
         return;
     }
 
-    mActed[mCurrentActing] = true;
-    nextActing(mCurrentActing);
+    mActed[actingPlayer] = true;
+    nextActing(actingPlayer);
 
     // Everybody folded but one.
-    if (mNActing == 1 && mBets[mCurrentActing] == mMaxBet) {
+    if (mNActing == 1 && mBets[actingPlayer] == mMaxBet) {
         endGame();
         return;
     }
 
     // End of the round (we went around the table)
-    if (mActed[mCurrentActing] && mBets[mCurrentActing] == mMaxBet) {
+    if (mActed[actingPlayer] && mBets[actingPlayer] == mMaxBet) {
 
         // Showdown
         if (round == RIVER) {
@@ -352,7 +378,7 @@ void GameState::nextState()
             do {
                 mActed[i] = false;
             } while (nextActing(i) != mFirstActing);
-            mCurrentActing = mFirstActing;
+            actingPlayer = mFirstActing;
         }
     }
     setLegalActions();
@@ -361,17 +387,15 @@ void GameState::nextState()
 void GameState::setLegalActions()
 {
     //ZoneScoped;
-    actingPlayer = mCurrentActing;
-
-    chips legalCall = mToCall - mBets[mCurrentActing];
-    call = std::min(legalCall, stakes[mCurrentActing]);
+    chips legalCall = mToCall - mBets[actingPlayer];
+    call = std::min(legalCall, stakes[actingPlayer]);
     minRaise = legalCall + mLargestRaise;
-    allin = stakes[mCurrentActing];
+    allin = stakes[actingPlayer];
     
     // Stake less than a complete call
     // or not facing a full raise.
-    if (stakes[mCurrentActing] <= legalCall
-        || (mActed[mCurrentActing]
+    if (stakes[actingPlayer] <= legalCall
+        || (mActed[actingPlayer]
             && legalCall && legalCall < mLargestRaise)) {
         actions[0] = FOLD;
         actions[1] = CALL;

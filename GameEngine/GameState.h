@@ -5,6 +5,7 @@
 #include "../OMPEval/omp/Random.h"
 #include "../OMPEval/omp/HandEvaluator.h"
 #include "../Optimus/Constants.h"
+#include "../Utils/BitOp.h"
 #include <iostream>
 #include "../tracy/Tracy.hpp"
 
@@ -102,13 +103,15 @@ public:
 	void setHoleCards(uint8_t player, const Hand& hand);
 	void setBoardCards(const Hand& boardCards0);
 
-	// The game could have finished if there was less than 2 acting players
-	// left after charging the antes and the blinds.
+	// NB: The game could have finished if there was
+	// less than 2 acting players left after charging
+	// the antes and the blinds.
 	void startNewHand(uint8_t dealerIdx, bool dealRandomCards = true);
 	void nextState();
+
 	// Next active player, ie. non-zero stake player
 	// (to set the dealer of the next hand).
-	// Do not use it when a hand is running (because of all-in players).
+	// Do NOT use it when a hand is running (because of all-in players).
 	uint8_t& nextActive(uint8_t& i) const;
 
 	std::array<chips, opt::MAX_PLAYERS> stakes{};
@@ -159,10 +162,16 @@ protected:
 	void chargeAnte();
 	void chargeBlinds();
 
+	static void populateNextLookup();
+
+	bool isAlive(uint8_t i) const;
+	bool isActing(uint8_t i) const;
 	uint8_t& nextAlive(uint8_t& i) const;
 	uint8_t& nextActing(uint8_t& i) const;
-	void eraseAlive(uint8_t& i);
-	void eraseActing(uint8_t& i);
+	void addAlive(uint8_t i);
+	void addActing(uint8_t i);
+	void eraseAlive(uint8_t i);
+	void eraseActing(uint8_t i);
 
 	void setLegalActions();
 
@@ -178,27 +187,32 @@ protected:
 
 	chips mAnte, mSB, mBB;
 
-	// Players
+	// Stakes at the beginning of the hand.
 	std::array<chips, opt::MAX_PLAYERS> mInitialStakes{};
 	// Bets since the start of a hand.
 	std::array<chips, opt::MAX_PLAYERS> mBets{};
-	// Active players (were dealt cards and did not fold)
-	std::array<uint8_t, opt::MAX_PLAYERS> mAlive{};
-	uint8_t mFirstAlive;
-	uint8_t mNAlive;
-	// Alive and did not go all-in yet.
-	std::array<uint8_t, opt::MAX_PLAYERS> mActing{};
-	uint8_t mFirstActing;
-	uint8_t mNActing;
 	// Acted on the current round.
 	std::array<bool, opt::MAX_PLAYERS> mActed{};
+
+	// Next player's index lookup table.
+	static const uint16_t NEXT_LOOKUP_SIZE = 1U << opt::MAX_PLAYERS;
+	static std::array<std::array<uint8_t, opt::MAX_PLAYERS>,
+		NEXT_LOOKUP_SIZE> NEXT_LOOKUP;
+
+	// Alive players, ie. were dealt cards and did not fold.
+	uint16_t mAlive;
+	uint8_t mFirstAlive;
+	uint8_t mNAlive;
+
+	// Alive and did not go all-in yet.
+	uint16_t mActing;
+	uint8_t mFirstActing;
+	uint8_t mNActing;
 
 	// Sum of all pots
 	chips mPot;
 
 	uint8_t mDealer;
-	// Player making the action passed to nextState.
-	uint8_t mCurrentActing;
 	// Current number of chips to call (counting from the start of the hand)
 	chips mToCall;
 	// Similar to mToCall, but it can be different at the beginning

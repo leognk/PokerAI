@@ -2,6 +2,7 @@
 #define HANDDATA_H
 
 #include "../GameEngine/GameState.h"
+#include <vector>
 
 namespace hdt {
 
