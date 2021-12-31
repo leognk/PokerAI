@@ -355,30 +355,34 @@ void GameState::nextState()
     mActed[actingPlayer] = true;
     nextActing(actingPlayer);
 
-    // Everybody folded but one.
-    if (mNActing == 1 && mBets[actingPlayer] == mMaxBet) {
-        endGame();
-        return;
-    }
+    // Max bet is matched.
+    if (mBets[actingPlayer] == mMaxBet) {
 
-    // End of the round (we went around the table)
-    if (mActed[actingPlayer] && mBets[actingPlayer] == mMaxBet) {
-
-        // Showdown
-        if (round == RIVER) {
+        // Everybody folded but one.
+        if (mNActing == 1) {
             endGame();
             return;
         }
 
-        // Go to the next round.
-        else {
-            ++round;
-            mLargestRaise = mBB;
-            uint8_t i = mFirstActing;
-            do {
-                mActed[i] = false;
-            } while (nextActing(i) != mFirstActing);
-            actingPlayer = mFirstActing;
+        // End of the round (we went around the table)
+        if (mActed[actingPlayer]) {
+
+            // Showdown
+            if (round == RIVER) {
+                endGame();
+                return;
+            }
+
+            // Go to the next round.
+            else {
+                ++round;
+                mLargestRaise = mBB;
+                uint8_t i = mFirstActing;
+                do {
+                    mActed[i] = false;
+                } while (nextActing(i) != mFirstActing);
+                actingPlayer = mFirstActing;
+            }
         }
     }
     setLegalActions();
