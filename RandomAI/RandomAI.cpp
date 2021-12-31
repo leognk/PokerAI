@@ -69,7 +69,7 @@ std::array<std::array<unsigned, egn::GameState::nLegalCases>,
 
 void RandomAI::act(egn::GameState& state)
 {
-	ZoneScoped;
+	//ZoneScoped;
 	// Pick a random action using the distribution.
 	state.action = egn::Action(
 		mRandChoice(actionCumWeights[state.legalCase], mRng));
