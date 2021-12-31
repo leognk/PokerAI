@@ -16,9 +16,9 @@ RandomAI::RandomAI(
 	actionCumWeights(buildActionCumWeights()),
 	mRng{ (!rngSeed) ? std::random_device{}() : rngSeed }
 {
-	assert(0 <= foldProba && foldProba <= 1);
+	assert(0 <= foldProba && foldProba < 1);
 	assert(0 <= callProba && callProba <= 1);
-	assert(!(foldProba == 1 && callProba == 1));
+	assert(!(foldProba == 0 && callProba == 0));
 }
 #pragma warning(pop)
 
