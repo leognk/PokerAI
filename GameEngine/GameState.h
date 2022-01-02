@@ -195,16 +195,20 @@ protected:
 	std::array<bool, opt::MAX_PLAYERS> mActed{};
 
 	// Next player's index lookup table.
+	// Give the mask of players and the current player to get
+	// the next player.
 	static const uint16_t NEXT_LOOKUP_SIZE = 1U << opt::MAX_PLAYERS;
 	static std::array<std::array<uint8_t, opt::MAX_PLAYERS>,
 		NEXT_LOOKUP_SIZE> NEXT_LOOKUP;
 
 	// Alive players, ie. were dealt cards and did not fold.
+	// Mask of alive players.
 	uint16_t mAlive;
 	uint8_t mFirstAlive;
 	uint8_t mNAlive;
 
 	// Alive and did not go all-in yet.
+	// Mask of acting players.
 	uint16_t mActing;
 	uint8_t mFirstActing;
 	uint8_t mNActing;
