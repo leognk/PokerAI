@@ -1,10 +1,7 @@
 #include <cassert>
 #include "hand_index.h"
 
-#define MAX_GROUP_INDEX        0x100000 
-#define MAX_CARDS_PER_ROUND    15
-#define ROUND_SHIFT            4
-#define ROUND_MASK             0xf
+namespace abc {
 
 uint8_t hand_indexer_s::nth_unset[1 << RANKS][RANKS];
 bool hand_indexer_s::equal[1 << (SUITS - 1)][SUITS];
@@ -568,3 +565,5 @@ bool hand_indexer_s::hand_unindex(uint_fast32_t round, hand_index_t index, uint8
 
   return true;
 }
+
+} // abc

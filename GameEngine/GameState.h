@@ -46,6 +46,7 @@ inline Action actionFromString(const std::string& actionStr)
 }
 
 enum Round { PREFLOP, FLOP, TURN, RIVER };
+static const uint8_t N_ROUNDS = 4;
 
 #pragma warning(suppress: 26812)
 inline Round& operator++(Round& r)

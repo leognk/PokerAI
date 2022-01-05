@@ -12,9 +12,11 @@
 
 #include <cstdint>
 
-#define SUITS     4
-#define RANKS    13
-#define CARDS    52
+namespace abc {
+
+static const uint8_t SUITS = 4;
+static const uint8_t RANKS = 13;
+static const uint8_t CARDS = 52;
 
 typedef uint_fast32_t card_t;
 
@@ -32,5 +34,7 @@ static inline card_t deck_get_rank(card_t card) {
 static inline card_t deck_make_card(card_t suit, card_t rank) {
   return rank<<2 | suit;
 }
+
+} // abc
 
 #endif /* _DECK_H_ */

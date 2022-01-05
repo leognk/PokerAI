@@ -30,6 +30,17 @@ public:
         }
     };
 
+    Hand(const uint8_t handArr[], uint8_t nCards)
+    {
+        if (nCards == 0)
+            *this = Hand::empty();
+        else {
+            *this = Hand(handArr[0]);
+            for (uint8_t i = 1; i < nCards; ++i)
+                *this += Hand(handArr[i]);
+        }
+    }
+
     std::string getStr() const;
 
     template<unsigned nCards>
@@ -53,6 +64,21 @@ public:
     };
 
     uint8_t countCards() const;
+
+    template<uint8_t nCards>
+    static std::array<uint8_t, nCards> stringToArray(const std::string& handStr)
+    {
+        // Ignore whitespaces and turn to lowercase.
+        std::string s;
+        for (char c : handStr) {
+            if (std::isgraph(c))
+                s += std::tolower(c);
+        }
+        std::array<uint8_t, nCards> handArr{};
+        for (size_t i = 0; i + 1 < s.size(); i += 2)
+            handArr[i / 2] = getIdx(s.substr(i, 2));
+        return handArr;
+    }
 
 private:
     static unsigned getIdx(const std::string& cardStr);

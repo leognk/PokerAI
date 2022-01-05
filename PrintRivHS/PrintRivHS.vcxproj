@@ -18,11 +18,22 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="PrintRivHS.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HandData\HandData.vcxproj">
+      <Project>{84e3a460-8d80-44f6-91cf-6d7105b3d933}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\LossyAbstraction\LossyAbstraction.vcxproj">
+      <Project>{30a7bf15-f11f-43e4-bdeb-85528f77d8f2}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{93306ad9-d7ff-4d2f-8977-62d2a3ba02df}</ProjectGuid>
-    <RootNamespace>Test1</RootNamespace>
+    <ProjectGuid>{cf72ddf6-3389-4a03-b5d4-e415f312d2d9}</ProjectGuid>
+    <RootNamespace>PrintRivHS</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -142,20 +153,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Test1.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\GameEngine\GameEngine.vcxproj">
-      <Project>{d600e3c1-f1a0-42d2-bc70-d143b14aac40}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\LosslessAbstraction\LosslessAbstraction.vcxproj">
-      <Project>{af95634e-7f0f-4d67-95ba-f908637faa6e}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\LossyAbstraction\LossyAbstraction.vcxproj">
-      <Project>{30a7bf15-f11f-43e4-bdeb-85528f77d8f2}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
 </Project>

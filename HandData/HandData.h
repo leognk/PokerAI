@@ -6,9 +6,9 @@
 
 namespace hdt {
 
-static const std::string projectPath = "C:/Users/leota/Desktop/Info/Poker/My projets/Optimus";
-static const std::string handDataRoot = projectPath + "/data/BulkHands-14489";
-static const std::string compressedHandDataFile = projectPath + "/data/BulkHands-14489.txt";
+static const std::string projectPath = "C:/Users/leota/Desktop/Info/Poker/My projets/Optimus/";
+static const std::string handDataRoot = projectPath + "data/HandData/BulkHands-14489";
+static const std::string compressedHandDataFile = projectPath + "data/HandData/BulkHands-14489.txt";
 
 #pragma warning(push)
 #pragma warning(disable: 26495)

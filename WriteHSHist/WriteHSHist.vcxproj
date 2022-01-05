@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{93306ad9-d7ff-4d2f-8977-62d2a3ba02df}</ProjectGuid>
-    <RootNamespace>Test1</RootNamespace>
+    <ProjectGuid>{e8b089f4-4fc4-44c8-a11d-8fd64edcb7e4}</ProjectGuid>
+    <RootNamespace>WriteHSHist</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -143,19 +143,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Test1.cpp" />
+    <ClCompile Include="WriteHSHist.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GameEngine\GameEngine.vcxproj">
       <Project>{d600e3c1-f1a0-42d2-bc70-d143b14aac40}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\LosslessAbstraction\LosslessAbstraction.vcxproj">
-      <Project>{af95634e-7f0f-4d67-95ba-f908637faa6e}</Project>
     </ProjectReference>
     <ProjectReference Include="..\LossyAbstraction\LossyAbstraction.vcxproj">
       <Project>{30a7bf15-f11f-43e4-bdeb-85528f77d8f2}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
 </Project>

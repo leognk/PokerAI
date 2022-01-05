@@ -12,7 +12,13 @@ static const unsigned SUIT_MASK = 0x3;
 static const unsigned RANK_MASK = 0x3c;
 static const unsigned RANK_SHIFT = 2;
 static const unsigned HOLE_CARDS = 2;
-static const unsigned BOARD_CARDS = 5;
+static const unsigned FLOP_CARDS = 3;
+static const unsigned TURN_CARDS = 1;
+static const unsigned RIVER_CARDS = 1;
+static const unsigned BOARD_CARDS = FLOP_CARDS + TURN_CARDS + RIVER_CARDS;
+static const unsigned FLOP_HAND = HOLE_CARDS + FLOP_CARDS;
+static const unsigned TURN_HAND = HOLE_CARDS + FLOP_CARDS + TURN_CARDS;
+static const unsigned RIVER_HAND = HOLE_CARDS + BOARD_CARDS;
 static const unsigned COMBO_COUNT = 1326;
 
 static const unsigned HAND_CATEGORY_OFFSET = 0x1000; // 4096

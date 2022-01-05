@@ -14,13 +14,24 @@
 #include <array>
 #include "deck.h"
 
-#define MAX_ROUNDS             8
-#define MAX_GROUP_INDEX        0x100000 
-#define MAX_CARDS_PER_ROUND    15
-#define ROUND_SHIFT            4
-#define ROUND_MASK             0xf
+namespace abc {
 
-typedef uint64_t hand_index_t;
+static const uint8_t MAX_ROUNDS = 4;
+static const uint32_t MAX_GROUP_INDEX = 0x100000;
+static const uint8_t MAX_CARDS_PER_ROUND = 3;
+static const uint8_t ROUND_SHIFT = 4;
+static const uint8_t ROUND_MASK = 0xf;
+
+static const uint32_t PREFLOP_SIZE = 169;
+static const uint32_t FLOP_SIZE = 1286792; // 1.3M
+static const uint32_t TURN_SIZE = 55190538; // 55M
+static const uint32_t RIVER_SIZE = 2428287420; // 2.4G
+
+// Sizes with combined public cards.
+static const uint32_t CMB_TURN_SIZE = 13960050; // 14M
+static const uint32_t CMB_RIVER_SIZE = 123156254; // 123M
+
+typedef uint32_t hand_index_t;
 typedef struct hand_indexer_s hand_indexer_t;
 typedef struct hand_indexer_state_s hand_indexer_state_t;
 
@@ -32,19 +43,15 @@ struct hand_indexer_s
 	 *
 	 * @param rounds number of rounds
 	 * @param cards_per_round number of cards in each round
-	 * @param indexer
 	 */
 	hand_indexer_s(uint_fast32_t rounds, const std::array<uint8_t, MAX_ROUNDS> cards_per_round);
 
 	/**
 	 * Free a hand indexer.
-	 *
-	 * @param indexer
 	 */
 	~hand_indexer_s();
 
 	/**
-	 * @param indexer
 	 * @param round
 	 * @returns size of index for hands on round
 	 */
@@ -54,7 +61,6 @@ struct hand_indexer_s
 	 * Initialize a hand index state.  This is used for incrementally indexing a hand as
 	 * new rounds are dealt and determining if a hand is canonical.
 	 *
-	 * @param indexer
 	 * @param state
 	 */
 	void hand_indexer_state_init(hand_indexer_state_t* state);
@@ -62,7 +68,6 @@ struct hand_indexer_s
 	/**
 	 * Index a hand on every round.  This is not more expensive than just indexing the last round.
 	 *
-	 * @param indexer
 	 * @param cards
 	 * @param indices
 	 * @returns hand's index on the last round
@@ -72,7 +77,6 @@ struct hand_indexer_s
 	/**
 	 * Index a hand on the last round.
 	 *
-	 * @param indexer
 	 * @param cards
 	 * @returns hand's index on the last round
 	 */
@@ -81,7 +85,6 @@ struct hand_indexer_s
 	/**
 	 * Incrementally index the next round.
 	 *
-	 * @param indexer
 	 * @param cards the cards for the next round only!
 	 * @param state
 	 * @returns the hand's index at the latest round
@@ -91,7 +94,6 @@ struct hand_indexer_s
 	/**
 	 * Recover the canonical hand from a particular index.
 	 *
-	 * @param indexer
 	 * @param round
 	 * @param index
 	 * @param cards
@@ -101,7 +103,9 @@ struct hand_indexer_s
 
 
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////// IMPLEMENTATION DETAILS ///////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -140,6 +144,8 @@ struct hand_indexer_state_s {
 	uint_fast32_t round, permutation_index, permutation_multiplier;
 	uint32_t used_ranks[SUITS];
 };
+
+} // abc
 
 #include <intrin.h>
 

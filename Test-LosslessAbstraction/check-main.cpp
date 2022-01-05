@@ -3,6 +3,8 @@
 #include <cassert>
 #include "../LosslessAbstraction/hand_index.h"
 
+using namespace abc;
+
 static uint8_t nth_bit_[1 << 16][16];
 static void nth_bit_ctor() {
     for (uint_fast32_t i = 0; i < 1 << 16; ++i) {
@@ -56,6 +58,7 @@ void test_full(hand_indexer_t& indexer) {
   free(seen);
 
   for(uint64_t i=0; i<size; ++i) {
+#pragma warning (suppress: 4244)
     indexer.hand_unindex(indexer.rounds-1, i, cards);
     assert(indexer.hand_index_last(cards) == i);
   }
@@ -156,7 +159,7 @@ int main(int argc, char ** argv) {
   }
   std::cout << "\n";
   for(uint_fast32_t i=0; i<RANKS; ++i) {
-      std::cout << RANK_TO_CHAR[RANKS-1-i];
+    std::cout << RANK_TO_CHAR[RANKS-1-i];
     for(uint_fast32_t j=0; j<RANKS; ++j) {
       cards[0] = deck_make_card(0, RANKS-1-j);
       cards[1] = deck_make_card(j<=i, RANKS-1-i);
