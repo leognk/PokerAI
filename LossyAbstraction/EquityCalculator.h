@@ -79,6 +79,56 @@ public:
 		return hsHist;
 	}
 
+	template<uint16_t nBins>
+	static std::array<uint32_t, nBins> buildPreflopHSHist(const uint8_t hand[])
+	{
+		std::array<uint32_t, nBins> hsHist{};
+		uint8_t cards[omp::RIVER_HAND];
+		std::copy(hand, hand + omp::HOLE_CARDS, cards);
+
+		// Loop over all flop's, turn's and river's cards,
+		// skipping cards already used.
+
+		std::array<uint8_t, omp::BOARD_CARDS> boardCards = { 0, 1, 2, 3, 4 };
+		uint8_t lastIdx = omp::BOARD_CARDS - 1;
+
+		while (true) {
+
+			// Look for cards already used.
+			bool skip = false;
+			for (uint8_t c : boardCards) {
+				if (c == cards[0] || c == cards[1]) {
+					skip = true;
+					continue;
+				}
+			}
+
+			if (!skip) {
+				for (uint8_t i = 0; i < omp::BOARD_CARDS; ++i)
+					cards[omp::HOLE_CARDS + i] = boardCards[i];
+				hand_index_t handIdx = cmbRivIndexer.hand_index_last(cards);
+#pragma warning(suppress: 4244 26451)
+				uint16_t binIdx = (double)RIV_HS_LUT[handIdx] / (MAX_RIV_HS + 1) * nBins;
+				++hsHist[binIdx];
+			}
+
+			// Go to the next combination of board cards.
+			++boardCards[lastIdx];
+			if (boardCards[lastIdx] == omp::CARD_COUNT) {
+				uint8_t movingIdx = lastIdx - 1;
+				while (boardCards[movingIdx] ==
+					omp::CARD_COUNT - omp::BOARD_CARDS + movingIdx) {
+					if (!movingIdx) return hsHist;
+					--movingIdx;
+				}
+				++boardCards[movingIdx];
+				// Reset after movingIdx.
+				for (uint8_t i = movingIdx + 1; i < omp::BOARD_CARDS; ++i)
+					boardCards[i] = boardCards[i - 1] + 1;
+			}
+		}
+	}
+
 	// Hand strength (equity) lookup table on river.
 	static std::array<uint16_t, CMB_RIVER_SIZE> RIV_HS_LUT;
 	static hand_indexer_t cmbRivIndexer;
