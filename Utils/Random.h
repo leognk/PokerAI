@@ -55,6 +55,7 @@ private:
 
 class SplitMix64
 {
+    typedef uint64_t result_type;
 public:
     SplitMix64(uint64_t seed) { x = seed; }
     uint64_t operator()()
@@ -70,12 +71,12 @@ private:
     uint64_t x;
 };
 
-class XoShiro128PlusPlus
+class XoShiro256PlusPlus
 {
+    typedef uint64_t result_type;
+
 public:
-#pragma warning(push)
-#pragma warning(disable: 4244)
-    XoShiro128PlusPlus(uint32_t seed)
+    XoShiro256PlusPlus(uint64_t seed)
     {
         SplitMix64 seeder(seed);
         mState[0] = seeder();
@@ -86,43 +87,47 @@ public:
         for (unsigned i = 0; i < 10000; ++i)
             operator()();
     }
-#pragma warning(pop)
 
-    uint32_t operator()()
+    uint64_t operator()()
     {
-        uint32_t s0 = mState[0];
-        uint32_t s1 = mState[1];
-        uint32_t s2 = mState[2];
-        uint32_t s3 = mState[3];
-        uint32_t result = rotl(s0 + s3, 7) + s0;
-        uint32_t t = s1 << 9;
+        uint64_t s0 = mState[0];
+        uint64_t s1 = mState[1];
+        uint64_t s2 = mState[2];
+        uint64_t s3 = mState[3];
+
+        uint64_t result = rotl(s0 + s3, 23) + s0;
+        uint64_t t = s1 << 17;
+
         mState[2] ^= s0;
         mState[3] ^= s1;
         mState[1] ^= s2;
         mState[0] ^= s3;
+
         mState[2] ^= t;
-        mState[3] = rotl(s3, 11);
+
+        mState[3] = rotl(s3, 45);
+
         return result;
     }
 
-    static uint32_t(min)()
+    static uint64_t(min)()
     {
         return 0;
     }
 
-    static uint32_t(max)()
+    static uint64_t(max)()
     {
-        return ~(uint32_t)0;
+        return ~(uint64_t)0;
     }
 
 private:
-    static uint32_t rotl(uint32_t x, unsigned k)
+    static uint64_t rotl(uint64_t x, unsigned k)
     {
         // MSVC and most g++ versions will compile this to rotl on x64.
-        return (x << k) | (x >> (32 - k));
+        return (x << k) | (x >> (64 - k));
     }
 
-    uint32_t mState[4];
+    uint64_t mState[4];
 };
 
 } // opt
