@@ -1,10 +1,9 @@
 #ifndef ABC_EQUITYCALCULATOR_H
 #define ABC_EQUITYCALCULATOR_H
 
-#include <string>
-#include <fstream>
 #include "../LosslessAbstraction/hand_index.h"
 #include "../OMPEval/omp/HandEvaluator.h"
+#include "../Utils/ioArray.h"
 
 namespace abc {
 
@@ -148,22 +147,6 @@ public:
 
 private:
 	static uint16_t calculateRivHS(const uint8_t hand[]);
-
-	template <typename A>
-	static void saveArray(const A& arr, const std::string& path)
-	{
-		auto file = std::fstream(path, std::ios::out | std::ios::binary);
-		file.write((char*)&arr[0], sizeof(arr));
-		file.close();
-	}
-
-	template <typename A>
-	static void loadArray(A& arr, const std::string& path)
-	{
-		auto file = std::fstream(path, std::ios::in | std::ios::binary);
-		file.read((char*)&arr[0], sizeof(arr));
-		file.close();
-	}
 
 	static omp::HandEvaluator eval;
 	static uint64_t evalCount;

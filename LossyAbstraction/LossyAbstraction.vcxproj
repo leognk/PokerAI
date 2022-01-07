@@ -34,6 +34,9 @@
     <ProjectReference Include="..\OMPEval\OMPEval.vcxproj">
       <Project>{5cafc22b-8926-49b4-95c5-66766cd5ecb3}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\Utils\Utils.vcxproj">
+      <Project>{2b261b87-ab22-4819-a536-8f50fb66a682}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

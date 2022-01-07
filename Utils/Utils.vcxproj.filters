@@ -21,6 +21,9 @@
     <ClInclude Include="BitOp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ioArray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Random.cpp">
