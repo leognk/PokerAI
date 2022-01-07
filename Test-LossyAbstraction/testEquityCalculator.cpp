@@ -38,35 +38,6 @@ TEST_F(EquityCalculatorTest, VerifySomeRivHS)
 	EXPECT_EQ(eqt.RIV_HS_LUT[123156253], 1980);
 }
 
-TEST_F(EquityCalculatorTest, VerifySomePreflopHSHist)
-{
-	const std::vector<std::string> fileNames = {
-		"Preflop equity distribution - 4s4h.bin",
-		"Preflop equity distribution - 6s6h.bin",
-		"Preflop equity distribution - QsKs.bin",
-		"Preflop equity distribution - TsJs.bin"
-	};
-	const std::vector<std::string> handStrings = {
-		"4s 4h",
-		"6s 6h",
-		"Qs Ks",
-		"Ts Js"
-	};
-	for (uint8_t i = 0; i < fileNames.size(); ++i) {
-		auto file = std::fstream(hsHistExDir + fileNames[i],
-			std::ios::in | std::ios::binary);
-		std::array<uint32_t, 50> hsHistRef;
-		file.read((char*)&hsHistRef[0], hsHistRef.size() * sizeof(uint32_t));
-		file.close();
-		auto hand = egn::Hand::stringToArray<2>(handStrings[i]);
-		auto hsHist = eqt.buildPreflopHSHist<hsHistRef.size()>(hand.data());
-		for (uint32_t j = 0; j < hsHist.size(); ++j)
-			EXPECT_EQ(hsHist[j], hsHistRef[j]);
-		uint32_t sum = std::accumulate(hsHist.begin(), hsHist.end(), uint32_t(0));
-		EXPECT_EQ(sum, 2118760); // binom(52 - 2, 5)
-	}
-}
-
 TEST_F(EquityCalculatorTest, VerifySomeTurnHSHist)
 {
 	const std::vector<std::string> fileNames = {
@@ -83,8 +54,8 @@ TEST_F(EquityCalculatorTest, VerifySomeTurnHSHist)
 		std::array<uint8_t, 50> hsHistRef;
 		file.read((char*)&hsHistRef[0], hsHistRef.size() * sizeof(uint8_t));
 		file.close();
-		auto hand = egn::Hand::stringToArray<6>(handStrings[i]);
-		auto hsHist = eqt.buildTurnHSHist<hsHistRef.size()>(hand.data());
+		auto hand = egn::Hand::stringToArray<7>(handStrings[i]);
+		auto hsHist = eqt.buildTurnHSHist(hand.data());
 		for (uint8_t j = 0; j < hsHist.size(); ++j)
 			EXPECT_EQ(hsHist[j], hsHistRef[j]);
 		uint8_t sum = std::accumulate(hsHist.begin(), hsHist.end(), uint8_t(0));
@@ -108,11 +79,40 @@ TEST_F(EquityCalculatorTest, VerifySomeFlopHSHist)
 		std::array<uint16_t, 50> hsHistRef;
 		file.read((char*)&hsHistRef[0], hsHistRef.size() * sizeof(uint16_t));
 		file.close();
-		auto hand = egn::Hand::stringToArray<5>(handStrings[i]);
-		auto hsHist = eqt.buildFlopHSHist<hsHistRef.size()>(hand.data());
+		auto hand = egn::Hand::stringToArray<7>(handStrings[i]);
+		auto hsHist = eqt.buildFlopHSHist(hand.data());
 		for (uint8_t j = 0; j < hsHist.size(); ++j)
 			EXPECT_EQ(hsHist[j], hsHistRef[j]);
 		uint16_t sum = std::accumulate(hsHist.begin(), hsHist.end(), uint16_t(0));
 		EXPECT_EQ(sum, 1081); // binom(52 - 5, 2) = 47 * 23
+	}
+}
+
+TEST_F(EquityCalculatorTest, VerifySomePreflopHSHist)
+{
+	const std::vector<std::string> fileNames = {
+		"Preflop equity distribution - 4s4h.bin",
+		"Preflop equity distribution - 6s6h.bin",
+		"Preflop equity distribution - QsKs.bin",
+		"Preflop equity distribution - TsJs.bin"
+	};
+	const std::vector<std::string> handStrings = {
+		"4s 4h",
+		"6s 6h",
+		"Qs Ks",
+		"Ts Js"
+	};
+	for (uint8_t i = 0; i < fileNames.size(); ++i) {
+		auto file = std::fstream(hsHistExDir + fileNames[i],
+			std::ios::in | std::ios::binary);
+		std::array<uint32_t, 50> hsHistRef;
+		file.read((char*)&hsHistRef[0], hsHistRef.size() * sizeof(uint32_t));
+		file.close();
+		auto hand = egn::Hand::stringToArray<7>(handStrings[i]);
+		auto hsHist = eqt.buildPreflopHSHist(hand.data());
+		for (uint32_t j = 0; j < hsHist.size(); ++j)
+			EXPECT_EQ(hsHist[j], hsHistRef[j]);
+		uint32_t sum = std::accumulate(hsHist.begin(), hsHist.end(), uint32_t(0));
+		EXPECT_EQ(sum, 2118760); // binom(52 - 2, 5)
 	}
 }

@@ -1,33 +1,38 @@
-#ifndef ABC_DKEM_H
-#define ABC_DKEM_H
+#ifndef ABC_KMEANS_H
+#define ABC_KMEANS_H
 
-#include "../LosslessAbstraction/hand_index.h"
+#include <cstdint>
+#include <array>
 
 namespace abc {
 
-	typedef uint8_t idx_t;
-
-	// Class generating lossy information abstraction
-	// with distribution-aware k-means earth mover's distance.
-	template<typename bck_t = uint8_t>
-	class DKEM
+// Class implementing k-means++ with earth mover's distance
+// or L2 distance.
+template<typename cluster_t = uint8_t>
+class KMeans
+{
+public:
+	template<typename bin_t, uint32_t nHists, uint16_t nBins>
+	static std::array<cluster_t, nHists> buildClustersEMD(
+		const std::array<std::array<bin_t, nBins>, nHists>& hists,
+		cluster_t nClusters, uint8_t nRestarts)
 	{
-	public:
-		// BCK for BUCKET
-		static void populateFlopBckLUT(bck_t nBck)
-		{
 
-		}
+	}
 
-		static std::array<bck_t, FLOP_SIZE> FLOP_BCK_LUT;
-		static std::array<bck_t, CMB_TURN_SIZE> TURN_BCK_LUT;
-		static std::array<bck_t, CMB_RIVER_SIZE> RIV_BCK_LUT;
+	template<typename coord_t, uint32_t nVects, uint8_t nCoords>
+	static std::array<cluster_t, nVects> buildClustersL2(
+		const std::array<std::array<coord_t, nCoords>, nVects>& vects,
+		cluster_t nClusters, uint8_t nRestarts)
+	{
 
-	private:
+	}
+
+private:
 
 
-	}; // DKEM
+}; // KMeans
 
 } // abc
 
-#endif // ABC_DKEM_H
+#endif // ABC_KMEANS_H

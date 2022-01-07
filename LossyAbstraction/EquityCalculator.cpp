@@ -1,4 +1,3 @@
-#include <fstream>
 #include "../cpptqdm/tqdm.h"
 #include "EquityCalculator.h"
 #include "../OMPEval/omp/Constants.h"
@@ -6,8 +5,18 @@
 namespace abc {
 
 std::array<uint16_t, CMB_RIVER_SIZE> EquityCalculator::RIV_HS_LUT;
+std::array<std::array<uint8_t, N_BINS>, CMB_TURN_SIZE> EquityCalculator::TURN_HS_HISTS;
+std::array<std::array<uint16_t, N_BINS>, FLOP_SIZE> EquityCalculator::FLOP_HS_HISTS;
+std::array<std::array<uint32_t, N_BINS>, PREFLOP_SIZE> EquityCalculator::PREFLOP_HS_HISTS;
+
 hand_indexer_t EquityCalculator::cmbRivIndexer(
 	2, { omp::HOLE_CARDS, omp::BOARD_CARDS });
+hand_indexer_t EquityCalculator::cmbTurnIndexer(
+	2, { omp::HOLE_CARDS, omp::FLOP_CARDS + omp::TURN_CARDS });
+hand_indexer_t EquityCalculator::flopIndexer(
+	2, { omp::HOLE_CARDS, omp::FLOP_CARDS });
+hand_indexer_t EquityCalculator::preflopIndexer(
+	1, { omp::HOLE_CARDS });
 
 omp::HandEvaluator EquityCalculator::eval;
 uint64_t EquityCalculator::evalCount;
@@ -26,18 +35,77 @@ void EquityCalculator::populateRivHSLUT()
 		throw std::runtime_error("Incorrect number of evaluations done.");
 }
 
+void EquityCalculator::populateTurnHSHists()
+{
+	uint8_t hand[omp::RIVER_HAND];
+	tqdm bar;
+	for (hand_index_t i = 0; i < CMB_TURN_SIZE; ++i) {
+		bar.progress(i, CMB_TURN_SIZE);
+		cmbTurnIndexer.hand_unindex(1, i, hand);
+		TURN_HS_HISTS[i] = buildTurnHSHist(hand);
+	}
+}
+
+void EquityCalculator::populateFlopHSHists()
+{
+	uint8_t hand[omp::RIVER_HAND];
+	tqdm bar;
+	for (hand_index_t i = 0; i < FLOP_SIZE; ++i) {
+		bar.progress(i, FLOP_SIZE);
+		flopIndexer.hand_unindex(1, i, hand);
+		FLOP_HS_HISTS[i] = buildFlopHSHist(hand);
+	}
+}
+
+void EquityCalculator::populatePreflopHSHists()
+{
+	uint8_t hand[omp::RIVER_HAND];
+	tqdm bar;
+	for (hand_index_t i = 0; i < PREFLOP_SIZE; ++i) {
+		bar.progress(i, PREFLOP_SIZE);
+		preflopIndexer.hand_unindex(0, i, hand);
+		PREFLOP_HS_HISTS[i] = buildPreflopHSHist(hand);
+	}
+}
+
 void EquityCalculator::saveRivHSLUT()
 {
-	auto file = std::fstream(rivHSLUTPath, std::ios::out | std::ios::binary);
-	file.write((char*)&RIV_HS_LUT[0], RIV_HS_LUT.size() * sizeof(uint16_t));
-	file.close();
+	saveArray(RIV_HS_LUT, rivHSLUTPath);
+}
+
+void EquityCalculator::saveTurnHSHists()
+{
+	saveArray(TURN_HS_HISTS, turnHSHistsPath);
+}
+
+void EquityCalculator::saveFlopHSHists()
+{
+	saveArray(FLOP_HS_HISTS, flopHSHistsPath);
+}
+
+void EquityCalculator::savePreflopHSHists()
+{
+	saveArray(PREFLOP_HS_HISTS, preflopHSHistsPath);
 }
 
 void EquityCalculator::loadRivHSLUT()
 {
-	auto file = std::fstream(rivHSLUTPath, std::ios::in | std::ios::binary);
-	file.read((char*)&RIV_HS_LUT[0], RIV_HS_LUT.size() * sizeof(uint16_t));
-	file.close();
+	loadArray(RIV_HS_LUT, rivHSLUTPath);
+}
+
+void EquityCalculator::loadTurnHSHists()
+{
+	loadArray(TURN_HS_HISTS, turnHSHistsPath);
+}
+
+void EquityCalculator::loadFlopHSHists()
+{
+	loadArray(FLOP_HS_HISTS, flopHSHistsPath);
+}
+
+void EquityCalculator::loadPreflopHSHists()
+{
+	loadArray(PREFLOP_HS_HISTS, preflopHSHistsPath);
 }
 
 uint16_t EquityCalculator::calculateRivHS(const uint8_t hand[])

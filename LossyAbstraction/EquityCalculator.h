@@ -2,6 +2,7 @@
 #define ABC_EQUITYCALCULATOR_H
 
 #include <string>
+#include <fstream>
 #include "../LosslessAbstraction/hand_index.h"
 #include "../OMPEval/omp/HandEvaluator.h"
 
@@ -9,6 +10,12 @@ namespace abc {
 
 static const std::string dir = "../data/AbstractionSaves/";
 static const std::string rivHSLUTPath = dir + "RIV_HS_LUT.bin";
+static const std::string turnHSHistsPath = dir + "TURN_HS_HISTS.bin";
+static const std::string flopHSHistsPath = dir + "FLOP_HS_HISTS.bin";
+static const std::string preflopHSHistsPath = dir + "PREFLOP_HS_HISTS.bin";
+
+// Number of bins of hand strength histograms.
+static const uint16_t N_BINS = 50;
 
 // Maximum equity score, which is 2 times the number of
 // possibilities of opponent's hole cards: 2 * binom(52-7, 2) = 1980
@@ -21,11 +28,21 @@ class EquityCalculator
 {
 public:
 	static void populateRivHSLUT();
-	static void saveRivHSLUT();
-	static void loadRivHSLUT();
+	static void populateTurnHSHists();
+	static void populateFlopHSHists();
+	static void populatePreflopHSHists();
 
-	template<uint16_t nBins>
-	static std::array<uint8_t, nBins> buildTurnHSHist(const uint8_t hand[])
+	static void saveRivHSLUT();
+	static void saveTurnHSHists();
+	static void saveFlopHSHists();
+	static void savePreflopHSHists();
+
+	static void loadRivHSLUT();
+	static void loadTurnHSHists();
+	static void loadFlopHSHists();
+	static void loadPreflopHSHists();
+
+	static std::array<uint8_t, N_BINS> buildTurnHSHist(uint8_t hand[])
 	{
 		// Get hand's mask.
 		uint64_t handMask = 0;
@@ -34,23 +51,20 @@ public:
 
 		// Loop over all river's cards,
 		// skipping cards already used.
-		std::array<uint8_t, nBins> hsHist{};
-		uint8_t cards[omp::RIVER_HAND];
-		std::copy(hand, hand + omp::TURN_HAND, cards);
+		std::array<uint8_t, N_BINS> hsHist{};
 		for (uint8_t c = 0; c < omp::CARD_COUNT; ++c) {
 			if (handMask & (1ull << c))
 				continue;
-			cards[omp::TURN_HAND] = c;
-			hand_index_t handIdx = cmbRivIndexer.hand_index_last(cards);
+			hand[omp::TURN_HAND] = c;
+			hand_index_t handIdx = cmbRivIndexer.hand_index_last(hand);
 #pragma warning(suppress: 4244 26451)
-			uint16_t binIdx = (double)RIV_HS_LUT[handIdx] / (MAX_RIV_HS + 1) * nBins;
+			uint16_t binIdx = (double)RIV_HS_LUT[handIdx] / (MAX_RIV_HS + 1) * N_BINS;
 			++hsHist[binIdx];
 		}
 		return hsHist;
 	}
 
-	template<uint16_t nBins>
-	static std::array<uint16_t, nBins> buildFlopHSHist(const uint8_t hand[])
+	static std::array<uint16_t, N_BINS> buildFlopHSHist(uint8_t hand[])
 	{
 		// Get hand's mask.
 		uint64_t handMask = 0;
@@ -59,82 +73,97 @@ public:
 
 		// Loop over all turn's and river's cards,
 		// skipping cards already used.
-		std::array<uint16_t, nBins> hsHist{};
-		uint8_t cards[omp::RIVER_HAND];
-		std::copy(hand, hand + omp::FLOP_HAND, cards);
+		std::array<uint16_t, N_BINS> hsHist{};
 		for (uint8_t c1 = 1; c1 < omp::CARD_COUNT; ++c1) {
 			if (handMask & (1ull << c1))
 				continue;
 			for (uint8_t c2 = 0; c2 < c1; ++c2) {
 				if (handMask & (1ull << c2))
 					continue;
-				cards[omp::FLOP_HAND] = c1;
-				cards[omp::TURN_HAND] = c2;
-				hand_index_t handIdx = cmbRivIndexer.hand_index_last(cards);
+				hand[omp::FLOP_HAND] = c1;
+				hand[omp::TURN_HAND] = c2;
+				hand_index_t handIdx = cmbRivIndexer.hand_index_last(hand);
 #pragma warning(suppress: 4244 26451)
-				uint16_t binIdx = (double)RIV_HS_LUT[handIdx] / (MAX_RIV_HS + 1) * nBins;
+				uint16_t binIdx = (double)RIV_HS_LUT[handIdx] / (MAX_RIV_HS + 1) * N_BINS;
 				++hsHist[binIdx];
 			}
 		}
 		return hsHist;
 	}
 
-	template<uint16_t nBins>
-	static std::array<uint32_t, nBins> buildPreflopHSHist(const uint8_t hand[])
+	static std::array<uint32_t, N_BINS> buildPreflopHSHist(uint8_t hand[])
 	{
-		std::array<uint32_t, nBins> hsHist{};
-		uint8_t cards[omp::RIVER_HAND];
-		std::copy(hand, hand + omp::HOLE_CARDS, cards);
-
 		// Loop over all flop's, turn's and river's cards,
 		// skipping cards already used.
-
-		std::array<uint8_t, omp::BOARD_CARDS> boardCards = { 0, 1, 2, 3, 4 };
-		uint8_t lastIdx = omp::BOARD_CARDS - 1;
-
+		std::array<uint32_t, N_BINS> hsHist{};
+		for (uint8_t i = 0; i < omp::BOARD_CARDS; ++i)
+			hand[omp::HOLE_CARDS + i] = i;
+		uint8_t lastIdx = omp::RIVER_HAND - 1;
 		while (true) {
 
 			// Look for cards already used.
 			bool skip = false;
-			for (uint8_t c : boardCards) {
-				if (c == cards[0] || c == cards[1]) {
+			for (uint8_t i = omp::HOLE_CARDS; i < omp::RIVER_HAND; ++i) {
+				if (hand[i] == hand[0] || hand[i] == hand[1]) {
 					skip = true;
 					continue;
 				}
 			}
 
 			if (!skip) {
-				for (uint8_t i = 0; i < omp::BOARD_CARDS; ++i)
-					cards[omp::HOLE_CARDS + i] = boardCards[i];
-				hand_index_t handIdx = cmbRivIndexer.hand_index_last(cards);
+				hand_index_t handIdx = cmbRivIndexer.hand_index_last(hand);
 #pragma warning(suppress: 4244 26451)
-				uint16_t binIdx = (double)RIV_HS_LUT[handIdx] / (MAX_RIV_HS + 1) * nBins;
+				uint16_t binIdx = (double)RIV_HS_LUT[handIdx] / (MAX_RIV_HS + 1) * N_BINS;
 				++hsHist[binIdx];
 			}
 
 			// Go to the next combination of board cards.
-			++boardCards[lastIdx];
-			if (boardCards[lastIdx] == omp::CARD_COUNT) {
+			++hand[lastIdx];
+			if (hand[lastIdx] == omp::CARD_COUNT) {
 				uint8_t movingIdx = lastIdx - 1;
-				while (boardCards[movingIdx] ==
-					omp::CARD_COUNT - omp::BOARD_CARDS + movingIdx) {
-					if (!movingIdx) return hsHist;
+				while (hand[movingIdx] ==
+					omp::CARD_COUNT - omp::RIVER_HAND + movingIdx) {
+					if (movingIdx == omp::HOLE_CARDS) return hsHist;
 					--movingIdx;
 				}
-				++boardCards[movingIdx];
+				++hand[movingIdx];
 				// Reset after movingIdx.
-				for (uint8_t i = movingIdx + 1; i < omp::BOARD_CARDS; ++i)
-					boardCards[i] = boardCards[i - 1] + 1;
+				for (uint8_t i = movingIdx + 1; i < omp::RIVER_HAND; ++i)
+					hand[i] = hand[i - 1] + 1;
 			}
 		}
 	}
 
 	// Hand strength (equity) lookup table on river.
 	static std::array<uint16_t, CMB_RIVER_SIZE> RIV_HS_LUT;
+	// Hand strength histograms on each round.
+	static std::array<std::array<uint8_t, N_BINS>, CMB_TURN_SIZE> TURN_HS_HISTS;
+	static std::array<std::array<uint16_t, N_BINS>, FLOP_SIZE> FLOP_HS_HISTS;
+	static std::array<std::array<uint32_t, N_BINS>, PREFLOP_SIZE> PREFLOP_HS_HISTS;
+
 	static hand_indexer_t cmbRivIndexer;
+	static hand_indexer_t cmbTurnIndexer;
+	static hand_indexer_t flopIndexer;
+	static hand_indexer_t preflopIndexer;
 
 private:
 	static uint16_t calculateRivHS(const uint8_t hand[]);
+
+	template <typename A>
+	static void saveArray(const A& arr, const std::string& path)
+	{
+		auto file = std::fstream(path, std::ios::out | std::ios::binary);
+		file.write((char*)&arr[0], sizeof(arr));
+		file.close();
+	}
+
+	template <typename A>
+	static void loadArray(A& arr, const std::string& path)
+	{
+		auto file = std::fstream(path, std::ios::in | std::ios::binary);
+		file.read((char*)&arr[0], sizeof(arr));
+		file.close();
+	}
 
 	static omp::HandEvaluator eval;
 	static uint64_t evalCount;
