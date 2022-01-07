@@ -53,6 +53,78 @@ private:
     unsigned mBufferUsesLeft;
 };
 
+class SplitMix64
+{
+public:
+    SplitMix64(uint64_t seed) { x = seed; }
+    uint64_t operator()()
+    {
+        uint64_t z = (x += 0x9e3779b97f4a7c15);
+        z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9;
+        z = (z ^ (z >> 27)) * 0x94d049bb133111eb;
+        return z ^ (z >> 31);
+    }
+    static uint64_t(min)() { return 0; }
+    static uint64_t(max)() { return ~(uint64_t)0; }
+private:
+    uint64_t x;
+};
+
+class XoShiro128PlusPlus
+{
+public:
+#pragma warning(push)
+#pragma warning(disable: 4244)
+    XoShiro128PlusPlus(uint32_t seed)
+    {
+        SplitMix64 seeder(seed);
+        mState[0] = seeder();
+        mState[1] = seeder();
+        mState[2] = seeder();
+        mState[3] = seeder();
+        // Warm-up the RNG.
+        for (unsigned i = 0; i < 10000; ++i)
+            operator()();
+    }
+#pragma warning(pop)
+
+    uint32_t operator()()
+    {
+        uint32_t s0 = mState[0];
+        uint32_t s1 = mState[1];
+        uint32_t s2 = mState[2];
+        uint32_t s3 = mState[3];
+        uint32_t result = rotl(s0 + s3, 7) + s0;
+        uint32_t t = s1 << 9;
+        mState[2] ^= s0;
+        mState[3] ^= s1;
+        mState[1] ^= s2;
+        mState[0] ^= s3;
+        mState[2] ^= t;
+        mState[3] = rotl(s3, 11);
+        return result;
+    }
+
+    static uint32_t(min)()
+    {
+        return 0;
+    }
+
+    static uint32_t(max)()
+    {
+        return ~(uint32_t)0;
+    }
+
+private:
+    static uint32_t rotl(uint32_t x, unsigned k)
+    {
+        // MSVC and most g++ versions will compile this to rotl on x64.
+        return (x << k) | (x >> (32 - k));
+    }
+
+    uint32_t mState[4];
+};
+
 } // opt
 
 #endif // OPT_RANDOM_H

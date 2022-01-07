@@ -24,7 +24,7 @@
     <ClInclude Include="Random.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Random.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -35,6 +35,11 @@
     <ClInclude Include="omp\Random.h" />
     <ClInclude Include="omp\Util.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Utils\Utils.vcxproj">
+      <Project>{2b261b87-ab22-4819-a536-8f50fb66a682}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

@@ -2,6 +2,7 @@
 #define OMP_RANDOM_H
 
 #include "../libdivide/libdivide.h"
+#include "../../Utils/Random.h"
 #include <cstdint>
 #include <climits>
 
@@ -15,7 +16,9 @@ public:
 
     XoroShiro128Plus(uint64_t seed)
     {
-        mState[0] = ~(mState[1] = seed);
+        opt::SplitMix64 seeder(seed);
+        mState[0] = seeder();
+        mState[1] = seeder();
         // Warm-up the RNG.
         for (unsigned i = 0; i < 10000; ++i)
             operator()();

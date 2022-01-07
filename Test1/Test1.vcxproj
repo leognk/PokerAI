@@ -155,6 +155,9 @@
     <ProjectReference Include="..\LossyAbstraction\LossyAbstraction.vcxproj">
       <Project>{30a7bf15-f11f-43e4-bdeb-85528f77d8f2}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\Utils\Utils.vcxproj">
+      <Project>{2b261b87-ab22-4819-a536-8f50fb66a682}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
