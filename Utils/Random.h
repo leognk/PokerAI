@@ -1,14 +1,24 @@
 #ifndef OPT_RANDOM_H
 #define OPT_RANDOM_H
 
-#include <cstdint> 
+#include <cstdint>
+#include <boost/multiprecision/cpp_bin_float.hpp>
+#include <boost/math/special_functions/round.hpp>
 
 namespace opt {
 
+using float50_t = boost::multiprecision::cpp_bin_float_50;
+
 // Generate a random index with the given
-// array of cumulated weights (maximum weight is RANGE).
-// The precision is 1 / 2^tBits.
-// tBits must be less than 32 (excluded).
+// array of cumulated weights (uintN_t with N > tBits
+// or float with enough bits on the fractional part).
+// The sum of the weights must be equal to RANGE,
+// which is 2^tBits.
+// Ideally, the number N of elements must be very small
+// compared to RANGE (and it has to be less than RANGE),
+// because the precision of the probability is 1 / RANGE and
+// the order of magnitude of the actual probabilities is 1 / N.
+// tBits must be less than 64 excluded.
 template<unsigned tBits = 16>
 class FastRandomChoice
 {
@@ -19,35 +29,49 @@ public:
         mBufferUsesLeft = 0;
     }
 
-    template<class C, class TRng>
-    unsigned operator()(C& cumWeights, TRng& rng)
+    // Rescale each cumulated weight.
+    // After this, the total sum is guaranteed to be
+    // exactly equal to RANGE.
+    template<class C>
+    void rescaleCumWeights(C& cumWeights)
     {
-        unsigned x = rand(rng);
+        float50_t rescaleFactor = RANGE;
+        rescaleFactor /= cumWeights.back();
+        for (unsigned i = 0; i < cumWeights.size(); ++i)
+            cumWeights[i] = round(rescaleFactor * cumWeights[i])
+                .convert_to<C::value_type>();
+        assert(cumWeights.back() == RANGE);
+    }
+
+    template<class C, class TRng>
+    unsigned operator()(const C& cumWeights, TRng& rng)
+    {
+        uint64_t x = rand(rng);
         unsigned i = 0;
         while (cumWeights[i] <= x)
             ++i;
         return i;
     }
 
-    static const unsigned RANGE = 1u << tBits;
+    static const uint64_t RANGE = 1ull << tBits;
 
 private:
-    // Generate a random unsigned int between 0 and RANGE excluded.
+    // Generate a random uint64_t between 0 and RANGE excluded.
     template<class TRng>
-    unsigned rand(TRng& rng)
+    uint64_t rand(TRng& rng)
     {
         static_assert(sizeof(typename TRng::result_type) == sizeof(uint64_t), "64-bit RNG required.");
         if (mBufferUsesLeft == 0) {
             mBuffer = rng();
             mBufferUsesLeft = sizeof(mBuffer) * CHAR_BIT / tBits;
         }
-        unsigned res = (unsigned)mBuffer & MASK;
+        uint64_t res = mBuffer & MASK;
         mBuffer >>= tBits;
         --mBufferUsesLeft;
         return res;
     }
 
-    static const unsigned MASK = (1u << tBits) - 1;
+    static const uint64_t MASK = (1ull << tBits) - 1;
 
     uint64_t mBuffer;
     unsigned mBufferUsesLeft;
@@ -73,9 +97,9 @@ private:
 
 class XoShiro256PlusPlus
 {
+public:
     typedef uint64_t result_type;
 
-public:
     XoShiro256PlusPlus(uint64_t seed)
     {
         SplitMix64 seeder(seed);

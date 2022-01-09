@@ -38,31 +38,12 @@ std::array<std::array<unsigned, egn::GameState::nLegalCases>,
 		if (egn::GameState::actionMasks[i][egn::RAISE])
 			res[i][egn::RAISE] = mRaiseWeight;
 
-		// Normalize if necessary
-		unsigned delta = mRandChoice.RANGE
-			- res[i][egn::FOLD]
-			- res[i][egn::CALL]
-			- res[i][egn::RAISE];
-		if (delta) {
-			uint8_t nNonNull = bool(res[i][egn::FOLD])
-				+ bool(res[i][egn::CALL])
-				+ bool(res[i][egn::RAISE]);
-			unsigned divDelta = delta / nNonNull;
-			unsigned remDelta = delta % nNonNull;
-			for (uint8_t j = 0; j < egn::N_ACTIONS; ++j) {
-				if (res[i][j]) {
-					res[i][j] += divDelta;
-					if (remDelta) {
-						++res[i][j];
-						--remDelta;
-					}
-				}
-			}
-		}
-
 		// Accumulate
 		for (uint8_t j = 1; j < egn::N_ACTIONS; ++j)
 			res[i][j] += res[i][j - 1];
+
+		// Rescale
+		mRandChoice.rescaleCumWeights(res[i]);
 	}
 	return res;
 }

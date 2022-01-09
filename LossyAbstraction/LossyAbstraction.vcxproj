@@ -22,6 +22,7 @@
     <ClInclude Include="DKEM.h" />
     <ClInclude Include="EquityCalculator.h" />
     <ClInclude Include="KMeans.h" />
+    <ClInclude Include="Metrics.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DKEM.cpp" />
