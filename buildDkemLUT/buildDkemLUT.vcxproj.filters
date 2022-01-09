@@ -15,21 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DKEM.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EquityCalculator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="KMeans.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Metrics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="EquityCalculator.cpp">
+    <ClCompile Include="buildDkemLUT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

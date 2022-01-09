@@ -26,14 +26,15 @@ public:
 		rngSeed(rngSeed)
 	{}
 
+	// Run k-means and modify bestLabels in-place.
 	template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
-	std::array<cluSize_t, nSamples> buildClusters(
-		const std::array<std::array<feature_t, nFeatures>, nSamples>& data)
+	uint64_t buildClusters(
+		const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
+		std::array<cluSize_t, nSamples>& bestLabels)
 	{
 		Rng rng((!rngSeed) ? std::random_device{}() : rngSeed);
 
 		uint64_t bestInertia = 0;
-		std::array<cluSize_t, nSamples> bestLabels;
 
 		std::array<std::array<feature_t, nFeatures>, nClusters> centers;
 		std::array<cluSize_t, nSamples> labels;
@@ -46,16 +47,18 @@ public:
 			kMeansPlusPlus(data, centers, rng);
 
 			// Run k-means Elkan once.
-			kMeansSingleElkan(data, centers, labels);
+			uint16_t nIter = kMeansSingleElkan(data, centers, labels);
 
 			// Update the best clustering by looking at the inertia.
 			uint64_t inertia = calculateInertia(data, centers, labels);
-			std::cout << "Restart: " << nRestarts
-				<< " | Inertia: " << inertia << "\n";
 			if (i == 0 || inertia < bestInertia) {
 				bestInertia = inertia;
 				bestLabels = labels;
 			}
+
+			std::cout << "Restart: " << nRestarts
+				<< " | nIter: " << nIter
+				<< " | Inertia: " << inertia << "\n";
 		}
 
 		// Count number of distinct clusters found.
@@ -65,7 +68,7 @@ public:
 			throw std::runtime_error(
 				"Number of distinct clusters found smaller than n_clusters.");
 
-		return bestLabels;
+		return bestInertia;
 	}
 
 private:
@@ -119,7 +122,7 @@ private:
 	}
 
 	template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
-	void kMeansSingleElkan(
+	uint16_t kMeansSingleElkan(
 		const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
 		std::array<std::array<feature_t, nFeatures>, nClusters>& centers,
 		std::array<cluSize_t, nSamples>& labels)
@@ -155,19 +158,18 @@ private:
 				upperBounds, lowerBounds, labels);
 			updateCenterDists(newCenters, centerHalfDists, distNextCenter);
 			std::swap(centers, newCenters);
-			if (labels == oldLabels) {
-				strictConvergence = true;
-				break;
-			}
+			if (labels == oldLabels)
+				return i;
 			oldLabels = labels;
 		}
 
-		if (!strictConvergence)
-			// Run one last step so that predicted labels match cluster centers.
-			elkanIter(
-				data, centers, newCenters, weightInClusters,
-				centerHalfDists, distNextCenter,
-				upperBounds, lowerBounds, labels);
+		// Run one last step so that predicted labels match cluster centers.
+		elkanIter(
+			data, centers, newCenters, weightInClusters,
+			centerHalfDists, distNextCenter,
+			upperBounds, lowerBounds, labels);
+
+		return maxIter + 1;
 	}
 
 	template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
