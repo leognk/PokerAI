@@ -1,8 +1,10 @@
-#ifndef ABC_KMEANS_H
-#define ABC_KMEANS_H
+#ifndef OPT_IOARRAY_H
+#define OPT_IOARRAY_H
 
 #include <string>
 #include <fstream>
+
+namespace opt {
 
 template<typename A>
 static void saveArray(const A& arr, const std::string& path)
@@ -20,4 +22,6 @@ static void loadArray(A& arr, const std::string& path)
 	file.close();
 }
 
-#endif // ABC_KMEANS_H
+} // opt
+
+#endif // OPT_IOARRAY_H

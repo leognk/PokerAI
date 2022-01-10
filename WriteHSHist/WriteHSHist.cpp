@@ -7,10 +7,10 @@ int main()
 	// Build hsHist.
 	abc::EquityCalculator eqt;
 	eqt.loadRivHSLUT();
-	auto hand = egn::Hand::stringToArray<2>("Qs Ks");
-	auto hsHist = eqt.buildPreflopHSHist(hand.data());
+	auto hand = egn::Hand::stringToArray<5>("5c 9d 3d 5d 7d");
+	auto hsHist = eqt.buildFlopHSHist(hand.data());
 
 	// Write hsHist into a file.
-	saveArray(hsHist,
-		"../data/AbstractionSaves/HSHistExamples/Preflop equity distribution - QsKs.bin");
+	opt::saveArray(hsHist,
+		"../data/AbstractionSaves/HSHistExamples/Flop equity distribution - 5c9d-3d5d7d.bin");
 }

@@ -3,7 +3,6 @@
 
 #include <random>
 #include <cstring>
-#include <set>
 #include "Metrics.h"
 #include "../Utils/Random.h"
 #include "../cpptqdm/tqdm.h"
@@ -18,62 +17,65 @@ class KMeans
 public:
 
 	// Set rngSeed to 0 to set a random seed.
-	KMeans(bool useEMD, uint16_t nRestarts,
-		uint16_t maxIter, unsigned rngSeed = 0) :
+	KMeans(bool useEMD, unsigned nRestarts,
+		unsigned maxIter, unsigned rngSeed = 0) :
 		useEMD(useEMD),
 		nRestarts(nRestarts),
 		maxIter(maxIter),
 		rngSeed(rngSeed)
-	{}
+	{
+	}
 
 	// Run k-means and modify bestLabels in-place.
 	template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
-	uint64_t buildClusters(
+	uint32_t buildClusters(
 		const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
 		std::array<cluSize_t, nSamples>& bestLabels)
 	{
-		Rng rng((!rngSeed) ? std::random_device{}() : rngSeed);
+		Rng rng{ (!rngSeed) ? std::random_device{}() : rngSeed };
 
 		uint64_t bestInertia = 0;
+		uint32_t bestMinWeight = 0;
 
 		std::array<std::array<feature_t, nFeatures>, nClusters> centers;
 		std::array<cluSize_t, nSamples> labels;
 
 		tqdm bar;
-		for (uint16_t i = 0; i < nRestarts; ++i) {
+		for (unsigned i = 0; i < nRestarts; ++i) {
 			bar.progress(i, nRestarts);
 
 			// Initialize centers.
 			kMeansPlusPlus(data, centers, rng);
 
 			// Run k-means Elkan once.
-			uint16_t nIter = kMeansSingleElkan(data, centers, labels);
+			unsigned nIter = kMeansSingleElkan(data, centers, labels);
 
 			// Update the best clustering by looking at the inertia.
 			uint64_t inertia = calculateInertia(data, centers, labels);
+			uint32_t minWeight = calculateMinWeight(labels);
 			if (i == 0 || inertia < bestInertia) {
 				bestInertia = inertia;
+				bestMinWeight = minWeight;
 				bestLabels = labels;
 			}
 
-			std::cout << "Restart: " << nRestarts
-				<< " | nIter: " << nIter
-				<< " | Inertia: " << inertia << "\n";
+			std::cout << "restart: " << i
+				<< " | n_iter: " << nIter
+				<< " | min_weight: " << minWeight
+				<< " | avg_weight: " << nSamples / nClusters << "  \n";
 		}
 
 		// Count number of distinct clusters found.
-		cluSize_t nDistinctClusters = std::set(
-			bestLabels.begin(), bestLabels.end()).size();
-		if (nDistinctClusters != nClusters)
+		if (countUniqueLabels(bestLabels) != nClusters)
 			throw std::runtime_error(
 				"Number of distinct clusters found smaller than n_clusters.");
 
-		return bestInertia;
+		return bestMinWeight;
 	}
 
 private:
 
-	typedef opt::XoShiro128PlusPlus Rng;
+	typedef opt::XoShiro256PlusPlus Rng;
 
 	// Initialize the centers with k-means++.
 	template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
@@ -122,7 +124,7 @@ private:
 	}
 
 	template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
-	uint16_t kMeansSingleElkan(
+	unsigned kMeansSingleElkan(
 		const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
 		std::array<std::array<feature_t, nFeatures>, nClusters>& centers,
 		std::array<cluSize_t, nSamples>& labels)
@@ -132,7 +134,7 @@ private:
 		std::array<cluSize_t, nSamples> oldLabels = labels;
 
 		// Init the matrix of the half of the distance between any 2 clusters centers.
-		std::array<std::array<uint64_t, nClusters>, nClusters> centerHalfDists;
+		std::array<std::array<uint64_t, nClusters>, nClusters> centerHalfDists{};
 		// Init the array of the half of the distance between each center
 		// and its closest center.
 		std::array<uint64_t, nClusters> distNextCenter;
@@ -149,7 +151,7 @@ private:
 		// Proceed to the iterations of k-means.
 		bool strictConvergence = false;
 		tqdm bar;
-		for (uint16_t i = 0; i < maxIter; ++i) {
+		for (unsigned i = 0; i < maxIter; ++i) {
 			bar.progress(i, maxIter);
 
 			elkanIter(
@@ -161,6 +163,9 @@ private:
 			if (labels == oldLabels)
 				return i;
 			oldLabels = labels;
+			////////////////////////////////////////////////////////////////////////////////////////////////
+			//std::cout << calculateInertia(data, centers, labels) / 1000000000000 << "\n";
+			////////////////////////////////////////////////////////////////////////////////////////////////
 		}
 
 		// Run one last step so that predicted labels match cluster centers.
@@ -172,10 +177,10 @@ private:
 		return maxIter + 1;
 	}
 
-	template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
+	template<typename feature_t, uint8_t nFeatures>
 	void updateCenterDists(
 		const std::array<std::array<feature_t, nFeatures>, nClusters>& centers,
-		std::array<std::array<uint64_t, nClusters>, nSamples>& centerHalfDists,
+		std::array<std::array<uint64_t, nClusters>, nClusters>& centerHalfDists,
 		std::array<uint64_t, nClusters>& distNextCenter)
 	{
 		// Update centerHalfDists.
@@ -201,17 +206,17 @@ private:
 	void initBounds(
 		const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
 		const std::array<std::array<feature_t, nFeatures>, nClusters>& centers,
-		const std::array<std::array<uint64_t, nClusters>, nSamples>& centerHalfDists,
+		const std::array<std::array<uint64_t, nClusters>, nClusters>& centerHalfDists,
 		std::array<cluSize_t, nSamples>& labels,
 		std::array<uint64_t, nSamples>& upperBounds,
 		std::array<std::array<uint64_t, nClusters>, nSamples>& lowerBounds)
 	{
-		for (uin32_t i = 0; i < nSamples; ++i) {
+		for (uint32_t i = 0; i < nSamples; ++i) {
 			cluSize_t bestCluster = 0;
 			uint64_t minDist = calculateDist(data[i], centers[0]);
 			lowerBounds[i][0] = minDist;
 			for (cluSize_t j = 1; j < nClusters; ++j) {
-				if (centerHalfDists[j][bestCluster] < minDist) {
+				if (centerHalfDists[bestCluster][j] < minDist) {
 					uint64_t dist = calculateDist(data[i], centers[j]);
 					lowerBounds[i][j] = dist;
 					if (dist < minDist) {
@@ -231,7 +236,7 @@ private:
 		const std::array<std::array<feature_t, nFeatures>, nClusters>& centers,
 		std::array<std::array<feature_t, nFeatures>, nClusters>& newCenters,
 		std::array<uint32_t, nClusters>& weightInClusters,
-		const std::array<std::array<uint64_t, nClusters>, nSamples>& centerHalfDists,
+		const std::array<std::array<uint64_t, nClusters>, nClusters>& centerHalfDists,
 		const std::array<uint64_t, nClusters>& distNextCenter,
 		std::array<uint64_t, nSamples>& upperBounds,
 		std::array<std::array<uint64_t, nClusters>, nSamples>& lowerBounds,
@@ -255,26 +260,26 @@ private:
 					// sample to be relabelled, and we need to confirm this by
 					// recomputing the upper and lower bounds.
 					if (j != label
-						&& (upperBound > lowerBounds[i, j])
-						&& (upperBound > centerHalfDistances[label, j])) {
+						&& (upperBound > lowerBounds[i][j])
+						&& (upperBound > centerHalfDists[label][j])) {
 
 						// Recompute upper bound by calculating the actual distance
 						// between the sample and its current assigned center.
 						if (!boundsTight) {
 							upperBound = calculateDist(data[i], centers[label]);
-							lowerBounds[i, label] = upperBound;
+							lowerBounds[i][label] = upperBound;
 							boundsTight = true;
 						}
 
 						// If the condition still holds, then compute the actual
 						// distance between the sample and center. If this is less
 						// than the previous distance, reassign label.
-						if (upperBound > lowerBounds[i, j]
-							|| (upperBound > centerHalfDists[label, j])) {
+						if (upperBound > lowerBounds[i][j]
+							|| (upperBound > centerHalfDists[label][j])) {
 
 							uint64_t dist = calculateDist(data[i], centers[j]);
-							lowerBounds[i, j] = dist;
-							if (dist < upperBounds) {
+							lowerBounds[i][j] = dist;
+							if (dist < upperBound) {
 								label = j;
 								upperBound = dist;
 							}
@@ -328,6 +333,7 @@ private:
 			if (weightInClusters[j] == 0)
 				emptyClusters.push_back(j);
 		}
+#pragma warning(suppress: 4267)
 		cluSize_t nEmpty = emptyClusters.size();
 		if (nEmpty == 0) return;
 
@@ -373,6 +379,27 @@ private:
 		return inertia;
 	}
 
+	template<uint32_t nSamples>
+	uint32_t calculateMinWeight(const std::array<cluSize_t, nSamples>& labels)
+	{
+		std::array<uint32_t, nClusters> weightInClusters{};
+		for (cluSize_t label : labels)
+			++weightInClusters[label];
+		uint32_t minWeight = weightInClusters[0];
+		for (uint32_t weight : weightInClusters)
+			if (weight < minWeight) minWeight = weight;
+		return minWeight;
+	}
+
+	template<uint32_t nSamples>
+	cluSize_t countUniqueLabels(const std::array<cluSize_t, nSamples>& labels)
+	{
+		std::array<uint8_t, nClusters> visited{};
+		for (cluSize_t label : labels)
+			visited[label] = 1;
+		return std::accumulate(visited.begin(), visited.end(), uint8_t(0));
+	}
+
 	template<typename feature_t, uint8_t nFeatures>
 	uint64_t calculateDist(
 		const std::array<feature_t, nFeatures>& u,
@@ -392,8 +419,8 @@ private:
 	}
 
 	bool useEMD;
-	uint16_t nRestarts;
-	uint16_t maxIter;
+	unsigned nRestarts;
+	unsigned maxIter;
 	unsigned rngSeed;
 
 }; // KMeans

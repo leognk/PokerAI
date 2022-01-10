@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="buildDkemLUT.cpp">
+    <ClCompile Include="BuildDkemLUT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

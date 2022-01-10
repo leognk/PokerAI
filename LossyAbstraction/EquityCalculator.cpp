@@ -1,6 +1,7 @@
 #include "../cpptqdm/tqdm.h"
 #include "EquityCalculator.h"
 #include "../OMPEval/omp/Constants.h"
+#include "../Utils/ioArray.h"
 
 namespace abc {
 
@@ -70,42 +71,42 @@ void EquityCalculator::populatePreflopHSHists()
 
 void EquityCalculator::saveRivHSLUT()
 {
-	saveArray(RIV_HS_LUT, rivHSLUTPath);
+	opt::saveArray(RIV_HS_LUT, rivHSLUTPath);
 }
 
 void EquityCalculator::saveTurnHSHists()
 {
-	saveArray(TURN_HS_HISTS, turnHSHistsPath);
+	opt::saveArray(TURN_HS_HISTS, turnHSHistsPath);
 }
 
 void EquityCalculator::saveFlopHSHists()
 {
-	saveArray(FLOP_HS_HISTS, flopHSHistsPath);
+	opt::saveArray(FLOP_HS_HISTS, flopHSHistsPath);
 }
 
 void EquityCalculator::savePreflopHSHists()
 {
-	saveArray(PREFLOP_HS_HISTS, preflopHSHistsPath);
+	opt::saveArray(PREFLOP_HS_HISTS, preflopHSHistsPath);
 }
 
 void EquityCalculator::loadRivHSLUT()
 {
-	loadArray(RIV_HS_LUT, rivHSLUTPath);
+	opt::loadArray(RIV_HS_LUT, rivHSLUTPath);
 }
 
 void EquityCalculator::loadTurnHSHists()
 {
-	loadArray(TURN_HS_HISTS, turnHSHistsPath);
+	opt::loadArray(TURN_HS_HISTS, turnHSHistsPath);
 }
 
 void EquityCalculator::loadFlopHSHists()
 {
-	loadArray(FLOP_HS_HISTS, flopHSHistsPath);
+	opt::loadArray(FLOP_HS_HISTS, flopHSHistsPath);
 }
 
 void EquityCalculator::loadPreflopHSHists()
 {
-	loadArray(PREFLOP_HS_HISTS, preflopHSHistsPath);
+	opt::loadArray(PREFLOP_HS_HISTS, preflopHSHistsPath);
 }
 
 uint16_t EquityCalculator::calculateRivHS(const uint8_t hand[])
@@ -143,6 +144,98 @@ uint16_t EquityCalculator::calculateRivHS(const uint8_t hand[])
 		}
 	}
 	return equity;
+}
+
+std::array<uint8_t, N_BINS> EquityCalculator::buildTurnHSHist(uint8_t hand[])
+{
+	// Get hand's mask.
+	uint64_t handMask = 0;
+	for (uint8_t i = 0; i < omp::TURN_HAND; ++i)
+		handMask |= 1ull << hand[i];
+
+	// Loop over all river's cards,
+	// skipping cards already used.
+	std::array<uint8_t, N_BINS> hsHist{};
+	for (uint8_t c = 0; c < omp::CARD_COUNT; ++c) {
+		if (handMask & (1ull << c))
+			continue;
+		hand[omp::TURN_HAND] = c;
+		hand_index_t handIdx = cmbRivIndexer.hand_index_last(hand);
+#pragma warning(suppress: 4244 26451)
+		uint16_t binIdx = (double)RIV_HS_LUT[handIdx] / (MAX_RIV_HS + 1) * N_BINS;
+		++hsHist[binIdx];
+	}
+	return hsHist;
+}
+
+std::array<uint16_t, N_BINS> EquityCalculator::buildFlopHSHist(uint8_t hand[])
+{
+	// Get hand's mask.
+	uint64_t handMask = 0;
+	for (uint8_t i = 0; i < omp::FLOP_HAND; ++i)
+		handMask |= 1ull << hand[i];
+
+	// Loop over all turn's and river's cards,
+	// skipping cards already used.
+	std::array<uint16_t, N_BINS> hsHist{};
+	for (uint8_t c1 = 1; c1 < omp::CARD_COUNT; ++c1) {
+		if (handMask & (1ull << c1))
+			continue;
+		for (uint8_t c2 = 0; c2 < c1; ++c2) {
+			if (handMask & (1ull << c2))
+				continue;
+			hand[omp::FLOP_HAND] = c1;
+			hand[omp::TURN_HAND] = c2;
+			hand_index_t handIdx = cmbRivIndexer.hand_index_last(hand);
+#pragma warning(suppress: 4244 26451)
+			uint16_t binIdx = (double)RIV_HS_LUT[handIdx] / (MAX_RIV_HS + 1) * N_BINS;
+			++hsHist[binIdx];
+		}
+	}
+	return hsHist;
+}
+
+std::array<uint32_t, N_BINS> EquityCalculator::buildPreflopHSHist(uint8_t hand[])
+{
+	// Loop over all flop's, turn's and river's cards,
+	// skipping cards already used.
+	std::array<uint32_t, N_BINS> hsHist{};
+	for (uint8_t i = 0; i < omp::BOARD_CARDS; ++i)
+		hand[omp::HOLE_CARDS + i] = i;
+	uint8_t lastIdx = omp::RIVER_HAND - 1;
+	while (true) {
+
+		// Look for cards already used.
+		bool skip = false;
+		for (uint8_t i = omp::HOLE_CARDS; i < omp::RIVER_HAND; ++i) {
+			if (hand[i] == hand[0] || hand[i] == hand[1]) {
+				skip = true;
+				continue;
+			}
+		}
+
+		if (!skip) {
+			hand_index_t handIdx = cmbRivIndexer.hand_index_last(hand);
+#pragma warning(suppress: 4244 26451)
+			uint16_t binIdx = (double)RIV_HS_LUT[handIdx] / (MAX_RIV_HS + 1) * N_BINS;
+			++hsHist[binIdx];
+		}
+
+		// Go to the next combination of board cards.
+		++hand[lastIdx];
+		if (hand[lastIdx] == omp::CARD_COUNT) {
+			uint8_t movingIdx = lastIdx - 1;
+			while (hand[movingIdx] ==
+				omp::CARD_COUNT - omp::RIVER_HAND + movingIdx) {
+				if (movingIdx == omp::HOLE_CARDS) return hsHist;
+				--movingIdx;
+			}
+			++hand[movingIdx];
+			// Reset after movingIdx.
+			for (uint8_t i = movingIdx + 1; i < omp::RIVER_HAND; ++i)
+				hand[i] = hand[i - 1] + 1;
+		}
+	}
 }
 
 } // abc

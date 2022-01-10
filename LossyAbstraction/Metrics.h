@@ -93,6 +93,7 @@ uint64_t euclidianDistance(
 	const std::array<feature_t, nFeatures>& v)
 {
 	uint64_t distSq = euclidianDistanceSq(u, v);
+#pragma warning(suppress: 4244)
 	return std::round(std::sqrt(distSq));
 }
 

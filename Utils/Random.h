@@ -37,7 +37,7 @@ public:
     {
         float50_t rescaleFactor = RANGE;
         rescaleFactor /= cumWeights.back();
-        for (unsigned i = 0; i < cumWeights.size(); ++i)
+        for (unsigned i = 0; i < cumWeights.size(); ++i) 
             cumWeights[i] = round(rescaleFactor * cumWeights[i])
                 .convert_to<C::value_type>();
         assert(cumWeights.back() == RANGE);
@@ -71,6 +71,7 @@ private:
         return res;
     }
 
+#pragma warning(suppress: 26454)
     static const uint64_t MASK = (1ull << tBits) - 1;
 
     uint64_t mBuffer;

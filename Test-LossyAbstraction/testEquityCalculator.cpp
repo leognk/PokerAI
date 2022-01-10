@@ -1,8 +1,8 @@
 #include "pch.h"
-#include <fstream>
 #include <numeric>
 #include "../LossyAbstraction/EquityCalculator.h"
 #include "../GameEngine/Hand.h"
+#include "../Utils/ioArray.h"
 
 static const std::string hsHistExDir = "../data/AbstractionSaves/HSHistExamples/";
 
@@ -49,11 +49,8 @@ TEST_F(EquityCalculatorTest, VerifySomeTurnHSHist)
 		"As Ac 3h Kh Ks Qc"
 	};
 	for (uint8_t i = 0; i < fileNames.size(); ++i) {
-		auto file = std::fstream(hsHistExDir + fileNames[i],
-			std::ios::in | std::ios::binary);
 		std::array<uint8_t, 50> hsHistRef;
-		file.read((char*)&hsHistRef[0], hsHistRef.size() * sizeof(uint8_t));
-		file.close();
+		opt::loadArray(hsHistRef, hsHistExDir + fileNames[i]);
 		auto hand = egn::Hand::stringToArray<7>(handStrings[i]);
 		auto hsHist = eqt.buildTurnHSHist(hand.data());
 		for (uint8_t j = 0; j < hsHist.size(); ++j)
@@ -66,19 +63,16 @@ TEST_F(EquityCalculatorTest, VerifySomeTurnHSHist)
 TEST_F(EquityCalculatorTest, VerifySomeFlopHSHist)
 {
 	const std::vector<std::string> fileNames = {
-		"River equity distribution - TcQd-7h9hQh.bin",
-		"River equity distribution - 5c9d-3d5d7d.bin"
+		"Flop equity distribution - TcQd-7h9hQh.bin",
+		"Flop equity distribution - 5c9d-3d5d7d.bin"
 	};
 	const std::vector<std::string> handStrings = {
 		"Tc Qd 7h 9h Qh",
 		"5c 9d 3d 5d 7d"
 	};
 	for (uint8_t i = 0; i < fileNames.size(); ++i) {
-		auto file = std::fstream(hsHistExDir + fileNames[i],
-			std::ios::in | std::ios::binary);
 		std::array<uint16_t, 50> hsHistRef;
-		file.read((char*)&hsHistRef[0], hsHistRef.size() * sizeof(uint16_t));
-		file.close();
+		opt::loadArray(hsHistRef, hsHistExDir + fileNames[i]);
 		auto hand = egn::Hand::stringToArray<7>(handStrings[i]);
 		auto hsHist = eqt.buildFlopHSHist(hand.data());
 		for (uint8_t j = 0; j < hsHist.size(); ++j)
@@ -103,11 +97,8 @@ TEST_F(EquityCalculatorTest, VerifySomePreflopHSHist)
 		"Ts Js"
 	};
 	for (uint8_t i = 0; i < fileNames.size(); ++i) {
-		auto file = std::fstream(hsHistExDir + fileNames[i],
-			std::ios::in | std::ios::binary);
 		std::array<uint32_t, 50> hsHistRef;
-		file.read((char*)&hsHistRef[0], hsHistRef.size() * sizeof(uint32_t));
-		file.close();
+		opt::loadArray(hsHistRef, hsHistExDir + fileNames[i]);
 		auto hand = egn::Hand::stringToArray<7>(handStrings[i]);
 		auto hsHist = eqt.buildPreflopHSHist(hand.data());
 		for (uint32_t j = 0; j < hsHist.size(); ++j)

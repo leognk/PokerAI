@@ -18,11 +18,19 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LossyAbstraction\LossyAbstraction.vcxproj">
+      <Project>{30a7bf15-f11f-43e4-bdeb-85528f77d8f2}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="BuildDkemLUT.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{57020ace-5644-4b01-a23e-1efd51e37d75}</ProjectGuid>
-    <RootNamespace>buildDkemLUT</RootNamespace>
+    <ProjectGuid>{be4e1235-5f55-4fc6-bc96-7e4cdefe0e52}</ProjectGuid>
+    <RootNamespace>BuildDkemLUT</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -142,14 +150,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="buildDkemLUT.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\LossyAbstraction\LossyAbstraction.vcxproj">
-      <Project>{30a7bf15-f11f-43e4-bdeb-85528f77d8f2}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

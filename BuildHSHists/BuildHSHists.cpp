@@ -3,6 +3,7 @@
 int main()
 {
 	abc::EquityCalculator eqt;
+	eqt.loadRivHSLUT();
 
 	eqt.populateTurnHSHists();
 	eqt.saveTurnHSHists();
