@@ -242,7 +242,6 @@ private:
 		std::array<std::array<uint64_t, nClusters>, nSamples>& lowerBounds,
 		std::array<cluSize_t, nSamples>& labels)
 	{
-		std::memset(newCenters.data(), 0, nClusters * nFeatures * sizeof(feature_t));
 		std::memset(weightInClusters.data(), 0, nClusters * sizeof(uint32_t));
 
 		for (uint32_t i = 0; i < nSamples; ++i) {
