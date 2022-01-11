@@ -164,7 +164,8 @@ private:
 				return i;
 			oldLabels = labels;
 			////////////////////////////////////////////////////////////////////////////////////////////////
-			std::cout << calculateInertia(data, centers, labels) / 10000000000000000 << "\n";
+			std::cout << calculateInertia(data, centers, labels) << "\n";
+			//std::cout << calculateInertia(data, centers, labels) / 10000000000000000 << "\n";
 			////////////////////////////////////////////////////////////////////////////////////////////////
 		}
 
