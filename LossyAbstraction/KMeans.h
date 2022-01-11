@@ -288,19 +288,13 @@ private:
 				labels[i] = label;
 				upperBounds[i] = upperBound;
 			}
-			// Update centers.
 			++weightInClusters[label];
-			for (uint8_t k = 0; k < nFeatures; ++k)
-				newCenters[label][k] += data[i][k];
 		}
 
 		// Update centers.
-		relocateEmptyClusters(data, centers, newCenters, weightInClusters, labels);
-		// Average centers.
-		for (cluSize_t j = 0; j < nClusters; ++j) {
-			for (uint8_t k = 0; k < nFeatures; ++k)
-				newCenters[j][k] /= weightInClusters[j];
-		}
+		relocateEmptyClusters(data, centers, weightInClusters, labels);
+		for (cluSize_t j = 0; j < nClusters; ++j)
+			calculateCenter(data, labels, j, weightInClusters[j], newCenters[j]);
 		// Center shift.
 		std::array<uint64_t, nClusters> centerShift;
 		for (cluSize_t j = 0; j < nClusters; ++j)
@@ -322,7 +316,6 @@ private:
 	void relocateEmptyClusters(
 		const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
 		const std::array<std::array<feature_t, nFeatures>, nClusters>& centers,
-		std::array<std::array<feature_t, nFeatures>, nClusters>& newCenters,
 		std::array<uint32_t, nClusters>& weightInClusters,
 		std::array<cluSize_t, nSamples>& labels)
 	{
@@ -356,10 +349,6 @@ private:
 			uint32_t farIdx = farFromCenters[j];
 			cluSize_t oldClusterId = labels[farIdx];
 
-			for (uint8_t k = 0; k < nFeatures; ++k) {
-				newCenters[oldClusterId][k] -= data[farIdx][k];
-				newCenters[newClusterId][k] = data[farIdx][k];
-			}
 			weightInClusters[newClusterId] = 1;
 			--weightInClusters[oldClusterId];
 			labels[farIdx] = newClusterId;
@@ -415,6 +404,18 @@ private:
 	{
 		if (useEMD) return emdSq(u, v);
 		else return euclidianDistanceSq(u, v);
+	}
+
+	template<typename cluSize_t, typename feature_t, uint32_t nSamples, uint8_t nFeatures>
+	void calculateCenter(
+		const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
+		const std::array<cluSize_t, nSamples>& labels,
+		cluSize_t label,
+		uint32_t weight,
+		std::array<feature_t, nFeatures>& center)
+	{
+		if (useEMD) return emdCenter(data, labels, label, weight, center);
+		else return euclidianCenter(data, labels, label, weight, center);
 	}
 
 	bool useEMD;

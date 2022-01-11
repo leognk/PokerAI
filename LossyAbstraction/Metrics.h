@@ -2,8 +2,8 @@
 #define ABC_METRICS_H
 
 #include <array>
-#include <algorithm>
 #include <cmath>
+#include <numeric>
 
 namespace abc {
 
@@ -38,9 +38,12 @@ uint64_t emdSq(
 // https://www.stat.cmu.edu/~larry/=sml/Opt.pdf
 // Quote: "the Wasserstein barycenter which, in this case,
 // can be obtained simply by averaging the order statistics"
-template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
+template<typename cluSize_t, typename feature_t, uint32_t nSamples, uint8_t nFeatures>
 void emdCenter(
 	const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
+	const std::array<cluSize_t, nSamples>& labels,
+	cluSize_t label,
+	uint32_t weight,
 	std::array<feature_t, nFeatures>& center)
 {
 	// Generate the average samples from the input histograms.
@@ -48,6 +51,7 @@ void emdCenter(
 		std::accumulate(data[0].begin(), data[0].end(), feature_t(0));
 	std::vector<uint64_t> centerSamples(sumFeatures);
 	for (uint32_t i = 0; i < nSamples; ++i) {
+		if (labels[i] != label) continue;
 		uint8_t k = 0;
 		while (data[i][k] == 0) ++k;
 		feature_t count = 0;
@@ -64,7 +68,7 @@ void emdCenter(
 	std::memset(center.data(), 0, nFeatures * sizeof(feature_t));
 	for (feature_t j = 0; j < sumFeatures; ++j) {
 #pragma warning(suppress: 4244)
-		uint8_t idx = std::round((double)centerSamples[j] / nSamples);
+		uint8_t idx = std::round((double)centerSamples[j] / weight);
 		++center[idx];
 	}
 }
@@ -94,17 +98,22 @@ uint64_t euclidianDistance(
 	return std::round(std::sqrt(distSq));
 }
 
-template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
+template<typename cluSize_t, typename feature_t, uint32_t nSamples, uint8_t nFeatures>
 void euclidianCenter(
 	const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
+	const std::array<cluSize_t, nSamples>& labels,
+	cluSize_t label,
+	uint32_t weight,
 	std::array<feature_t, nFeatures>& center)
 {
 	for (feature_t k = 0; k < nFeatures; ++k) {
 		uint64_t acc = 0;
-		for (uint32_t i = 0; i < nSamples; ++i)
-			acc += data[i][k];
+		for (uint32_t i = 0; i < nSamples; ++i) {
+			if (labels[i] == label)
+				acc += data[i][k];
+		}
 #pragma warning(suppress: 4244)
-		center[k] = std::round((double)acc / nSamples);
+		center[k] = std::round((double)acc / weight);
 	}
 }
 

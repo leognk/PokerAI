@@ -21,7 +21,7 @@ public:
 	// Set rngSeed to 0 to set a random seed.
 #pragma warning(suppress: 26495)
 	DKEM(unsigned kMeansNRestarts, unsigned kMeansMaxIter, unsigned kMeansRngSeed = 0) :
-		kmeans(true, kMeansNRestarts, kMeansMaxIter, kMeansRngSeed)
+		kmeans(false, kMeansNRestarts, kMeansMaxIter, kMeansRngSeed)
 	{
 	}
 
