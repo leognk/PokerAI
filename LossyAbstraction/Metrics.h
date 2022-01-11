@@ -87,38 +87,6 @@ uint64_t emdSq(
 // Optimal Transport and Wasserstein Distance
 // 4 - Barycenters and PCA
 // https://www.stat.cmu.edu/~larry/=sml/Opt.pdf
-// Quote: "In a sense, all we are really doing is
-// converting to quantiles and averaging."
-// So we average the quantiles of the data points and convert it to
-// a distribution (histogram) which will be the barycenter.
-//template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
-//void emdCenter(
-//	const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
-//	std::array<feature_t, nFeatures>& center, feature_t sumFeatures)
-//{
-//	std::memset(center.data(), 0, nFeatures * sizeof(feature_t));
-//	std::vector<uint64_t> centerQuantile(sumFeatures, 0);
-//	for (uint32_t i = 0; i < nSamples; ++i) {
-//		uint64_t cumul = 0;
-//		for (uint8_t k = 0; k < nFeatures; ++k) {
-//			if (data[i][k] != 0) {
-//				cumul += data[i][k];
-//#pragma warning(suppress: 26451)
-//				centerQuantile[cumul - 1] += k + 1;
-//			}
-//		}
-//	}
-//	for (feature_t i = 0; i < sumFeatures; ++i) {
-//#pragma warning(suppress: 4244)
-//		uint8_t idx = std::round((double)centerQuantile[i] / nSamples);
-//		if (idx != 0) center[idx - 1] = i + 1;
-//	}
-//}
-
-// Reference:
-// Optimal Transport and Wasserstein Distance
-// 4 - Barycenters and PCA
-// https://www.stat.cmu.edu/~larry/=sml/Opt.pdf
 // Quote: "the Wasserstein barycenter which, in this case,
 // can be obtained simply by averaging the order statistics"
 template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
