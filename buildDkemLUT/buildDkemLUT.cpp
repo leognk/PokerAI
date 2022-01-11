@@ -11,7 +11,7 @@ int main()
 	const bckSize_t nBck = 8;
 
 	const uint32_t kMeansNRestarts = 100; // 25
-	const uint32_t kMeansMaxIter = 3; // 300
+	const uint32_t kMeansMaxIter = 10000; // 300
 	const unsigned kMeansRngSeed = 1; // 0 for random seed
 
 	abc::DKEM<bckSize_t, nBck> dkem(kMeansNRestarts, kMeansMaxIter, kMeansRngSeed);
