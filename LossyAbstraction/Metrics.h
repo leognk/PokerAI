@@ -16,7 +16,7 @@ uint64_t emd(
 	int64_t diffAcc = 0;
 	uint64_t distance = 0;
 	for (uint8_t i = 0; i < nFeatures; ++i) {
-		diffAcc += u[i] - v[i];
+		diffAcc += (int64_t)u[i] - v[i];
 		distance += std::abs(diffAcc);
 	}
 	return distance;
@@ -57,7 +57,6 @@ void emdCenter(
 		feature_t count = 0;
 		for (feature_t j = 0; j < sumFeatures; ++j) {
 			centerSamples[j] += k;
-#pragma warning(suppress: 28020)
 			if (++count == data[i][k]) {
 				++k;
 				count = 0;
@@ -81,7 +80,7 @@ uint64_t euclidianDistanceSq(
 {
 	uint64_t res = 0;
 	for (uint8_t i = 0; i < nFeatures; ++i) {
-		int64_t diff = u[i] - v[i];
+		int64_t diff = (int64_t)u[i] - v[i];
 		res += diff * diff;
 	}
 	return res;

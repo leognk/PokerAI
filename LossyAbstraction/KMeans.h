@@ -59,11 +59,12 @@ public:
 				bestLabels = labels;
 			}
 
-			std::cout << "restart: " << i
-				<< " | n_iter: " << nIter
-				<< " | min_weight: " << minWeight
-				<< " | avg_weight: " << nSamples / nClusters << "  \n";
+			std::cout << "restart: " << std::setw(3) << i
+				<< " | n_iter: " << std::setw(3) << nIter
+				<< " | min_weight: " << std::setw(3) << minWeight
+				<< " | avg_weight: " << std::setw(3) << nSamples / nClusters << "  \n";
 		}
+		bar.progress(nRestarts - 1, nRestarts);
 
 		// Count number of distinct clusters found.
 		if (countUniqueLabels(bestLabels) != nClusters)
@@ -149,11 +150,7 @@ private:
 		initBounds(data, centers, centerHalfDists, labels, upperBounds, lowerBounds);
 
 		// Proceed to the iterations of k-means.
-		bool strictConvergence = false;
-		tqdm bar;
 		for (unsigned i = 0; i < maxIter; ++i) {
-			bar.progress(i, maxIter);
-
 			elkanIter(
 				data, centers, newCenters, weightInClusters,
 				centerHalfDists, distNextCenter,
@@ -164,7 +161,7 @@ private:
 				return i;
 			oldLabels = labels;
 			////////////////////////////////////////////////////////////////////////////////////////////////
-			std::cout << calculateInertia(data, centers, labels) << "\n";
+			//std::cout << calculateInertia(data, centers, labels) << "\n";
 			//std::cout << calculateInertia(data, centers, labels) / 10000000000000000 << "\n";
 			////////////////////////////////////////////////////////////////////////////////////////////////
 		}
