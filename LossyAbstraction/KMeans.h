@@ -46,7 +46,7 @@ public:
 			bar.progress(i, nRestarts);
 
 			// Initialize centers.
-			kMeansPlusPlus(data, centers, rng);
+			kMeansPlusPlusInit(data, centers, rng);
 
 			// Run k-means Elkan once.
 			unsigned nIter = kMeansSingleElkan(data, centers, labels);
@@ -81,7 +81,7 @@ private:
 
 	// Initialize the centers with k-means++.
 	template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
-	void kMeansPlusPlus(
+	void kMeansPlusPlusInit(
 		const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
 		std::vector<std::vector<feature_t>>& centers,
 		Rng& rng)
@@ -93,7 +93,7 @@ private:
 
 		// Initialize the squared distances between each data point
 		// and the nearest center that has already been chosen.
-		std::vector<uint64_t> minSqDists(nSamples);
+		std::vector<uint32_t> minSqDists(nSamples);
 		for (uint32_t i = 0; i < nSamples; ++i) {
 			minSqDists[i] = calculateDistSq(data[i], centers[0]);
 		}
@@ -120,7 +120,7 @@ private:
 			for (uint32_t i = 0; i < nSamples; ++i) {
 				// Skip if point i has already been chosen as a center.
 				if (minSqDists[i] == 0) continue;
-				uint64_t newSqDist = calculateDistSq(data[i], centers[c]);
+				uint32_t newSqDist = calculateDistSq(data[i], centers[c]);
 				if (newSqDist < minSqDists[i])
 					minSqDists[i] = newSqDist;
 			}
@@ -139,20 +139,20 @@ private:
 		std::vector<cluSize_t> oldLabels = labels;
 
 		// Init the matrix of the half of the distance between any 2 clusters centers.
-		std::vector<std::vector<uint64_t>> centerHalfDists(
-			nClusters, std::vector<uint64_t>(nClusters));
+		std::vector<std::vector<uint16_t>> centerHalfDists(
+			nClusters, std::vector<uint16_t>(nClusters));
 		// Init the array of the half of the distance between each center
 		// and its closest center.
-		std::vector<uint64_t> distNextCenter(nClusters);
+		std::vector<uint16_t> distNextCenter(nClusters);
 		updateCenterDists(centers, centerHalfDists, distNextCenter);
 
 		// Init the matrix of the upper bound on the distance between
 		// each sample and its closest cluster center.
-		std::vector<uint64_t> upperBounds(nSamples);
+		std::vector<uint16_t> upperBounds(nSamples);
 		// Init the matrix of the lower bound on the distance between
 		// each sample and each cluster center.
-		std::vector<std::vector<uint64_t>> lowerBounds(
-			nSamples, std::vector<uint64_t>(nClusters));
+		std::vector<std::vector<uint16_t>> lowerBounds(
+			nSamples, std::vector<uint16_t>(nClusters));
 		initBounds(data, centers, centerHalfDists, labels, upperBounds, lowerBounds);
 
 		// Proceed to the iterations of k-means.
@@ -184,8 +184,8 @@ private:
 	template<typename feature_t>
 	void updateCenterDists(
 		const std::vector<std::vector<feature_t>>& centers,
-		std::vector<std::vector<uint64_t>>& centerHalfDists,
-		std::vector<uint64_t>& distNextCenter)
+		std::vector<std::vector<uint16_t>>& centerHalfDists,
+		std::vector<uint16_t>& distNextCenter)
 	{
 		// Update centerHalfDists.
 		for (cluSize_t c1 = 1; c1 < nClusters; ++c1) {
@@ -196,7 +196,7 @@ private:
 		}
 		// Update distNextCenter.
 		for (cluSize_t c1 = 0; c1 < nClusters; ++c1) {
-			uint64_t minDist = 0;
+			uint16_t minDist = 0;
 			for (cluSize_t c2 = 0; c2 < nClusters; ++c2) {
 				if (c2 == c1) continue;
 				if (minDist == 0 || centerHalfDists[c1][c2] < minDist)
@@ -210,18 +210,18 @@ private:
 	void initBounds(
 		const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
 		const std::vector<std::vector<feature_t>>& centers,
-		const std::vector<std::vector<uint64_t>>& centerHalfDists,
+		const std::vector<std::vector<uint16_t>>& centerHalfDists,
 		std::vector<cluSize_t>& labels,
-		std::vector<uint64_t>& upperBounds,
-		std::vector<std::vector<uint64_t>>& lowerBounds)
+		std::vector<uint16_t>& upperBounds,
+		std::vector<std::vector<uint16_t>>& lowerBounds)
 	{
 		for (uint32_t i = 0; i < nSamples; ++i) {
 			cluSize_t bestCluster = 0;
-			uint64_t minDist = calculateDist(data[i], centers[0]);
+			uint16_t minDist = calculateDist(data[i], centers[0]);
 			lowerBounds[i][0] = minDist;
 			for (cluSize_t j = 1; j < nClusters; ++j) {
 				if (centerHalfDists[bestCluster][j] < minDist) {
-					uint64_t dist = calculateDist(data[i], centers[j]);
+					uint16_t dist = calculateDist(data[i], centers[j]);
 					lowerBounds[i][j] = dist;
 					if (dist < minDist) {
 						minDist = dist;
@@ -240,16 +240,16 @@ private:
 		const std::vector<std::vector<feature_t>>& centers,
 		std::vector<std::vector<feature_t>>& newCenters,
 		std::vector<uint32_t>& weightInClusters,
-		const std::vector<std::vector<uint64_t>>& centerHalfDists,
-		const std::vector<uint64_t>& distNextCenter,
-		std::vector<uint64_t>& upperBounds,
-		std::vector<std::vector<uint64_t>>& lowerBounds,
+		const std::vector<std::vector<uint16_t>>& centerHalfDists,
+		const std::vector<uint16_t>& distNextCenter,
+		std::vector<uint16_t>& upperBounds,
+		std::vector<std::vector<uint16_t>>& lowerBounds,
 		std::vector<cluSize_t>& labels)
 	{
 		std::memset(&weightInClusters[0], 0, nClusters * sizeof(uint32_t));
 
 		for (uint32_t i = 0; i < nSamples; ++i) {
-			uint64_t upperBound = upperBounds[i];
+			uint16_t upperBound = upperBounds[i];
 			bool boundsTight = false;
 			cluSize_t label = labels[i];
 
@@ -280,7 +280,7 @@ private:
 						if (upperBound > lowerBounds[i][j]
 							|| (upperBound > centerHalfDists[label][j])) {
 
-							uint64_t dist = calculateDist(data[i], centers[j]);
+							uint16_t dist = calculateDist(data[i], centers[j]);
 							lowerBounds[i][j] = dist;
 							if (dist < upperBound) {
 								label = j;
@@ -300,7 +300,7 @@ private:
 		for (cluSize_t j = 0; j < nClusters; ++j)
 			calculateCenter(data, labels, j, weightInClusters[j], newCenters[j]);
 		// Center shift.
-		std::vector<uint64_t> centerShift(nClusters);
+		std::vector<uint16_t> centerShift(nClusters);
 		for (cluSize_t j = 0; j < nClusters; ++j)
 			centerShift[j] = calculateDist(newCenters[j], centers[j]);
 
@@ -334,7 +334,7 @@ private:
 		if (nEmpty == 0) return;
 
 		// Find the nEmpty farthest data points from their centers.
-		std::vector<uint64_t> dists(nSamples);
+		std::vector<uint16_t> dists(nSamples);
 		for (uint32_t i = 0; i < nSamples; ++i)
 			dists[i] = calculateDist(data[i], centers[labels[i]]);
 		std::vector<uint32_t> farFromCenters(nSamples);
@@ -393,14 +393,14 @@ private:
 	}
 
 	template<typename C1, typename C2>
-	uint64_t calculateDist(const C1& u, const C2& v)
+	uint16_t calculateDist(const C1& u, const C2& v)
 	{
 		if (useEMD) return emd(u, v);
 		else return euclidianDistance(u, v);
 	}
 
 	template<typename C1, typename C2>
-	uint64_t calculateDistSq(const C1& u, const C2& v)
+	uint32_t calculateDistSq(const C1& u, const C2& v)
 	{
 		if (useEMD) return emdSq(u, v);
 		else return euclidianDistanceSq(u, v);

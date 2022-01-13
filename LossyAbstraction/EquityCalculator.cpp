@@ -7,8 +7,8 @@ namespace abc {
 
 std::array<uint16_t, CMB_RIVER_SIZE> EquityCalculator::RIV_HS_LUT;
 std::array<std::array<uint8_t, N_BINS>, CMB_TURN_SIZE> EquityCalculator::TURN_HS_HISTS;
-std::array<std::array<uint16_t, N_BINS>, FLOP_SIZE> EquityCalculator::FLOP_HS_HISTS;
-std::array<std::array<uint32_t, N_BINS>, PREFLOP_SIZE> EquityCalculator::PREFLOP_HS_HISTS;
+std::array<std::array<uint8_t, N_BINS>, FLOP_SIZE> EquityCalculator::FLOP_HS_HISTS;
+std::array<std::array<uint8_t, N_BINS>, PREFLOP_SIZE> EquityCalculator::PREFLOP_HS_HISTS;
 
 hand_indexer_t EquityCalculator::cmbRivIndexer(
 	2, { omp::HOLE_CARDS, omp::BOARD_CARDS });
@@ -168,7 +168,7 @@ std::array<uint8_t, N_BINS> EquityCalculator::buildTurnHSHist(uint8_t hand[])
 	return hsHist;
 }
 
-std::array<uint16_t, N_BINS> EquityCalculator::buildFlopHSHist(uint8_t hand[])
+std::array<uint8_t, N_BINS> EquityCalculator::buildFlopHSHist(uint8_t hand[])
 {
 	// Get hand's mask.
 	uint64_t handMask = 0;
@@ -177,7 +177,7 @@ std::array<uint16_t, N_BINS> EquityCalculator::buildFlopHSHist(uint8_t hand[])
 
 	// Loop over all turn's and river's cards,
 	// skipping cards already used.
-	std::array<uint16_t, N_BINS> hsHist{};
+	std::array<uint16_t, N_BINS> accHsHist{};
 	for (uint8_t c1 = 1; c1 < omp::CARD_COUNT; ++c1) {
 		if (handMask & (1ull << c1))
 			continue;
@@ -189,17 +189,17 @@ std::array<uint16_t, N_BINS> EquityCalculator::buildFlopHSHist(uint8_t hand[])
 			hand_index_t handIdx = cmbRivIndexer.hand_index_last(hand);
 #pragma warning(suppress: 4244 26451)
 			uint16_t binIdx = (double)RIV_HS_LUT[handIdx] / (MAX_RIV_HS + 1) * N_BINS;
-			++hsHist[binIdx];
+			++accHsHist[binIdx];
 		}
 	}
-	return hsHist;
+	return normalizeHist(accHsHist);
 }
 
-std::array<uint32_t, N_BINS> EquityCalculator::buildPreflopHSHist(uint8_t hand[])
+std::array<uint8_t, N_BINS> EquityCalculator::buildPreflopHSHist(uint8_t hand[])
 {
 	// Loop over all flop's, turn's and river's cards,
 	// skipping cards already used.
-	std::array<uint32_t, N_BINS> hsHist{};
+	std::array<uint32_t, N_BINS> accHsHist{};
 	for (uint8_t i = 0; i < omp::BOARD_CARDS; ++i)
 		hand[omp::HOLE_CARDS + i] = i;
 	uint8_t lastIdx = omp::RIVER_HAND - 1;
@@ -218,7 +218,7 @@ std::array<uint32_t, N_BINS> EquityCalculator::buildPreflopHSHist(uint8_t hand[]
 			hand_index_t handIdx = cmbRivIndexer.hand_index_last(hand);
 #pragma warning(suppress: 4244 26451)
 			uint16_t binIdx = (double)RIV_HS_LUT[handIdx] / (MAX_RIV_HS + 1) * N_BINS;
-			++hsHist[binIdx];
+			++accHsHist[binIdx];
 		}
 
 		// Go to the next combination of board cards.
@@ -227,7 +227,8 @@ std::array<uint32_t, N_BINS> EquityCalculator::buildPreflopHSHist(uint8_t hand[]
 			uint8_t movingIdx = lastIdx - 1;
 			while (hand[movingIdx] ==
 				omp::CARD_COUNT - omp::RIVER_HAND + movingIdx) {
-				if (movingIdx == omp::HOLE_CARDS) return hsHist;
+				if (movingIdx == omp::HOLE_CARDS)
+					return normalizeHist(accHsHist);
 				--movingIdx;
 			}
 			++hand[movingIdx];

@@ -9,12 +9,12 @@ namespace abc {
 
 // Earth mover's distance.
 template<typename C1, typename C2>
-uint64_t emd(const C1& u, const C2& v)
+uint16_t emd(const C1& u, const C2& v)
 {
-	int64_t diffAcc = 0;
-	uint64_t distance = 0;
+	int16_t diffAcc = 0;
+	uint16_t distance = 0;
 	for (uint8_t i = 0; i < u.size(); ++i) {
-		diffAcc += (int64_t)u[i] - v[i];
+		diffAcc += (int16_t)u[i] - v[i];
 		distance += std::abs(diffAcc);
 	}
 	return distance;
@@ -22,9 +22,9 @@ uint64_t emd(const C1& u, const C2& v)
 
 // Squared earth mover's distance multiplied by nFeatures.
 template<typename C1, typename C2>
-uint64_t emdSq(const C1& u, const C2& v)
+uint32_t emdSq(const C1& u, const C2& v)
 {
-	uint64_t distance = emd(u, v);
+	uint32_t distance = emd(u, v);
 	return distance * distance;
 }
 
@@ -68,11 +68,11 @@ void emdCenter(
 
 // Squared euclidian distance.
 template<typename C1, typename C2>
-uint64_t euclidianDistanceSq(const C1& u, const C2& v)
+uint32_t euclidianDistanceSq(const C1& u, const C2& v)
 {
-	uint64_t res = 0;
+	uint32_t res = 0;
 	for (uint8_t i = 0; i < u.size(); ++i) {
-		int64_t diff = (int64_t)u[i] - v[i];
+		int32_t diff = (int32_t)u[i] - v[i];
 		res += diff * diff;
 	}
 	return res;
@@ -80,9 +80,9 @@ uint64_t euclidianDistanceSq(const C1& u, const C2& v)
 
 // Euclidian distance.
 template<typename C1, typename C2>
-uint64_t euclidianDistance(const C1& u, const C2& v)
+uint16_t euclidianDistance(const C1& u, const C2& v)
 {
-	uint64_t distSq = euclidianDistanceSq(u, v);
+	uint32_t distSq = euclidianDistanceSq(u, v);
 #pragma warning(suppress: 4244)
 	return std::round(std::sqrt(distSq));
 }
