@@ -2,23 +2,24 @@
 #define OPT_RANDOM_H
 
 #include <cstdint>
-#include <boost/multiprecision/cpp_bin_float.hpp>
-#include <boost/math/special_functions/round.hpp>
+#include <stdexcept>
 
 namespace opt {
-
-using float50_t = boost::multiprecision::cpp_bin_float_50;
 
 // Generate a random index with the given
 // array of cumulated weights (uintN_t with N > tBits
 // or float with enough bits on the fractional part).
 // The sum of the weights must be equal to RANGE,
 // which is 2^tBits.
-// Ideally, the number N of elements must be very small
+// Ideally, the number N of elements must be small
 // compared to RANGE (and it has to be less than RANGE),
 // because the precision of the probability is 1 / RANGE and
 // the order of magnitude of the actual probabilities is 1 / N.
-// tBits must be less than 64 excluded.
+// In other words, log2(N) < tBits.
+// Also preferably, cumWeights.back() < RANGE.
+// tBits must be less than 53 excluded because in rescaleCumWeights,
+// RANGE will be converted to a double which uses 53 bits for
+// the fractional part.
 template<unsigned tBits = 16>
 class FastRandomChoice
 {
@@ -35,12 +36,12 @@ public:
     template<class C>
     void rescaleCumWeights(C& cumWeights)
     {
-        float50_t rescaleFactor = RANGE;
-        rescaleFactor /= cumWeights.back();
+        double rescaleFactor = (double)RANGE / cumWeights.back();
         for (unsigned i = 0; i < cumWeights.size(); ++i) 
-            cumWeights[i] = round(rescaleFactor * cumWeights[i])
-                .convert_to<C::value_type>();
-        assert(cumWeights.back() == RANGE);
+#pragma warning(suppress: 4244)
+            cumWeights[i] = round(rescaleFactor * cumWeights[i]);
+        if (cumWeights.back() != RANGE)
+            throw std::runtime_error("Sum of weights not equal to RANGE.");
     }
 
     template<class C, class TRng>

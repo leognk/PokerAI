@@ -4,6 +4,7 @@
 #include <random>
 #include <cstring>
 #include <chrono>
+#include <iostream>
 #include "Metrics.h"
 #include "../Utils/Random.h"
 
@@ -100,7 +101,7 @@ private:
 
 		// Choose the remaining nClusters - 1 centers
 		// among the data points.
-		opt::FastRandomChoice<63> randChoice;
+		opt::FastRandomChoice<52> randChoice;
 		std::vector<uint64_t> cumWeights(nSamples);
 		for (cluSize_t c = 1; c < nClusters; ++c) {
 
@@ -188,9 +189,9 @@ private:
 		auto duration = 1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(t - startTime).count();
 		std::cout << "restart: " << std::setw(4) << restartCount + 1 << "/" << nRestarts
 			<< " | n_iter: " << std::setw(3) << nIter + 1
-			<< " | sqrt_inertia: " << std::setw(6) << inertia
-			<< " | min_weight: " << std::setw(2) << minWeight
-			<< " | " << std::setw(3) << std::round(duration) << " sec\n";
+			<< " | sqrt_inertia: " << std::setw(7) << inertia
+			<< " | min_weight: " << std::setw(4) << minWeight
+			<< " | " << std::setw(4) << std::round(duration) << " sec\n";
 	}
 
 	template<typename feature_t>
