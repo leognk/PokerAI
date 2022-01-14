@@ -4,7 +4,7 @@
 #include "../GameEngine/Hand.h"
 #include "../Utils/ioArray.h"
 
-static const std::string hsHistExDir = "../data/AbstractionSaves/HSHistExamples/";
+static const std::string hsHistExDir = "../data/AbstractionSaves/Tests/HSHistExamples/";
 
 class EquityCalculatorTest : public ::testing::Test
 {
@@ -82,28 +82,16 @@ TEST_F(EquityCalculatorTest, VerifySomeFlopHSHist)
 	}
 }
 
-TEST_F(EquityCalculatorTest, VerifySomePreflopHSHist)
+TEST_F(EquityCalculatorTest, VerifyPreflopHSHist)
 {
-	const std::vector<std::string> fileNames = {
-		"Preflop equity distribution - 4s4h.bin",
-		"Preflop equity distribution - 6s6h.bin",
-		"Preflop equity distribution - QsKs.bin",
-		"Preflop equity distribution - TsJs.bin"
-	};
-	const std::vector<std::string> handStrings = {
-		"4s 4h",
-		"6s 6h",
-		"Qs Ks",
-		"Ts Js"
-	};
-	for (uint8_t i = 0; i < fileNames.size(); ++i) {
-		std::array<uint32_t, 50> hsHistRef;
-		opt::loadArray(hsHistRef, hsHistExDir + fileNames[i]);
-		auto hand = egn::Hand::stringToArray<7>(handStrings[i]);
-		auto hsHist = eqt.buildPreflopHSHist(hand.data());
-		for (uint32_t j = 0; j < hsHist.size(); ++j)
-			EXPECT_EQ(hsHist[j], hsHistRef[j]);
-		uint32_t sum = std::accumulate(hsHist.begin(), hsHist.end(), uint32_t(0));
-		EXPECT_EQ(sum, 2118760); // binom(52 - 2, 5)
+	static std::array<std::array<uint16_t, abc::N_BINS>, abc::PREFLOP_SIZE> hsHistRef;
+	opt::loadArray(hsHistRef, hsHistExDir + "PREFLOP_HS_HISTS.bin");
+	eqt.loadPreflopHSHists();
+	for (uint8_t i = 0; i < abc::PREFLOP_SIZE; ++i) {
+		for (uint8_t j = 0; j < abc::N_BINS; ++j)
+			EXPECT_EQ(eqt.PREFLOP_HS_HISTS[i][j], hsHistRef[i][j]);
+		uint32_t sum = std::accumulate(
+			eqt.PREFLOP_HS_HISTS[i].begin(), eqt.PREFLOP_HS_HISTS[i].end(), uint32_t(0));
+		EXPECT_EQ(sum, abc::MAX_TOTAL_WEIGHT); // (non-normalized sum is binom(52 - 2, 5))
 	}
 }

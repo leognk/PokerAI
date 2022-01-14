@@ -7,8 +7,8 @@ namespace abc {
 
 std::array<uint16_t, CMB_RIVER_SIZE> EquityCalculator::RIV_HS_LUT;
 std::array<std::array<uint8_t, N_BINS>, CMB_TURN_SIZE> EquityCalculator::TURN_HS_HISTS;
-std::array<std::array<uint8_t, N_BINS>, FLOP_SIZE> EquityCalculator::FLOP_HS_HISTS;
-std::array<std::array<uint8_t, N_BINS>, PREFLOP_SIZE> EquityCalculator::PREFLOP_HS_HISTS;
+std::array<std::array<uint16_t, N_BINS>, FLOP_SIZE> EquityCalculator::FLOP_HS_HISTS;
+std::array<std::array<uint16_t, N_BINS>, PREFLOP_SIZE> EquityCalculator::PREFLOP_HS_HISTS;
 
 hand_indexer_t EquityCalculator::cmbRivIndexer(
 	2, { omp::HOLE_CARDS, omp::BOARD_CARDS });
@@ -168,7 +168,7 @@ std::array<uint8_t, N_BINS> EquityCalculator::buildTurnHSHist(uint8_t hand[])
 	return hsHist;
 }
 
-std::array<uint8_t, N_BINS> EquityCalculator::buildFlopHSHist(uint8_t hand[])
+std::array<uint16_t, N_BINS> EquityCalculator::buildFlopHSHist(uint8_t hand[])
 {
 	// Get hand's mask.
 	uint64_t handMask = 0;
@@ -177,7 +177,7 @@ std::array<uint8_t, N_BINS> EquityCalculator::buildFlopHSHist(uint8_t hand[])
 
 	// Loop over all turn's and river's cards,
 	// skipping cards already used.
-	std::array<uint16_t, N_BINS> accHsHist{};
+	std::array<uint16_t, N_BINS> hsHist{};
 	for (uint8_t c1 = 1; c1 < omp::CARD_COUNT; ++c1) {
 		if (handMask & (1ull << c1))
 			continue;
@@ -189,13 +189,13 @@ std::array<uint8_t, N_BINS> EquityCalculator::buildFlopHSHist(uint8_t hand[])
 			hand_index_t handIdx = cmbRivIndexer.hand_index_last(hand);
 #pragma warning(suppress: 4244 26451)
 			uint16_t binIdx = (double)RIV_HS_LUT[handIdx] / (MAX_RIV_HS + 1) * N_BINS;
-			++accHsHist[binIdx];
+			++hsHist[binIdx];
 		}
 	}
-	return normalizeHist(accHsHist);
+	return hsHist;
 }
 
-std::array<uint8_t, N_BINS> EquityCalculator::buildPreflopHSHist(uint8_t hand[])
+std::array<uint16_t, N_BINS> EquityCalculator::buildPreflopHSHist(uint8_t hand[])
 {
 	// Loop over all flop's, turn's and river's cards,
 	// skipping cards already used.
@@ -237,6 +237,22 @@ std::array<uint8_t, N_BINS> EquityCalculator::buildPreflopHSHist(uint8_t hand[])
 				hand[i] = hand[i - 1] + 1;
 		}
 	}
+}
+
+std::array<uint16_t, N_BINS> EquityCalculator::normalizeHist(
+	std::array<uint32_t, N_BINS>& accHsHist)
+{
+	// We apply the following weird procedure so that the total weight of
+	// the histogram will be exactly equal to MAX_TOTAL_WEIGHT, getting around
+	// rounding issues.
+	for (uint16_t i = 1; i < N_BINS; ++i)
+		accHsHist[i] += accHsHist[i - 1];
+	for (uint16_t i = 0; i < N_BINS; ++i)
+#pragma warning(suppress: 4244)
+		accHsHist[i] = std::round((double)MAX_TOTAL_WEIGHT * accHsHist[i] / accHsHist.back());
+	std::array<uint16_t, N_BINS> hsHist;
+	std::adjacent_difference(accHsHist.begin(), accHsHist.end(), hsHist.begin());
+	return hsHist;
 }
 
 } // abc

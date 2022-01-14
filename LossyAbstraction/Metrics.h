@@ -51,8 +51,8 @@ void emdCenter(
 		feature_t count = 0;
 		for (feature_t j = 0; j < sumFeatures; ++j) {
 			centerSamples[j] += k;
-			if (++count == data[i][k]) {
-				++k;
+			if (++count == data[i][k] && k != nFeatures - 1) {
+				while (data[i][++k] == 0);
 				count = 0;
 			}
 		}

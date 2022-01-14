@@ -18,19 +18,11 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="BuildRivHSLUT.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\LossyAbstraction\LossyAbstraction.vcxproj">
-      <Project>{30a7bf15-f11f-43e4-bdeb-85528f77d8f2}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{6b5a42d2-fe28-4e2e-b897-c6a5fe4d4015}</ProjectGuid>
-    <RootNamespace>BuildRivHSLUT</RootNamespace>
+    <ProjectGuid>{3de881a8-e708-4f19-aa9a-bc0c6e02a17a}</ProjectGuid>
+    <RootNamespace>BuildHS</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -150,6 +142,14 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="BuildHS.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LossyAbstraction\LossyAbstraction.vcxproj">
+      <Project>{30a7bf15-f11f-43e4-bdeb-85528f77d8f2}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

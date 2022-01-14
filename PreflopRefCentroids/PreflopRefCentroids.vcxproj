@@ -18,22 +18,11 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="PrintRivHS.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\HandData\HandData.vcxproj">
-      <Project>{84e3a460-8d80-44f6-91cf-6d7105b3d933}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\LossyAbstraction\LossyAbstraction.vcxproj">
-      <Project>{30a7bf15-f11f-43e4-bdeb-85528f77d8f2}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{cf72ddf6-3389-4a03-b5d4-e415f312d2d9}</ProjectGuid>
-    <RootNamespace>PrintRivHS</RootNamespace>
+    <ProjectGuid>{4ba0d468-aa16-40f0-9b4d-97f11ec137ec}</ProjectGuid>
+    <RootNamespace>PreflopRefCentroids</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -153,6 +142,14 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="PreflopRefCentroids.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LossyAbstraction\LossyAbstraction.vcxproj">
+      <Project>{30a7bf15-f11f-43e4-bdeb-85528f77d8f2}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -3,9 +3,9 @@
 
 #include <random>
 #include <cstring>
+#include <chrono>
 #include "Metrics.h"
 #include "../Utils/Random.h"
-#include "../cpptqdm/tqdm.h"
 
 namespace abc {
 
@@ -22,15 +22,19 @@ public:
 		useEMD(useEMD),
 		nRestarts(nRestarts),
 		maxIter(maxIter),
-		rngSeed(rngSeed)
+		rngSeed(rngSeed),
+		startTime(std::chrono::high_resolution_clock::now()),
+		restartCount(0)
 	{
 	}
 
 	// Run k-means and modify bestLabels in-place.
+	// Return inertia and minWeight.
 	template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
-	uint32_t buildClusters(
+	std::pair<uint64_t, uint32_t> buildClusters(
 		const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
-		std::array<cluSize_t, nSamples>& bestLabels)
+		std::array<cluSize_t, nSamples>& bestLabels,
+		std::array<std::array<feature_t, nFeatures>, nClusters>& bestCenters)
 	{
 		Rng rng{ (!rngSeed) ? std::random_device{}() : rngSeed };
 
@@ -40,39 +44,35 @@ public:
 		std::vector<std::vector<feature_t>> centers(
 			nClusters, std::vector<feature_t>(nFeatures));
 		std::vector<cluSize_t> labels(nSamples);
-
-		tqdm bar;
-		for (unsigned i = 0; i < nRestarts; ++i) {
-			bar.progress(i, nRestarts);
+		
+		while (restartCount < nRestarts) {
 
 			// Initialize centers.
 			kMeansPlusPlusInit(data, centers, rng);
 
 			// Run k-means Elkan once.
-			unsigned nIter = kMeansSingleElkan(data, centers, labels);
+			kMeansSingleElkan(data, centers, labels);
 
 			// Update the best clustering by looking at the inertia.
 			uint64_t inertia = calculateInertia(data, centers, labels);
 			uint32_t minWeight = calculateMinWeight(labels);
-			if (i == 0 || inertia < bestInertia) {
+			if (restartCount == 0 || inertia < bestInertia) {
 				bestInertia = inertia;
 				bestMinWeight = minWeight;
 				std::copy(labels.begin(), labels.end(), bestLabels.begin());
+				for (cluSize_t j = 0; j < nClusters; ++j)
+					std::copy(centers[j].begin(), centers[j].end(), bestCenters[j].begin());
 			}
 
-			std::cout << "restart: " << std::setw(3) << i
-				<< " | n_iter: " << std::setw(3) << nIter
-				<< " | min_weight: " << std::setw(3) << minWeight
-				<< " | avg_weight: " << std::setw(3) << nSamples / nClusters << "  \n";
+			++restartCount;
 		}
-		bar.progress(nRestarts - 1, nRestarts);
 
 		// Count number of distinct clusters found.
 		if (countUniqueLabels(bestLabels) != nClusters)
 			throw std::runtime_error(
 				"Number of distinct clusters found smaller than n_clusters.");
 
-		return bestMinWeight;
+		return std::make_pair(bestInertia, bestMinWeight);
 	}
 
 private:
@@ -128,7 +128,7 @@ private:
 	}
 
 	template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
-	unsigned kMeansSingleElkan(
+	void kMeansSingleElkan(
 		const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
 		std::vector<std::vector<feature_t>>& centers,
 		std::vector<cluSize_t>& labels)
@@ -157,19 +157,20 @@ private:
 
 		// Proceed to the iterations of k-means.
 		for (unsigned i = 0; i < maxIter; ++i) {
+
 			elkanIter(
 				data, centers, newCenters, weightInClusters,
 				centerHalfDists, distNextCenter,
 				upperBounds, lowerBounds, labels);
+
 			updateCenterDists(newCenters, centerHalfDists, distNextCenter);
 			std::swap(centers, newCenters);
+
+			printProgress(i, calculateInertia(data, centers, labels), calculateMinWeight(labels));
+
 			if (labels == oldLabels)
-				return i;
+				return;
 			oldLabels = labels;
-			////////////////////////////////////////////////////////////////////////////////////////////////
-			//std::cout << calculateInertia(data, centers, labels) << "\n";
-			//std::cout << calculateInertia(data, centers, labels) / 10000000000000000 << "\n";
-			////////////////////////////////////////////////////////////////////////////////////////////////
 		}
 
 		// Run one last step so that predicted labels match cluster centers.
@@ -178,7 +179,18 @@ private:
 			centerHalfDists, distNextCenter,
 			upperBounds, lowerBounds, labels);
 
-		return maxIter + 1;
+		printProgress(maxIter, calculateInertia(data, centers, labels), calculateMinWeight(labels));
+	}
+
+	void printProgress(uint16_t nIter, uint64_t inertia, uint32_t minWeight)
+	{
+		auto t = std::chrono::high_resolution_clock::now();
+		auto duration = 1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(t - startTime).count();
+		std::cout << "restart: " << std::setw(4) << restartCount + 1 << "/" << nRestarts
+			<< " | n_iter: " << std::setw(3) << nIter + 1
+			<< " | sqrt_inertia: " << std::setw(6) << inertia
+			<< " | min_weight: " << std::setw(2) << minWeight
+			<< " | " << std::setw(3) << std::round(duration) << " sec\n";
 	}
 
 	template<typename feature_t>
@@ -368,7 +380,8 @@ private:
 		uint64_t inertia = 0;
 		for (uint32_t i = 0; i < nSamples; ++i)
 			inertia += calculateDistSq(data[i], centers[labels[i]]);
-		return inertia;
+#pragma warning(suppress: 4244)
+		return std::round(std::sqrt(inertia));
 	}
 
 	template<typename C>
@@ -414,7 +427,7 @@ private:
 		uint32_t weight,
 		std::vector<feature_t>& center)
 	{
-		if (useEMD) return euclidianCenter(data, labels, label, weight, center);
+		if (useEMD) return emdCenter(data, labels, label, weight, center);
 		else return euclidianCenter(data, labels, label, weight, center);
 	}
 
@@ -422,6 +435,8 @@ private:
 	unsigned nRestarts;
 	unsigned maxIter;
 	unsigned rngSeed;
+	std::chrono::high_resolution_clock::time_point startTime;
+	unsigned restartCount;
 
 }; // KMeans
 

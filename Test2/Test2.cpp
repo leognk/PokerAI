@@ -9,24 +9,20 @@
 #include <regex>
 #include <locale>
 #include <bitset>
-#include <boost/regex/icu.hpp>
-#include <boost/algorithm/string/predicate.hpp>
-#include <json/json.h>
 
-namespace fs = std::filesystem;
-
-template<uint8_t size>
-std::array<uint8_t, size> getArr()
-{
-	std::array<uint8_t, size> a;
-	for (uint8_t i = 0; i < size; ++i)
-		a[i] = i;
-	return a;
-}
+#include "../LossyAbstraction/Metrics.h"
 
 int main()
 {
-	std::array<uint8_t, 6> a = getArr<6>();
-	for (uint8_t x : a)
-		std::cout << std::to_string(x) << "\n";
+	const uint32_t nBins = 5;
+	std::array<std::array<uint32_t, nBins>, 1> data = { 3, 0, 1, 4, 2 };
+	std::vector<uint32_t> labels(nBins, 0);
+	uint32_t label = 0;
+	uint32_t weight = 1;
+	std::vector<uint32_t> center(nBins);
+	abc::emdCenter(data, labels, label, weight, center);
+
+	for (uint32_t k = 0; k < nBins; ++k)
+		std::cout << center[k] << "  ";
+	std::cout << "\n";
 }

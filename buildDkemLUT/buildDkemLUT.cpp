@@ -10,7 +10,7 @@ int main()
 	typedef uint8_t bckSize_t;
 	const bckSize_t nBck = 8;
 
-	const uint32_t kMeansNRestarts = 1000; // 25
+	const uint32_t kMeansNRestarts = 10000; // 25
 	const uint32_t kMeansMaxIter = 300; // 300
 	const unsigned kMeansRngSeed = 1; // 0 for random seed
 
