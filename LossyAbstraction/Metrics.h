@@ -46,15 +46,10 @@ void emdCenter(
 	std::vector<uint64_t> centerSamples(sumFeatures);
 	for (uint32_t i = 0; i < nSamples; ++i) {
 		if (labels[i] != label) continue;
-		uint8_t k = 0;
-		while (data[i][k] == 0) ++k;
-		feature_t count = 0;
-		for (feature_t j = 0; j < sumFeatures; ++j) {
-			centerSamples[j] += k;
-			if (++count == data[i][k] && k != nFeatures - 1) {
-				while (data[i][++k] == 0);
-				count = 0;
-			}
+		feature_t j = data[i][0];
+		for (uint8_t k = 1; k < nFeatures; ++k) {
+			for (feature_t m = 0; m < data[i][k]; ++m)
+				centerSamples[j++] += k;
 		}
 	}
 	// Convert the average samples to a histogram which will be the center.

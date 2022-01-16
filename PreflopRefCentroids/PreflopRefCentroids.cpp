@@ -16,7 +16,7 @@ uint64_t calculateInertia(
 
 int main()
 {
-	const std::string vizDir = "../data/AbstractionSaves/Tests/VisualizePreflopBuckets/";
+	const std::string vizDir = "../data/AbstractionSaves/Tests/VisualizePreflopClustering/";
 
 	// Load data.
 	const uint8_t nBck = 8;

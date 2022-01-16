@@ -95,9 +95,8 @@ private:
 		// Initialize the squared distances between each data point
 		// and the nearest center that has already been chosen.
 		std::vector<uint32_t> minSqDists(nSamples);
-		for (uint32_t i = 0; i < nSamples; ++i) {
+		for (uint32_t i = 0; i < nSamples; ++i)
 			minSqDists[i] = calculateDistSq(data[i], centers[0]);
-		}
 
 		// Choose the remaining nClusters - 1 centers
 		// among the data points.
@@ -189,7 +188,7 @@ private:
 		auto duration = 1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(t - startTime).count();
 		std::cout << "restart: " << std::setw(4) << restartCount + 1 << "/" << nRestarts
 			<< " | n_iter: " << std::setw(3) << nIter + 1
-			<< " | sqrt_inertia: " << std::setw(7) << inertia
+			<< " | inertia: " << std::setw(7) << inertia
 			<< " | min_weight: " << std::setw(4) << minWeight
 			<< " | " << std::setw(4) << std::round(duration) << " sec\n";
 	}
