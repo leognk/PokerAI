@@ -26,6 +26,7 @@ void OCHSCalculator::saveRivOCHSLUT()
 
 void OCHSCalculator::loadRivOCHSLUT()
 {
+	RIV_OCHS_LUT.resize(CMB_RIVER_SIZE, std::vector<uint16_t>(OCHS_SIZE));
 	opt::load2DVector(RIV_OCHS_LUT, rivOCHSLUTPath);
 }
 
