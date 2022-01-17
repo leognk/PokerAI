@@ -2,7 +2,6 @@
 #define ABC_OCHSCALCULATOR_H
 
 #include "DKEM.h"
-#include "EquityCalculator.h"
 
 namespace abc {
 
@@ -23,10 +22,10 @@ public:
 	static void saveRivOCHSLUT();
 	static void loadRivOCHSLUT();
 
-	static std::array<std::array<uint16_t, OCHS_SIZE>, CMB_RIVER_SIZE> RIV_OCHS_LUT;
+	static std::vector<std::vector<uint16_t>> RIV_OCHS_LUT;
 
 private:
-	static std::array<uint16_t, OCHS_SIZE> calculateRivOCHS(const uint8_t hand[]);
+	static std::vector<uint16_t> calculateRivOCHS(const uint8_t hand[]);
 
 	static omp::HandEvaluator eval;
 

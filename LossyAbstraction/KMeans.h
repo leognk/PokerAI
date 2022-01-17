@@ -402,7 +402,7 @@ private:
 		std::vector<uint8_t> visited(nClusters);
 		for (cluSize_t label : labels)
 			visited[label] = 1;
-		return std::accumulate(visited.begin(), visited.end(), uint8_t(0));
+		return std::accumulate(visited.begin(), visited.end(), cluSize_t(0));
 	}
 
 	template<typename C1, typename C2>

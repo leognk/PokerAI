@@ -3,11 +3,12 @@
 
 namespace abc {
 
-std::array<std::array<uint16_t, OCHS_SIZE>, CMB_RIVER_SIZE> OCHSCalculator::RIV_OCHS_LUT;
+std::vector<std::vector<uint16_t>> OCHSCalculator::RIV_OCHS_LUT;
 omp::HandEvaluator OCHSCalculator::eval;
 
 void OCHSCalculator::populateRivOCHSLUT()
 {
+	RIV_OCHS_LUT.resize(CMB_RIVER_SIZE);
 	DKEM<uint8_t, OCHS_SIZE>::loadPreflopBckLUT();
 	uint8_t hand[omp::RIVER_HAND];
 	tqdm bar;
@@ -28,9 +29,9 @@ void OCHSCalculator::loadRivOCHSLUT()
 	opt::loadArray(RIV_OCHS_LUT, rivOCHSLUTPath);
 }
 
-std::array<uint16_t, OCHS_SIZE> OCHSCalculator::calculateRivOCHS(const uint8_t hand[])
+std::vector<uint16_t> OCHSCalculator::calculateRivOCHS(const uint8_t hand[])
 {
-	std::array<uint16_t, OCHS_SIZE> ochs{};
+	std::vector<uint16_t> ochs(OCHS_SIZE);
 
 	// Get hand's mask.
 	uint64_t handMask = 0;
