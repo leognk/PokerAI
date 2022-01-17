@@ -21,7 +21,7 @@ static void save2DVector(const V& v, const std::string& path)
 {
 	auto file = std::fstream(path, std::ios::out | std::ios::binary);
 	for (const auto& w : v)
-		file.write((char*)&w[0], sizeof(w));
+		file.write((char*)&w[0], w.size() * sizeof(w.value_type));
 	file.close();
 }
 
@@ -40,7 +40,7 @@ static void load2DVector(V& v, const std::string& path)
 {
 	auto file = std::fstream(path, std::ios::in | std::ios::binary);
 	for (auto& w : v)
-		file.read((char*)&w[0], sizeof(w));
+		file.read((char*)&w[0], w.size() * sizeof(w.value_type));
 	file.close();
 }
 
