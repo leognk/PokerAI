@@ -15,7 +15,7 @@ void OCHSCalculator::populateRivOCHSLUT()
 	for (hand_index_t i = 0; i < CMB_RIVER_SIZE; ++i) {
 		bar.progress(i, CMB_RIVER_SIZE);
 		EquityCalculator::cmbRivIndexer.hand_unindex(1, i, hand);
-		RIV_OCHS_LUT[i] = calculateRivOCHS(hand);
+		calculateRivOCHS(hand, RIV_OCHS_LUT[i]);
 	}
 }
 
@@ -29,10 +29,8 @@ void OCHSCalculator::loadRivOCHSLUT()
 	opt::load2DVector(RIV_OCHS_LUT, rivOCHSLUTPath);
 }
 
-std::vector<uint16_t> OCHSCalculator::calculateRivOCHS(const uint8_t hand[])
+void OCHSCalculator::calculateRivOCHS(const uint8_t hand[], std::vector<uint16_t>& ochs)
 {
-	std::vector<uint16_t> ochs(OCHS_SIZE);
-
 	// Get hand's mask.
 	uint64_t handMask = 0;
 	for (uint8_t i = 0; i < omp::RIVER_HAND; ++i)
@@ -74,8 +72,6 @@ std::vector<uint16_t> OCHSCalculator::calculateRivOCHS(const uint8_t hand[])
 	for (uint8_t k = 0; k < OCHS_SIZE; ++k)
 #pragma warning(suppress: 4244)
 		ochs[k] = std::round((double)MAX_OCHS_VALUE * ochs[k] / weightInClusters[k]);
-
-	return ochs;
 }
 
 } // abc

@@ -25,7 +25,7 @@ public:
 	static std::vector<std::vector<uint16_t>> RIV_OCHS_LUT;
 
 private:
-	static std::vector<uint16_t> calculateRivOCHS(const uint8_t hand[]);
+	static void calculateRivOCHS(const uint8_t hand[], std::vector<uint16_t>& ochs);
 
 	static omp::HandEvaluator eval;
 
