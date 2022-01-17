@@ -32,14 +32,19 @@ uint32_t emdSq(const C1& u, const C2& v)
 // Optimal Transport and Wasserstein Distance
 // Quote: "the Wasserstein barycenter which, in this case,
 // can be obtained simply by averaging the order statistics"
-template<typename cluSize_t, typename feature_t, uint32_t nSamples, uint8_t nFeatures>
+template<typename C, typename cluSize_t, typename feature_t>
 void emdCenter(
-	const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
+	const C& data,
 	const std::vector<cluSize_t>& labels,
 	cluSize_t label,
 	uint32_t weight,
 	std::vector<feature_t>& center)
 {
+#pragma warning(suppress: 4267)
+	uint32_t nSamples = data.size();
+#pragma warning(suppress: 4267)
+	uint8_t nFeatures = data[0].size();
+
 	// Generate the average samples from the input histograms.
 	feature_t sumFeatures =
 		std::accumulate(data[0].begin(), data[0].end(), feature_t(0));
@@ -82,14 +87,19 @@ uint16_t euclidianDistance(const C1& u, const C2& v)
 	return std::round(std::sqrt(distSq));
 }
 
-template<typename cluSize_t, typename feature_t, uint32_t nSamples, uint8_t nFeatures>
+template<typename C, typename cluSize_t, typename feature_t>
 void euclidianCenter(
-	const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
+	const C& data,
 	const std::vector<cluSize_t>& labels,
 	cluSize_t label,
 	uint32_t weight,
 	std::vector<feature_t>& center)
 {
+#pragma warning(suppress: 4267)
+	uint32_t nSamples = data.size();
+#pragma warning(suppress: 4267)
+	uint8_t nFeatures = data[0].size();
+
 	for (feature_t k = 0; k < nFeatures; ++k) {
 		uint64_t acc = 0;
 		for (uint32_t i = 0; i < nSamples; ++i) {

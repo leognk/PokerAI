@@ -29,14 +29,20 @@ public:
 	{
 	}
 
-	// Run k-means and modify bestLabels in-place.
+	// Run k-means and modify bestLabels and bestCenters in-place.
 	// Return inertia and minWeight.
-	template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
+	template<typename CData, typename CLabels, typename CCenters>
 	std::pair<uint64_t, uint32_t> buildClusters(
-		const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
-		std::array<cluSize_t, nSamples>& bestLabels,
-		std::array<std::array<feature_t, nFeatures>, nClusters>& bestCenters)
+		const CData& data,
+		CLabels& bestLabels,
+		CCenters& bestCenters)
 	{
+		typedef CData::value_type::value_type feature_t;
+#pragma warning(suppress: 4267)
+		nSamples = data.size();
+#pragma warning(suppress: 4267)
+		nFeatures = data[0].size();
+
 		Rng rng{ (!rngSeed) ? std::random_device{}() : rngSeed };
 
 		uint64_t bestInertia = 0;
@@ -81,9 +87,9 @@ private:
 	typedef opt::XoShiro256PlusPlus Rng;
 
 	// Initialize the centers with k-means++.
-	template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
+	template<typename C, typename feature_t>
 	void kMeansPlusPlusInit(
-		const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
+		const C& data,
 		std::vector<std::vector<feature_t>>& centers,
 		Rng& rng)
 	{
@@ -127,9 +133,9 @@ private:
 		}
 	}
 
-	template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
+	template<typename C, typename feature_t>
 	void kMeansSingleElkan(
-		const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
+		const C& data,
 		std::vector<std::vector<feature_t>>& centers,
 		std::vector<cluSize_t>& labels)
 	{
@@ -218,9 +224,9 @@ private:
 		}
 	}
 
-	template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
+	template<typename C, typename feature_t>
 	void initBounds(
-		const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
+		const C& data,
 		const std::vector<std::vector<feature_t>>& centers,
 		const std::vector<std::vector<uint16_t>>& centerHalfDists,
 		std::vector<cluSize_t>& labels,
@@ -246,9 +252,9 @@ private:
 		}
 	}
 
-	template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
+	template<typename C, typename feature_t>
 	void elkanIter(
-		const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
+		const C& data,
 		const std::vector<std::vector<feature_t>>& centers,
 		std::vector<std::vector<feature_t>>& newCenters,
 		std::vector<uint32_t>& weightInClusters,
@@ -328,9 +334,9 @@ private:
 		}
 	}
 
-	template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
+	template<typename C, typename feature_t>
 	void relocateEmptyClusters(
-		const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
+		const C& data,
 		const std::vector<std::vector<feature_t>>& centers,
 		std::vector<uint32_t>& weightInClusters,
 		std::vector<cluSize_t>& labels)
@@ -371,9 +377,9 @@ private:
 		}
 	}
 
-	template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
+	template<typename C, typename feature_t>
 	uint64_t calculateInertia(
-		const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
+		const C& data,
 		const std::vector<std::vector<feature_t>>& centers,
 		const std::vector<cluSize_t>& labels)
 	{
@@ -419,9 +425,9 @@ private:
 		else return euclidianDistanceSq(u, v);
 	}
 
-	template<typename feature_t, uint32_t nSamples, uint8_t nFeatures>
+	template<typename C, typename feature_t>
 	void calculateCenter(
-		const std::array<std::array<feature_t, nFeatures>, nSamples>& data,
+		const C& data,
 		const std::vector<cluSize_t>& labels,
 		cluSize_t label,
 		uint32_t weight,
@@ -437,6 +443,9 @@ private:
 	unsigned rngSeed;
 	std::chrono::high_resolution_clock::time_point startTime;
 	unsigned restartCount;
+
+	uint32_t nSamples = 0;
+	uint8_t nFeatures = 0;
 
 }; // KMeans
 
