@@ -18,58 +18,35 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="DKEM.h" />
-    <ClInclude Include="EquityCalculator.h" />
-    <ClInclude Include="KMeans.h" />
-    <ClInclude Include="KOC.h" />
-    <ClInclude Include="Metrics.h" />
-    <ClInclude Include="OCHSCalculator.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="EquityCalculator.cpp" />
-    <ClCompile Include="OCHSCalculator.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\LosslessAbstraction\LosslessAbstraction.vcxproj">
-      <Project>{af95634e-7f0f-4d67-95ba-f908637faa6e}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\OMPEval\OMPEval.vcxproj">
-      <Project>{5cafc22b-8926-49b4-95c5-66766cd5ecb3}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\Utils\Utils.vcxproj">
-      <Project>{2b261b87-ab22-4819-a536-8f50fb66a682}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{30a7bf15-f11f-43e4-bdeb-85528f77d8f2}</ProjectGuid>
-    <RootNamespace>LossyAbstraction</RootNamespace>
+    <ProjectGuid>{7c1fafd1-e2bf-428c-9eee-a17218ac27ec}</ProjectGuid>
+    <RootNamespace>BuildKOC</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -165,6 +142,14 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="BuildKOC.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LossyAbstraction\LossyAbstraction.vcxproj">
+      <Project>{30a7bf15-f11f-43e4-bdeb-85528f77d8f2}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

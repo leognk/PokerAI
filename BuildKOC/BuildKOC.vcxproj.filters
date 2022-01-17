@@ -15,30 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DKEM.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EquityCalculator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="KMeans.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Metrics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="KOC.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OCHSCalculator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="EquityCalculator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OCHSCalculator.cpp">
+    <ClCompile Include="BuildKOC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

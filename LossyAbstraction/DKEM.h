@@ -19,7 +19,6 @@ class DKEM
 public:
 
 	// Set rngSeed to 0 to set a random seed.
-#pragma warning(suppress: 26495)
 	DKEM(unsigned kMeansNRestarts = 0, unsigned kMeansMaxIter = 0, unsigned kMeansRngSeed = 0) :
 		kmeans(true, kMeansNRestarts, kMeansMaxIter, kMeansRngSeed)
 	{
@@ -156,8 +155,8 @@ template<typename bckSize_t, bckSize_t nBck>
 uint32_t DKEM<bckSize_t, nBck>::flopMinWeight;
 template<typename bckSize_t, bckSize_t nBck>
 uint32_t DKEM<bckSize_t, nBck>::turnMinWeight;
-template<typename bckSize_t, bckSize_t nBck>
 
+template<typename bckSize_t, bckSize_t nBck>
 EquityCalculator DKEM<bckSize_t, nBck>::eqt;
 
 } // abc
