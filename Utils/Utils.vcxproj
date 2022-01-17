@@ -20,7 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BitOp.h" />
-    <ClInclude Include="ioArray.h" />
+    <ClInclude Include="ioContainer.h" />
     <ClInclude Include="Random.h" />
   </ItemGroup>
   <ItemGroup>

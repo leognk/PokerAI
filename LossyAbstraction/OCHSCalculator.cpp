@@ -8,7 +8,7 @@ omp::HandEvaluator OCHSCalculator::eval;
 
 void OCHSCalculator::populateRivOCHSLUT()
 {
-	RIV_OCHS_LUT.resize(CMB_RIVER_SIZE);
+	RIV_OCHS_LUT.resize(CMB_RIVER_SIZE, std::vector<uint16_t>(OCHS_SIZE));
 	DKEM<uint8_t, OCHS_SIZE>::loadPreflopBckLUT();
 	uint8_t hand[omp::RIVER_HAND];
 	tqdm bar;
@@ -21,12 +21,12 @@ void OCHSCalculator::populateRivOCHSLUT()
 
 void OCHSCalculator::saveRivOCHSLUT()
 {
-	opt::saveArray(RIV_OCHS_LUT, rivOCHSLUTPath);
+	opt::save2DVector(RIV_OCHS_LUT, rivOCHSLUTPath);
 }
 
 void OCHSCalculator::loadRivOCHSLUT()
 {
-	opt::loadArray(RIV_OCHS_LUT, rivOCHSLUTPath);
+	opt::load2DVector(RIV_OCHS_LUT, rivOCHSLUTPath);
 }
 
 std::vector<uint16_t> OCHSCalculator::calculateRivOCHS(const uint8_t hand[])

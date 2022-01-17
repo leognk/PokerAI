@@ -21,7 +21,7 @@
     <ClInclude Include="BitOp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ioArray.h">
+    <ClInclude Include="ioContainer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

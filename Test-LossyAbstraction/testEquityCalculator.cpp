@@ -2,7 +2,7 @@
 #include <numeric>
 #include "../LossyAbstraction/EquityCalculator.h"
 #include "../GameEngine/Hand.h"
-#include "../Utils/ioArray.h"
+#include "../Utils/ioContainer.h"
 
 static const std::string hsHistExDir = "../data/AbstractionSaves/Tests/HSHistExamples/";
 
