@@ -4,12 +4,13 @@
 namespace abc {
 
 std::vector<std::vector<uint16_t>> OCHSCalculator::RIV_OCHS_LUT;
+DKEM<uint8_t, OCHS_SIZE> OCHSCalculator::dkem;
 omp::HandEvaluator OCHSCalculator::eval;
 
 void OCHSCalculator::populateRivOCHSLUT()
 {
 	RIV_OCHS_LUT.resize(CMB_RIVER_SIZE, std::vector<uint16_t>(OCHS_SIZE));
-	DKEM<uint8_t, OCHS_SIZE>::loadPreflopBckLUT();
+	dkem.loadPreflopBckLUT();
 	uint8_t hand[omp::RIVER_HAND];
 	tqdm bar;
 	for (hand_index_t i = 0; i < CMB_RIVER_SIZE; ++i) {
@@ -59,7 +60,7 @@ void OCHSCalculator::calculateRivOCHS(const uint8_t hand[], std::vector<uint16_t
 				omp::Hand(c1) + omp::Hand(c2) + boardCards);
 			uint8_t oppHand[omp::HOLE_CARDS] = { c1, c2 };
 			hand_index_t oppHandBck =
-				DKEM<uint8_t, OCHS_SIZE>::PREFLOP_BCK_LUT[
+				dkem.PREFLOP_BCK_LUT[
 					EquityCalculator::preflopIndexer.hand_index_last(oppHand)];
 			weightInClusters[oppHandBck] += 2;
 			if (handRank > oppRank)
