@@ -59,9 +59,8 @@ void OCHSCalculator::calculateRivOCHS(const uint8_t hand[], std::vector<uint16_t
 			uint16_t oppRank = eval.evaluate(
 				omp::Hand(c1) + omp::Hand(c2) + boardCards);
 			uint8_t oppHand[omp::HOLE_CARDS] = { c1, c2 };
-			hand_index_t oppHandBck =
-				dkem.PREFLOP_BCK_LUT[
-					EquityCalculator::preflopIndexer.hand_index_last(oppHand)];
+			hand_index_t oppHandBck = dkem.PREFLOP_BCK_LUT[
+				EquityCalculator::preflopIndexer.hand_index_last(oppHand)];
 			weightInClusters[oppHandBck] += 2;
 			if (handRank > oppRank)
 				ochs[oppHandBck] += 2;
