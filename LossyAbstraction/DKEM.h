@@ -93,19 +93,19 @@ public:
 	static void loadPreflopBckLUT()
 	{
 		opt::loadArray(PREFLOP_BCK_LUT,
-			bckLutDir + std::format("PREFLOP_BCK_{}_LUT.bin", nBck));
+			bckLutDir + std::format("PREFLOP_{}_BCK_LUT.bin", nBck));
 	}
 
 	static void loadFlopBckLUT()
 	{
 		opt::loadArray(FLOP_BCK_LUT,
-			bckLutDir + std::format("FLOP_BCK_{}_LUT.bin", nBck));
+			bckLutDir + std::format("FLOP_{}_BCK_LUT.bin", nBck));
 	}
 
 	static void loadTurnBckLUT()
 	{
 		opt::loadArray(TURN_BCK_LUT,
-			bckLutDir + std::format("TURN_BCK_{}_LUT.bin", nBck));
+			bckLutDir + std::format("TURN_{}_BCK_LUT.bin", nBck));
 	}
 
 	static std::array<bckSize_t, PREFLOP_SIZE> PREFLOP_BCK_LUT;
