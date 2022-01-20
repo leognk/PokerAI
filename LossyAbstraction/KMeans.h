@@ -185,6 +185,7 @@ private:
 
 			// Assign the farthest data point from already chosen centers
 			// to a new center.
+#pragma warning(suppress: 28020)
 			std::copy(data[maxMinIdx].begin(), data[maxMinIdx].end(), centers[c].begin());
 
 			// Update minSqDists, maxMinSqDist and maxMinIdx.
@@ -223,6 +224,7 @@ private:
 				maxIdx = i;
 			}
 		}
+#pragma warning(suppress: 28020)
 		std::copy(data[maxIdx].begin(), data[maxIdx].end(), centers[0].begin());
 
 		// Initialize the squared distances between each data point
@@ -275,7 +277,7 @@ private:
 		std::vector<std::vector<feature_t>> newCenters(
 			nClusters, std::vector<feature_t>(nFeatures));
 		std::vector<uint32_t> weightInClusters(nClusters);
-		std::vector<cluSize_t> oldLabels = labels;
+		uint64_t oldInertia = 0xffffffffffffffff;
 
 		// Init the matrix of the half of the distance between any 2 clusters centers.
 		std::vector<std::vector<uint16_t>> centerHalfDists(
@@ -305,11 +307,12 @@ private:
 			updateCenterDists(newCenters, centerHalfDists, distNextCenter);
 			std::swap(centers, newCenters);
 
-			printProgress(i, calculateInertia(data, centers, labels), calculateMinWeight(labels));
+			uint64_t inertia = calculateInertia(data, centers, labels);
+			printProgress(i, inertia, calculateMinWeight(labels));
 
-			if (labels == oldLabels)
+			if (inertia >= oldInertia)
 				return;
-			oldLabels = labels;
+			oldInertia = inertia;
 		}
 
 		// Run one last step so that predicted labels match cluster centers.
