@@ -10,6 +10,8 @@
 
 namespace abc {
 
+enum KMeansInitMode { PlusPlus, PlusPlusMax, PlusPlusMaxMax };
+
 // Class implementing k-means++ with earth mover's distance
 // or Euclidian distance.
 template<typename cluSize_t, cluSize_t nClusters>
@@ -20,12 +22,12 @@ public:
 	// Set rngSeed to 0 to set a random seed.
 	KMeans(bool useEMD, unsigned nRestarts,
 		unsigned maxIter, unsigned rngSeed = 0,
-		bool useKmeansPlusPlusMax = false) :
+		KMeansInitMode kmeansInitMode = KMeansInitMode::PlusPlus) :
 		useEMD(useEMD),
 		nRestarts(nRestarts),
 		maxIter(maxIter),
 		rngSeed(rngSeed),
-		useKmeansPlusPlusMax(useKmeansPlusPlusMax),
+		kmeansInitMode(kmeansInitMode),
 		startTime(std::chrono::high_resolution_clock::now()),
 		restartCount(0)
 	{
@@ -57,10 +59,19 @@ public:
 		while (restartCount < nRestarts) {
 
 			// Initialize centers.
-			if (!useKmeansPlusPlusMax)
+			switch (kmeansInitMode) {
+			case KMeansInitMode::PlusPlus:
 				kMeansPlusPlusInit(data, centers, rng);
-			else
-				kMeansPlusPlusMaxInit(data, centers);
+				break;
+			case KMeansInitMode::PlusPlusMax:
+				kMeansPlusPlusMaxInit(data, centers, rng);
+				break;
+			case KMeansInitMode::PlusPlusMaxMax:
+				kMeansPlusPlusMaxMaxInit(data, centers);
+				break;
+			default:
+				throw std::runtime_error("Specified k-means init mode does not exist.");
+			}
 
 			// Run k-means Elkan once.
 			kMeansSingleElkan(data, centers, labels);
@@ -143,7 +154,8 @@ private:
 	template<typename C, typename feature_t>
 	void kMeansPlusPlusMaxInit(
 		const C& data,
-		std::vector<std::vector<feature_t>>& centers)
+		std::vector<std::vector<feature_t>>& centers,
+		Rng& rng)
 	{
 		// Choose one center uniformly at random among the data.
 		std::uniform_int_distribution<unsigned> distr(0, nSamples - 1);
@@ -162,7 +174,70 @@ private:
 		uint32_t maxMinIdx = 0;
 		for (uint32_t i = 0; i < nSamples; ++i) {
 			if (minSqDists[i] > maxMinSqDist) {
-				maxMinSqDist = minSqDist;
+				maxMinSqDist = minSqDists[i];
+				maxMinIdx = i;
+			}
+		}
+
+		// Choose the remaining nClusters - 1 centers
+		// among the data points.
+		for (cluSize_t c = 1; c < nClusters; ++c) {
+
+			// Assign the farthest data point from already chosen centers
+			// to a new center.
+			std::copy(data[maxMinIdx].begin(), data[maxMinIdx].end(), centers[c].begin());
+
+			// Update minSqDists, maxMinSqDist and maxMinIdx.
+			maxMinSqDist = 0;
+			for (uint32_t i = 0; i < nSamples; ++i) {
+				// Skip if point i has already been chosen as a center.
+				if (minSqDists[i] == 0) continue;
+				uint32_t newSqDist = calculateDistSq(data[i], centers[c]);
+				if (newSqDist < minSqDists[i])
+					minSqDists[i] = newSqDist;
+				if (minSqDists[i] > maxMinSqDist) {
+					maxMinSqDist = minSqDists[i];
+					maxMinIdx = i;
+				}
+			}
+		}
+	}
+
+	// Initialize the centers with k-means++ max but
+	// by choosing the farthest data point from the center of all
+	// the data points as the first center.
+	template<typename C, typename feature_t>
+	void kMeansPlusPlusMaxMaxInit(
+		const C& data,
+		std::vector<std::vector<feature_t>>& centers)
+	{
+		// Choose the first center.
+		std::vector<feature_t> globalCenter(nFeatures);
+		calculateCenter(data, globalCenter);
+		uint32_t maxSqDist = 0;
+		uint32_t maxIdx = 0;
+		for (uint32_t i = 0; i < nSamples; ++i) {
+			uint32_t sqDist = calculateDistSq(data[i], globalCenter);
+			if (sqDist > maxSqDist) {
+				maxSqDist = sqDist;
+				maxIdx = i;
+			}
+		}
+		std::copy(data[maxIdx].begin(), data[maxIdx].end(), centers[0].begin());
+
+		// Initialize the squared distances between each data point
+		// and the nearest center that has already been chosen.
+		std::vector<uint32_t> minSqDists(nSamples);
+		for (uint32_t i = 0; i < nSamples; ++i)
+			minSqDists[i] = calculateDistSq(data[i], centers[0]);
+
+		// Initialize the farthest data point from the centers
+		// that have already been chosen.
+		uint32_t maxMinSqDist = 0;
+		uint32_t maxMinIdx = 0;
+		for (uint32_t i = 0; i < nSamples; ++i) {
+			if (minSqDists[i] > maxMinSqDist) {
+				maxMinSqDist = minSqDists[i];
 				maxMinIdx = i;
 			}
 		}
@@ -485,6 +560,13 @@ private:
 	}
 
 	template<typename C, typename feature_t>
+	void calculateCenter(const C& data, std::vector<feature_t>& center)
+	{
+		if (useEMD) emdCenter(data, center);
+		else euclidianCenter(data, center);
+	}
+
+	template<typename C, typename feature_t>
 	void calculateCenters(
 		const C& data,
 		const std::vector<cluSize_t>& labels,
@@ -499,7 +581,7 @@ private:
 	unsigned nRestarts;
 	unsigned maxIter;
 	unsigned rngSeed;
-	bool useKmeansPlusPlusMax;
+	KMeansInitMode kmeansInitMode;
 	std::chrono::high_resolution_clock::time_point startTime;
 	unsigned restartCount;
 

@@ -32,6 +32,38 @@ uint32_t emdSq(const C1& u, const C2& v)
 // Optimal Transport and Wasserstein Distance
 // Quote: "the Wasserstein barycenter which, in this case,
 // can be obtained simply by averaging the order statistics"
+template<typename C, typename feature_t>
+void emdCenter(const C& data, std::vector<feature_t>& center)
+{
+#pragma warning(suppress: 4267)
+	uint32_t nSamples = data.size();
+#pragma warning(suppress: 4267)
+	uint8_t nFeatures = data[0].size();
+
+	// Generate the average samples from the input histograms.
+	feature_t sumFeatures =
+		std::accumulate(data[0].begin(), data[0].end(), feature_t(0));
+	std::vector<uint64_t> centerSamples(sumFeatures);
+	for (uint32_t i = 0; i < nSamples; ++i) {
+		feature_t j = data[i][0];
+		for (uint8_t k = 1; k < nFeatures; ++k) {
+			for (feature_t m = 0; m < data[i][k]; ++m)
+				centerSamples[j++] += k;
+		}
+	}
+
+	// Convert the average samples to a histogram which will be the center.
+	for (feature_t j = 0; j < sumFeatures; ++j) {
+#pragma warning(suppress: 4244)
+		uint8_t idx = std::round((double)centerSamples[j] / nSamples);
+		++center[idx];
+	}
+}
+
+// Reference:
+// Optimal Transport and Wasserstein Distance
+// Quote: "the Wasserstein barycenter which, in this case,
+// can be obtained simply by averaging the order statistics"
 template<typename C, typename cluSize_t, typename feature_t>
 void emdCenters(
 	const C& data,
@@ -88,6 +120,27 @@ uint16_t euclidianDistance(const C1& u, const C2& v)
 	uint32_t distSq = euclidianDistanceSq(u, v);
 #pragma warning(suppress: 4244)
 	return std::round(std::sqrt(distSq));
+}
+
+template<typename C, typename feature_t>
+void euclidianCenter(const C& data, std::vector<feature_t>& center)
+{
+#pragma warning(suppress: 4267)
+	uint32_t nSamples = data.size();
+#pragma warning(suppress: 4267)
+	uint8_t nFeatures = data[0].size();
+
+	// Sum the data points.
+	std::vector<uint64_t> sum(nFeatures);
+	for (uint32_t i = 0; i < nSamples; ++i) {
+		for (uint8_t k = 0; k < nFeatures; ++k)
+			sum[k] += data[i][k];
+	}
+
+	// Normalize.
+	for (uint8_t k = 0; k < nFeatures; ++k)
+#pragma warning(suppress: 4244)
+		center[k] = std::round((double)sum[k] / nSamples);
 }
 
 template<typename C, typename cluSize_t, typename feature_t>
