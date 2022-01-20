@@ -13,8 +13,10 @@ int main()
 	const unsigned kMeansNRestarts = 10; // 25
 	const unsigned kMeansMaxIter = 300; // 300
 	const unsigned kMeansRngSeed = 1; // 0 for random seed
+	const bool useKmeansPlusPlusMax = false; // false
 
-	abc::DKEM<bckSize_t, nBck> dkem(kMeansNRestarts, kMeansMaxIter, kMeansRngSeed);
+	abc::DKEM<bckSize_t, nBck> dkem(
+		kMeansNRestarts, kMeansMaxIter, kMeansRngSeed, useKmeansPlusPlusMax);
 	switch (round) {
 	case 0:
 		dkem.populatePreflopBckLUT();

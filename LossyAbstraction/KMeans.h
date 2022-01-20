@@ -19,11 +19,13 @@ public:
 
 	// Set rngSeed to 0 to set a random seed.
 	KMeans(bool useEMD, unsigned nRestarts,
-		unsigned maxIter, unsigned rngSeed = 0) :
+		unsigned maxIter, unsigned rngSeed = 0,
+		bool useKmeansPlusPlusMax = false) :
 		useEMD(useEMD),
 		nRestarts(nRestarts),
 		maxIter(maxIter),
 		rngSeed(rngSeed),
+		useKmeansPlusPlusMax(useKmeansPlusPlusMax),
 		startTime(std::chrono::high_resolution_clock::now()),
 		restartCount(0)
 	{
@@ -55,7 +57,10 @@ public:
 		while (restartCount < nRestarts) {
 
 			// Initialize centers.
-			kMeansPlusPlusInit(data, centers, rng);
+			if (!useKmeansPlusPlusMax)
+				kMeansPlusPlusInit(data, centers, rng);
+			else
+				kMeansPlusPlusMaxInit(data, centers);
 
 			// Run k-means Elkan once.
 			kMeansSingleElkan(data, centers, labels);
@@ -129,6 +134,59 @@ private:
 				uint32_t newSqDist = calculateDistSq(data[i], centers[c]);
 				if (newSqDist < minSqDists[i])
 					minSqDists[i] = newSqDist;
+			}
+		}
+	}
+
+	// Initialize the centers with k-means++ but deterministically
+	// by choosing the farthest data point as the new center at each step.
+	template<typename C, typename feature_t>
+	void kMeansPlusPlusMaxInit(
+		const C& data,
+		std::vector<std::vector<feature_t>>& centers)
+	{
+		// Choose one center uniformly at random among the data.
+		std::uniform_int_distribution<unsigned> distr(0, nSamples - 1);
+		unsigned randIdx = distr(rng);
+		std::copy(data[randIdx].begin(), data[randIdx].end(), centers[0].begin());
+
+		// Initialize the squared distances between each data point
+		// and the nearest center that has already been chosen.
+		std::vector<uint32_t> minSqDists(nSamples);
+		for (uint32_t i = 0; i < nSamples; ++i)
+			minSqDists[i] = calculateDistSq(data[i], centers[0]);
+
+		// Initialize the farthest data point from the centers
+		// that have already been chosen.
+		uint32_t maxMinSqDist = 0;
+		uint32_t maxMinIdx = 0;
+		for (uint32_t i = 0; i < nSamples; ++i) {
+			if (minSqDists[i] > maxMinSqDist) {
+				maxMinSqDist = minSqDist;
+				maxMinIdx = i;
+			}
+		}
+
+		// Choose the remaining nClusters - 1 centers
+		// among the data points.
+		for (cluSize_t c = 1; c < nClusters; ++c) {
+
+			// Assign the farthest data point from already chosen centers
+			// to a new center.
+			std::copy(data[maxMinIdx].begin(), data[maxMinIdx].end(), centers[c].begin());
+
+			// Update minSqDists, maxMinSqDist and maxMinIdx.
+			maxMinSqDist = 0;
+			for (uint32_t i = 0; i < nSamples; ++i) {
+				// Skip if point i has already been chosen as a center.
+				if (minSqDists[i] == 0) continue;
+				uint32_t newSqDist = calculateDistSq(data[i], centers[c]);
+				if (newSqDist < minSqDists[i])
+					minSqDists[i] = newSqDist;
+				if (minSqDists[i] > maxMinSqDist) {
+					maxMinSqDist = minSqDists[i];
+					maxMinIdx = i;
+				}
 			}
 		}
 	}
@@ -441,6 +499,7 @@ private:
 	unsigned nRestarts;
 	unsigned maxIter;
 	unsigned rngSeed;
+	bool useKmeansPlusPlusMax;
 	std::chrono::high_resolution_clock::time_point startTime;
 	unsigned restartCount;
 

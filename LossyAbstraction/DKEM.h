@@ -19,8 +19,10 @@ class DKEM
 public:
 
 	// Set rngSeed to 0 to set a random seed.
-	DKEM(unsigned kMeansNRestarts = 0, unsigned kMeansMaxIter = 0, unsigned kMeansRngSeed = 0) :
-		kmeans(true, kMeansNRestarts, kMeansMaxIter, kMeansRngSeed)
+	DKEM(unsigned kMeansNRestarts = 0, unsigned kMeansMaxIter = 0,
+		unsigned kMeansRngSeed = 0, bool useKmeansPlusPlusMax = false) :
+		kmeans(true, kMeansNRestarts, kMeansMaxIter,
+			kMeansRngSeed, useKmeansPlusPlusMax)
 	{
 	}
 
