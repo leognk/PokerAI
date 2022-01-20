@@ -61,7 +61,6 @@ void emdCenters(
 
 	// Convert the average samples to histograms which will be the centers.
 	for (cluSize_t c = 0; c < nClusters; ++c) {
-		std::memset(&centers[c][0], 0, nFeatures * sizeof(feature_t));
 		for (feature_t j = 0; j < sumFeatures; ++j) {
 #pragma warning(suppress: 4244)
 			uint8_t idx = std::round((double)centersSamples[c][j] / weights[c]);
@@ -99,21 +98,25 @@ void euclidianCenters(
 	std::vector<std::vector<feature_t>>& centers)
 {
 #pragma warning(suppress: 4267)
+	cluSize_t nClusters = centers.size();
+#pragma warning(suppress: 4267)
 	uint32_t nSamples = data.size();
 #pragma warning(suppress: 4267)
 	uint8_t nFeatures = data[0].size();
 
 	// Sum the data points.
+	std::vector<std::vector<uint64_t>> sums(
+		nClusters, std::vector<uint64_t>(nFeatures));
 	for (uint32_t i = 0; i < nSamples; ++i) {
-		for (feature_t k = 0; k < nFeatures; ++k)
-			centers[labels[i]][k] += data[i][k];
+		for (uint8_t k = 0; k < nFeatures; ++k)
+			sums[labels[i]][k] += data[i][k];
 	}
 
 	// Normalize with the weigths.
-	for (cluSize_t j = 0; j < centers.size(); ++j) {
+	for (cluSize_t j = 0; j < nClusters; ++j) {
 		for (uint8_t k = 0; k < nFeatures; ++k)
 #pragma warning(suppress: 4244)
-			centers[j][k] = std::round((double)centers[j][k] / weights[j]);
+			centers[j][k] = std::round((double)sums[j][k] / weights[j]);
 	}
 }
 

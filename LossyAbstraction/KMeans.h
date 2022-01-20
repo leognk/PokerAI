@@ -264,6 +264,8 @@ private:
 		std::vector<std::vector<uint16_t>>& lowerBounds,
 		std::vector<cluSize_t>& labels)
 	{
+		for (std::vector<feature_t>& center : newCenters)
+			std::memset(&center[0], 0, nFeatures * sizeof(feature_t));
 		std::memset(&weightInClusters[0], 0, nClusters * sizeof(uint32_t));
 
 		for (uint32_t i = 0; i < nSamples; ++i) {
@@ -431,8 +433,8 @@ private:
 		std::vector<uint32_t>& weights,
 		std::vector<std::vector<feature_t>>& centers)
 	{
-		if (useEMD) return emdCenters(data, labels, weights, centers);
-		else return euclidianCenters(data, labels, weights, centers);
+		if (useEMD) emdCenters(data, labels, weights, centers);
+		else euclidianCenters(data, labels, weights, centers);
 	}
 
 	bool useEMD;
