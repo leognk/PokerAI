@@ -315,8 +315,7 @@ private:
 
 		// Update centers.
 		relocateEmptyClusters(data, centers, weightInClusters, labels);
-		for (cluSize_t j = 0; j < nClusters; ++j)
-			calculateCenter(data, labels, j, weightInClusters[j], newCenters[j]);
+		calculateCenters(data, labels, weightInClusters, newCenters);
 		// Center shift.
 		std::vector<uint16_t> centerShift(nClusters);
 		for (cluSize_t j = 0; j < nClusters; ++j)
@@ -426,15 +425,14 @@ private:
 	}
 
 	template<typename C, typename feature_t>
-	void calculateCenter(
+	void calculateCenters(
 		const C& data,
 		const std::vector<cluSize_t>& labels,
-		cluSize_t label,
-		uint32_t weight,
-		std::vector<feature_t>& center)
+		std::vector<uint32_t>& weights,
+		std::vector<std::vector<feature_t>>& centers)
 	{
-		if (useEMD) return emdCenter(data, labels, label, weight, center);
-		else return euclidianCenter(data, labels, label, weight, center);
+		if (useEMD) return emdCenters(data, labels, weights, centers);
+		else return euclidianCenters(data, labels, weights, centers);
 	}
 
 	bool useEMD;

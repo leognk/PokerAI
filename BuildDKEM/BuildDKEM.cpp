@@ -5,12 +5,12 @@ int main()
 	// 0: preflop
 	// 1: flop
 	// 2: turn
-	const uint8_t round = 1;
+	const uint8_t round = 0;
 
 	typedef uint8_t bckSize_t;
-	const bckSize_t nBck = 200;
+	const bckSize_t nBck = 8;
 
-	const unsigned kMeansNRestarts = 10; // 25
+	const unsigned kMeansNRestarts = 1000; // 25
 	const unsigned kMeansMaxIter = 300; // 300
 	const unsigned kMeansRngSeed = 1; // 0 for random seed
 

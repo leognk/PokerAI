@@ -33,13 +33,14 @@ uint32_t emdSq(const C1& u, const C2& v)
 // Quote: "the Wasserstein barycenter which, in this case,
 // can be obtained simply by averaging the order statistics"
 template<typename C, typename cluSize_t, typename feature_t>
-void emdCenter(
+void emdCenters(
 	const C& data,
 	const std::vector<cluSize_t>& labels,
-	cluSize_t label,
-	uint32_t weight,
-	std::vector<feature_t>& center)
+	std::vector<uint32_t>& weights,
+	std::vector<std::vector<feature_t>>& centers)
 {
+#pragma warning(suppress: 4267)
+	cluSize_t nClusters = centers.size();
 #pragma warning(suppress: 4267)
 	uint32_t nSamples = data.size();
 #pragma warning(suppress: 4267)
@@ -48,21 +49,24 @@ void emdCenter(
 	// Generate the average samples from the input histograms.
 	feature_t sumFeatures =
 		std::accumulate(data[0].begin(), data[0].end(), feature_t(0));
-	std::vector<uint64_t> centerSamples(sumFeatures);
+	std::vector<std::vector<uint64_t>> centersSamples(
+		nClusters, std::vector<uint64_t>(sumFeatures));
 	for (uint32_t i = 0; i < nSamples; ++i) {
-		if (labels[i] != label) continue;
 		feature_t j = data[i][0];
 		for (uint8_t k = 1; k < nFeatures; ++k) {
 			for (feature_t m = 0; m < data[i][k]; ++m)
-				centerSamples[j++] += k;
+				centersSamples[labels[i]][j++] += k;
 		}
 	}
-	// Convert the average samples to a histogram which will be the center.
-	std::memset(center.data(), 0, nFeatures * sizeof(feature_t));
-	for (feature_t j = 0; j < sumFeatures; ++j) {
+
+	// Convert the average samples to histograms which will be the centers.
+	for (cluSize_t c = 0; c < nClusters; ++c) {
+		std::memset(&centers[c][0], 0, nFeatures * sizeof(feature_t));
+		for (feature_t j = 0; j < sumFeatures; ++j) {
 #pragma warning(suppress: 4244)
-		uint8_t idx = std::round((double)centerSamples[j] / weight);
-		++center[idx];
+			uint8_t idx = std::round((double)centersSamples[c][j] / weights[c]);
+			++centers[c][idx];
+		}
 	}
 }
 
@@ -88,26 +92,28 @@ uint16_t euclidianDistance(const C1& u, const C2& v)
 }
 
 template<typename C, typename cluSize_t, typename feature_t>
-void euclidianCenter(
+void euclidianCenters(
 	const C& data,
 	const std::vector<cluSize_t>& labels,
-	cluSize_t label,
-	uint32_t weight,
-	std::vector<feature_t>& center)
+	std::vector<uint32_t> weights,
+	std::vector<std::vector<feature_t>>& centers)
 {
 #pragma warning(suppress: 4267)
 	uint32_t nSamples = data.size();
 #pragma warning(suppress: 4267)
 	uint8_t nFeatures = data[0].size();
 
-	for (feature_t k = 0; k < nFeatures; ++k) {
-		uint64_t acc = 0;
-		for (uint32_t i = 0; i < nSamples; ++i) {
-			if (labels[i] == label)
-				acc += data[i][k];
-		}
+	// Sum the data points.
+	for (uint32_t i = 0; i < nSamples; ++i) {
+		for (feature_t k = 0; k < nFeatures; ++k)
+			centers[labels[i]][k] += data[i][k];
+	}
+
+	// Normalize with the weigths.
+	for (cluSize_t j = 0; j < centers.size(); ++j) {
+		for (uint8_t k = 0; k < nFeatures; ++k)
 #pragma warning(suppress: 4244)
-		center[k] = std::round((double)acc / weight);
+			centers[j][k] = std::round((double)centers[j][k] / weights[j]);
 	}
 }
 
