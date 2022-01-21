@@ -11,6 +11,7 @@
 namespace abc {
 
 enum KMeansInitMode { PlusPlus, PlusPlusMax, PlusPlusMaxMax };
+enum KMeansIterMode { Elkan, SemiElkan };
 
 // Class implementing k-means++ with earth mover's distance
 // or Euclidian distance.
@@ -22,12 +23,14 @@ public:
 	// Set rngSeed to 0 to set a random seed.
 	KMeans(bool useEMD, unsigned nRestarts,
 		unsigned maxIter, unsigned rngSeed = 0,
-		KMeansInitMode kmeansInitMode = KMeansInitMode::PlusPlus) :
+		KMeansInitMode kmeansInitMode = KMeansInitMode::PlusPlus,
+		KMeansIterMode kmeansIterMode = KMeansIterMode::Elkan) :
 		useEMD(useEMD),
 		nRestarts(nRestarts),
 		maxIter(maxIter),
 		rngSeed(rngSeed),
 		kmeansInitMode(kmeansInitMode),
+		kmeansIterMode(kmeansIterMode),
 		startTime(std::chrono::high_resolution_clock::now()),
 		restartCount(0)
 	{
@@ -73,8 +76,17 @@ public:
 				throw std::runtime_error("Specified k-means init mode does not exist.");
 			}
 
-			// Run k-means Elkan once.
-			kMeansSingleElkan(data, centers, labels);
+			// Run k-means once.
+			switch (kmeansIterMode) {
+			case KMeansIterMode::Elkan:
+				kMeansSingleElkan(data, centers, labels);
+				break;
+			case KMeansIterMode::SemiElkan:
+				kMeansSingleSemiElkan(data, centers, labels);
+				break;
+			default:
+				throw std::runtime_error("Specified k-means iter mode does not exist.");
+			}
 
 			// Update the best clustering by looking at the inertia.
 			uint64_t inertia = calculateInertia(data, centers, labels);
@@ -324,6 +336,56 @@ private:
 		printProgress(maxIter, calculateInertia(data, centers, labels), calculateMinWeight(labels));
 	}
 
+	template<typename C, typename feature_t>
+	void kMeansSingleSemiElkan(
+		const C& data,
+		std::vector<std::vector<feature_t>>& centers,
+		std::vector<cluSize_t>& labels)
+	{
+		std::vector<std::vector<feature_t>> newCenters(
+			nClusters, std::vector<feature_t>(nFeatures));
+		std::vector<uint32_t> weightInClusters(nClusters);
+		uint64_t oldInertia = 0xffffffffffffffff;
+
+		// Init the matrix of the half of the distance between any 2 clusters centers.
+		std::vector<std::vector<uint16_t>> centerHalfDists(
+			nClusters, std::vector<uint16_t>(nClusters));
+		// Init the array of the half of the distance between each center
+		// and its closest center.
+		std::vector<uint16_t> distNextCenter(nClusters);
+		updateCenterDists(centers, centerHalfDists, distNextCenter);
+
+		// Init the matrix of the upper bound on the distance between
+		// each sample and its closest cluster center.
+		std::vector<uint16_t> upperBounds(nSamples);
+		initSemiBounds(data, centers, centerHalfDists, labels, upperBounds);
+
+		// Proceed to the iterations of k-means.
+		for (unsigned i = 0; i < maxIter; ++i) {
+
+			semiElkanIter(
+				data, centers, newCenters, weightInClusters,
+				centerHalfDists, distNextCenter, upperBounds, labels);
+
+			updateCenterDists(newCenters, centerHalfDists, distNextCenter);
+			std::swap(centers, newCenters);
+
+			uint64_t inertia = calculateInertia(data, centers, labels);
+			printProgress(i, inertia, calculateMinWeight(labels));
+
+			if (inertia >= oldInertia)
+				return;
+			oldInertia = inertia;
+		}
+
+		// Run one last step so that predicted labels match cluster centers.
+		semiElkanIter(
+			data, centers, newCenters, weightInClusters,
+			centerHalfDists, distNextCenter, upperBounds, labels);
+
+		printProgress(maxIter, calculateInertia(data, centers, labels), calculateMinWeight(labels));
+	}
+
 	void printProgress(uint16_t nIter, uint64_t inertia, uint32_t minWeight)
 	{
 		auto t = std::chrono::high_resolution_clock::now();
@@ -377,6 +439,31 @@ private:
 				if (centerHalfDists[bestCluster][j] < minDist) {
 					uint16_t dist = calculateDist(data[i], centers[j]);
 					lowerBounds[i][j] = dist;
+					if (dist < minDist) {
+						minDist = dist;
+						bestCluster = j;
+					}
+				}
+			}
+			labels[i] = bestCluster;
+			upperBounds[i] = minDist;
+		}
+	}
+
+	template<typename C, typename feature_t>
+	void initSemiBounds(
+		const C& data,
+		const std::vector<std::vector<feature_t>>& centers,
+		const std::vector<std::vector<uint16_t>>& centerHalfDists,
+		std::vector<cluSize_t>& labels,
+		std::vector<uint16_t>& upperBounds)
+	{
+		for (uint32_t i = 0; i < nSamples; ++i) {
+			cluSize_t bestCluster = 0;
+			uint16_t minDist = calculateDist(data[i], centers[0]);
+			for (cluSize_t j = 1; j < nClusters; ++j) {
+				if (centerHalfDists[bestCluster][j] < minDist) {
+					uint16_t dist = calculateDist(data[i], centers[j]);
 					if (dist < minDist) {
 						minDist = dist;
 						bestCluster = j;
@@ -469,6 +556,72 @@ private:
 					lowerBounds[i][j] = 0;
 			}
 		}
+	}
+
+	template<typename C, typename feature_t>
+	void semiElkanIter(
+		const C& data,
+		const std::vector<std::vector<feature_t>>& centers,
+		std::vector<std::vector<feature_t>>& newCenters,
+		std::vector<uint32_t>& weightInClusters,
+		const std::vector<std::vector<uint16_t>>& centerHalfDists,
+		const std::vector<uint16_t>& distNextCenter,
+		std::vector<uint16_t>& upperBounds,
+		std::vector<cluSize_t>& labels)
+	{
+		for (std::vector<feature_t>& center : newCenters)
+			std::memset(&center[0], 0, nFeatures * sizeof(feature_t));
+		std::memset(&weightInClusters[0], 0, nClusters * sizeof(uint32_t));
+
+		for (uint32_t i = 0; i < nSamples; ++i) {
+			uint16_t upperBound = upperBounds[i];
+			bool boundsTight = false;
+			cluSize_t label = labels[i];
+
+			// Next center is not far away from the currently assigned center.
+			// Sample might need to be assigned to another center.
+			if (distNextCenter[label] < upperBound) {
+
+				for (cluSize_t j = 0; j < nClusters; ++j) {
+
+					// If this holds, then j is a good candidate for the
+					// sample to be relabelled, and we need to confirm this by
+					// recomputing the upper bound.
+					if (j != label
+						&& (upperBound > centerHalfDists[label][j])) {
+
+						// Recompute upper bound by calculating the actual distance
+						// between the sample and its current assigned center.
+						if (!boundsTight) {
+							upperBound = calculateDist(data[i], centers[label]);
+							boundsTight = true;
+						}
+
+						// Compute the actual distance between the sample and center.
+						// If this is less than the previous distance, reassign label.
+						uint16_t dist = calculateDist(data[i], centers[j]);
+						if (dist < upperBound) {
+							label = j;
+							upperBound = dist;
+						}
+					}
+				}
+				labels[i] = label;
+				upperBounds[i] = upperBound;
+			}
+			++weightInClusters[label];
+		}
+
+		// Update centers.
+		relocateEmptyClusters(data, centers, weightInClusters, labels);
+		calculateCenters(data, labels, weightInClusters, newCenters);
+		// Center shift.
+		std::vector<uint16_t> centerShift(nClusters);
+		for (cluSize_t j = 0; j < nClusters; ++j)
+			centerShift[j] = calculateDist(newCenters[j], centers[j]);
+		// Update upper bounds.
+		for (uint32_t i = 0; i < nSamples; ++i)
+			upperBounds[i] += centerShift[labels[i]];
 	}
 
 	template<typename C, typename feature_t>
@@ -585,6 +738,7 @@ private:
 	unsigned maxIter;
 	unsigned rngSeed;
 	KMeansInitMode kmeansInitMode;
+	KMeansIterMode kmeansIterMode;
 	std::chrono::high_resolution_clock::time_point startTime;
 	unsigned restartCount;
 
