@@ -20,14 +20,16 @@ class KMeans
 {
 public:
 
+	// Set invTolerance (inverse tolerance) to 0 to give no tolerance.
 	// Set rngSeed to 0 to set a random seed.
 	KMeans(bool useEMD, unsigned nRestarts,
-		unsigned maxIter, unsigned rngSeed = 0,
+		unsigned maxIter, uint64_t invTolerance = 0, unsigned rngSeed = 0,
 		KMeansInitMode kmeansInitMode = KMeansInitMode::PlusPlus,
 		KMeansIterMode kmeansIterMode = KMeansIterMode::Elkan) :
 		useEMD(useEMD),
 		nRestarts(nRestarts),
 		maxIter(maxIter),
+		invTolerance(invTolerance),
 		rngSeed(rngSeed),
 		kmeansInitMode(kmeansInitMode),
 		kmeansIterMode(kmeansIterMode),
@@ -322,7 +324,9 @@ private:
 			uint64_t inertia = calculateInertia(data, centers, labels);
 			printProgress(i, inertia, calculateMinWeight(labels));
 
-			if (inertia >= oldInertia)
+			// Check the stopping criterion.
+			if (inertia >= oldInertia
+				|| (invTolerance != 0 && invTolerance * (oldInertia - inertia) <= inertia))
 				return;
 			oldInertia = inertia;
 		}
@@ -373,7 +377,9 @@ private:
 			uint64_t inertia = calculateInertia(data, centers, labels);
 			printProgress(i, inertia, calculateMinWeight(labels));
 
-			if (inertia >= oldInertia)
+			// Check the stopping criterion.
+			if (inertia >= oldInertia
+				|| (invTolerance != 0 && invTolerance * (oldInertia - inertia) <= inertia))
 				return;
 			oldInertia = inertia;
 		}
@@ -736,6 +742,7 @@ private:
 	bool useEMD;
 	unsigned nRestarts;
 	unsigned maxIter;
+	uint64_t invTolerance;
 	unsigned rngSeed;
 	KMeansInitMode kmeansInitMode;
 	KMeansIterMode kmeansIterMode;

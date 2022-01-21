@@ -14,10 +14,11 @@ class KOC
 public:
 
 	// Set rngSeed to 0 to set a random seed.
-	KOC(unsigned kMeansNRestarts = 0, unsigned kMeansMaxIter = 0, unsigned kMeansRngSeed = 0,
+	KOC(unsigned kMeansNRestarts = 0, unsigned kMeansMaxIter = 0,
+		uint64_t kMeansInvTolerance = 0, unsigned kMeansRngSeed = 0,
 		KMeansInitMode kmeansInitMode = KMeansInitMode::PlusPlus,
 		KMeansIterMode kmeansIterMode = KMeansIterMode::Elkan) :
-		kmeans(false, kMeansNRestarts, kMeansMaxIter,
+		kmeans(false, kMeansNRestarts, kMeansMaxIter, kMeansInvTolerance,
 			kMeansRngSeed, kmeansInitMode, kmeansIterMode)
 	{
 	}
