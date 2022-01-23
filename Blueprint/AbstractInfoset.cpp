@@ -107,9 +107,8 @@ void AbstractInfoset::calculateLegalBetSizes()
 		// Find the minimum idx for which
 		// the corresponding bet value >= minRaise.
 		beginRaiseId = 0;
-		while ((egn::chips)std::round(BET_SIZES[state.round][nRaises][beginRaiseId] * state.pot)
-			< state.minRaise) {
-
+		float minRaiseSize = state.minRaise / state.pot;
+		while (BET_SIZES[state.round][nRaises][beginRaiseId] < minRaiseSize) {
 			if (++beginRaiseId == BET_SIZES[state.round][nRaises].size())
 				return;
 		}
@@ -117,9 +116,8 @@ void AbstractInfoset::calculateLegalBetSizes()
 		// Find the maximum idx for which
 		// the previous corresponding bet value < allin.
 		endRaiseId = BET_SIZES[state.round][nRaises].size();
-		while ((egn::chips)std::round(BET_SIZES[state.round][nRaises][endRaiseId - 1] * state.pot)
-			>= state.allin) {
-
+		float allinSize = state.allin / state.pot;
+		while (BET_SIZES[state.round][nRaises][endRaiseId - 1] >= allinSize) {
 			if (--endRaiseId == beginRaiseId)
 				return;
 		}
