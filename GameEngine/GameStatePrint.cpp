@@ -102,7 +102,7 @@ std::ostream& GameStatePrint::printState(std::ostream& os) const
 {
     os << "Round: " << round;
     os << " | Board: " << Hand(boardCards);
-    os << " | Pot: " << mPot << std::endl << std::endl;
+    os << " | Pot: " << pot << std::endl << std::endl;
 
     unsigned stakeMaxChars = maxChars(stakes);
     unsigned betMaxChars = maxChars(mRoundBets);

@@ -122,7 +122,7 @@ public:
 
 	// action must be set before calling nextState.
 	Action action;
-	// bet must also bet set if action is RAISE.
+	// bet must also be set if action is RAISE.
 	chips bet;
 
 	// Legal actions for actingPlayer are given in the array actions
@@ -148,6 +148,8 @@ public:
 
 	// Current round.
 	Round round;
+	// Sum of all pots
+	chips pot;
 	// Whether the hand is finished.
 	bool finished;
 	// Rewards obtained by each player after the end of the hand.
@@ -213,9 +215,6 @@ protected:
 	uint16_t mActing;
 	uint8_t mFirstActing;
 	uint8_t mNActing;
-
-	// Sum of all pots
-	chips mPot;
 
 	uint8_t mDealer;
 	// Current number of chips to call (counting from the start of the hand)

@@ -11,9 +11,12 @@
 #include <fstream>
 //#include <bitset>
 
-#include "../LossyAbstraction/DKEM.h"
+#include "../GameEngine/GameState.h"
 
 int main()
 {
-
+	egn::GameState state(0, 100, {});
+	for (auto& x : state.stakes)
+		std::cout << x << " ";
+	std::cout << "\n";
 }
