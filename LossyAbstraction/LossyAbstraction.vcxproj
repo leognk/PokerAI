@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="DKEM.h" />
     <ClInclude Include="EquityCalculator.h" />
+    <ClInclude Include="LossyIndexer.h" />
     <ClInclude Include="KMeans.h" />
     <ClInclude Include="KOC.h" />
     <ClInclude Include="Metrics.h" />
@@ -31,6 +32,9 @@
     <ClCompile Include="OCHSCalculator.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\GameEngine\GameEngine.vcxproj">
+      <Project>{d600e3c1-f1a0-42d2-bc70-d143b14aac40}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\LosslessAbstraction\LosslessAbstraction.vcxproj">
       <Project>{af95634e-7f0f-4d67-95ba-f908637faa6e}</Project>
     </ProjectReference>

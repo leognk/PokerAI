@@ -1,8 +1,7 @@
 #ifndef BP_ABSTRACTINFOSET_H
 #define BP_ABSTRACTINFOSET_H
 
-#include "../LossyAbstraction/DKEM.h"
-#include "../LossyAbstraction/KOC.h"
+#include "../LossyAbstraction/LossyIndexer.h"
 #include "../GameEngine/GameState.h"
 
 namespace bp {
@@ -65,6 +64,7 @@ private:
 	void setAction(uint8_t actionId);
 	egn::chips getBetValue(uint8_t raiseId);
 	void calculateLegalBetSizes();
+	void calculateHandsIds();
 	void calculateIndex();
 
 	egn::GameState state;
@@ -80,8 +80,8 @@ private:
 	// beginRaiseId included and endRaiseId excluded.
 	uint8_t beginRaiseId, endRaiseId;
 
-	static abc::DKEM<bckSize_t, N_BCK_PER_ROUND> dkem;
-	static abc::KOC<bckSize_t, N_BCK_PER_ROUND> koc;
+	static abc::LossyIndexer<bckSize_t, N_BCK_PER_ROUND> handIndexer;
+	std::array<bckSize_t, omp::MAX_PLAYERS> handsIds;
 
 }; // AbstractInfoset
 

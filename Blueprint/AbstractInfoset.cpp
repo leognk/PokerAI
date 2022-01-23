@@ -2,8 +2,7 @@
 
 namespace bp {
 
-abc::DKEM<bckSize_t, N_BCK_PER_ROUND> AbstractInfoset::dkem;
-abc::KOC<bckSize_t, N_BCK_PER_ROUND> AbstractInfoset::koc;
+abc::LossyIndexer<bckSize_t, N_BCK_PER_ROUND> AbstractInfoset::handIndexer;
 
 AbstractInfoset::AbstractInfoset(
 	egn::chips ante,
@@ -22,10 +21,7 @@ AbstractInfoset::AbstractInfoset(
 	initialIndex = index;
 
 	// Load information abstraction lookup tables.
-	dkem.loadPreflopBckLUT();
-	dkem.loadFlopBckLUT();
-	dkem.loadTurnBckLUT();
-	koc.loadRivBckLUT();
+	handIndexer.loadLUT();
 }
 
 void AbstractInfoset::startNewHand()
@@ -39,6 +35,7 @@ void AbstractInfoset::startNewHand()
 	index = initialIndex;
 
 	state.startNewHand(0);
+	calculateHandsIds();
 }
 
 void AbstractInfoset::nextState(uint8_t actionId)
@@ -46,7 +43,11 @@ void AbstractInfoset::nextState(uint8_t actionId)
 	setAction(actionId);
 	egn::Round oldRound = state.round;
 	state.nextState();
-	if (state.round != oldRound) nRaises = 0;
+	// New round.
+	if (state.round != oldRound) {
+		nRaises = 0;
+		calculateHandsIds();
+	}
 	calculateLegalBetSizes();
 	calculateIndex();
 }
@@ -124,6 +125,15 @@ void AbstractInfoset::calculateLegalBetSizes()
 
 		nActions += endRaiseId - beginRaiseId;
 	}
+}
+
+void AbstractInfoset::calculateHandsIds()
+{
+	uint8_t i = state.mFirstAlive;
+	do {
+		handsIds[i] = handIndexer.handIndex(
+			state.round, state.hands[i].data(), state.boardCards.data());
+	} while (state.nextAlive(i) != state.mFirstAlive);
 }
 
 void AbstractInfoset::calculateIndex()

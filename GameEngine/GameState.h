@@ -9,6 +9,8 @@
 #include <iostream>
 #include "../tracy/Tracy.hpp"
 
+namespace bp { class AbstractInfoset; }
+
 namespace egn {
 
 typedef uint32_t chips;
@@ -243,6 +245,8 @@ protected:
 	// Used in setRankings.
 	std::array<uint16_t, opt::MAX_PLAYERS> mRanks{};
 	omp::HandEvaluator mEval;
+
+	friend class bp::AbstractInfoset;
 
 }; // GameState
 
