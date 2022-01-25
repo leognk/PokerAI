@@ -56,29 +56,35 @@ public:
 	void nextState(uint8_t actionId);
 
 	uint8_t nActions;
-	// Index of the abstract infoset.
-	// (index of the bucket in which the infoset is in)
-	infoIdx_t index;
+	// Indices of the children abstract infosets (each associated to a legal action).
+	// An index is the bucket's index to which the infoset belongs.
+	std::vector<infoIdx_t> nextStatesIds;
 
 private:
 	void setAction(uint8_t actionId);
 	egn::chips getBetValue(uint8_t raiseId);
-	void calculateLegalBetSizes();
+	void calculateLegalActions();
 	void calculateHandsIds();
-	void calculateIndex();
+	void calculateNextStatesIds();
+	infoIdx_t calculateNextStateIdx(uint8_t nextActionId);
 
 	egn::GameState state;
 
 	std::array<egn::chips, opt::MAX_PLAYERS> initialStakes;
 	uint8_t initialNActions;
 	uint8_t initialBeginRaiseId, initialEndRaiseId;
-	infoIdx_t initialIndex;
+	std::vector<infoIdx_t> initialNextStatesIds;
 
 	// Number of raises done in the current round.
 	uint8_t nRaises;
 	// Legal bet size ids will be between
 	// beginRaiseId included and endRaiseId excluded.
 	uint8_t beginRaiseId, endRaiseId;
+
+	// Number of players playing at the beginning of the current round.
+	uint8_t nPlayers;
+	// History of actions made in the current round.
+	std::vector<uint8_t> roundActions;
 
 	static abc::LossyIndexer<bckSize_t, N_BCK_PER_ROUND> handIndexer;
 	std::array<bckSize_t, omp::MAX_PLAYERS> handsIds;

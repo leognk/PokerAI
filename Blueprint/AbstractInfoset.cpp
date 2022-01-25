@@ -13,12 +13,12 @@ AbstractInfoset::AbstractInfoset(
 {
 	// Initialize member variables.
 	std::fill(initialStakes.begin(), initialStakes.end(), initialStake);
-	calculateLegalBetSizes();
-	calculateIndex();
+	calculateLegalActions();
+	calculateNextStatesIds();
 	initialNActions = nActions;
 	initialBeginRaiseId = beginRaiseId;
 	initialEndRaiseId = endRaiseId;
-	initialIndex = index;
+	initialNextStatesIds = nextStatesIds;
 
 	// Load information abstraction lookup tables.
 	handIndexer.loadLUT();
@@ -27,12 +27,16 @@ AbstractInfoset::AbstractInfoset(
 void AbstractInfoset::startNewHand()
 {
 	// Reset member variables.
+
 	nRaises = 0;
+	nPlayers = opt::MAX_PLAYERS;
+	roundActions.clear();
+
 	state.stakes = initialStakes;
 	nActions = initialNActions;
 	beginRaiseId = initialBeginRaiseId;
 	endRaiseId = initialEndRaiseId;
-	index = initialIndex;
+	nextStatesIds = initialNextStatesIds;
 
 	state.startNewHand(0);
 	calculateHandsIds();
@@ -41,15 +45,27 @@ void AbstractInfoset::startNewHand()
 void AbstractInfoset::nextState(uint8_t actionId)
 {
 	setAction(actionId);
+
+	// If the first players on the preflop fold, remove them and
+	// proceed as if they did not exist.
+	if (state.round == egn::PREFLOP && roundActions.empty() && actionId == 0)
+		--nPlayers;
+	else
+		roundActions.push_back(actionId);
+
 	egn::Round oldRound = state.round;
 	state.nextState();
+
 	// New round.
 	if (state.round != oldRound) {
 		nRaises = 0;
+		nPlayers = state.mNAlive;
+		roundActions.clear();
 		calculateHandsIds();
 	}
-	calculateLegalBetSizes();
-	calculateIndex();
+
+	calculateLegalActions();
+	calculateNextStatesIds();
 }
 
 void AbstractInfoset::setAction(uint8_t actionId)
@@ -93,7 +109,7 @@ egn::chips AbstractInfoset::getBetValue(uint8_t raiseId)
 		return state.allin;
 }
 
-void AbstractInfoset::calculateLegalBetSizes()
+void AbstractInfoset::calculateLegalActions()
 {
 	nActions = state.nActions;
 
@@ -136,7 +152,20 @@ void AbstractInfoset::calculateHandsIds()
 	} while (state.nextAlive(i) != state.mFirstAlive);
 }
 
-void AbstractInfoset::calculateIndex()
+void AbstractInfoset::calculateNextStatesIds()
+{
+	nextStatesIds.clear();
+	for (uint8_t a = 0; a < nActions; ++a)
+		nextStatesIds.push_back(calculateNextStateIdx(a));
+}
+
+// Hash the key composed of the following integers:
+// - state.round
+// - nPlayers
+// - handsIds[state.actingPlayer]
+// - roundActions
+// - nextActionId
+infoIdx_t AbstractInfoset::calculateNextStateIdx(uint8_t nextActionId)
 {
 
 }
