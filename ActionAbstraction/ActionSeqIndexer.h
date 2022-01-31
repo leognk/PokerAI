@@ -1,10 +1,10 @@
-#ifndef BP_ACTIONSEQINDEXER_H
-#define BP_ACTIONSEQINDEXER_H
+#ifndef ABC_ACTIONSEQINDEXER_H
+#define ABC_ACTIONSEQINDEXER_H
 
 #include "xxhash.h"
 #include "../BBHash/BooPHF.h"
 
-namespace bp {
+namespace abc {
 
 class ActionSeqHasher
 {
@@ -37,6 +37,6 @@ private:
 
 }; // ActionSeqIndexer
 
-} // bp
+} // abc
 
-#endif // BP_ACTIONSEQINDEXER_H
+#endif // ABC_ACTIONSEQINDEXER_H

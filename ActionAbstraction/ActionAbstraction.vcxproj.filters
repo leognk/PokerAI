@@ -15,21 +15,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BlueprintCalculator.h">
+    <ClInclude Include="ActionSeqIndexer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AbstractInfoset.h">
+    <ClInclude Include="ActionAbstraction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BlueprintCalculator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AbstractInfoset.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CountNodes.cpp">
+    <ClCompile Include="ActionAbstraction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
