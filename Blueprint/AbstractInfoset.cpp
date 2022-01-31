@@ -12,13 +12,18 @@ AbstractInfoset::AbstractInfoset(
 	state(ante, bigBlind, {})
 {
 	// Initialize member variables.
+
 	std::fill(initialStakes.begin(), initialStakes.end(), initialStake);
+
+	state.stakes = initialStakes;
+	state.startNewHand(dealer);
 	calculateLegalActions();
-	calculateNextStatesIds();
+	calculateActionSeqIds();
+
 	initialNActions = nActions;
 	initialBeginRaiseId = beginRaiseId;
 	initialEndRaiseId = endRaiseId;
-	initialNextStatesIds = nextStatesIds;
+	initialActionSeqIds = actionSeqIds;
 
 	// Load information abstraction lookup tables.
 	handIndexer.loadLUT();
@@ -36,9 +41,9 @@ void AbstractInfoset::startNewHand()
 	nActions = initialNActions;
 	beginRaiseId = initialBeginRaiseId;
 	endRaiseId = initialEndRaiseId;
-	nextStatesIds = initialNextStatesIds;
+	actionSeqIds = initialActionSeqIds;
 
-	state.startNewHand(0);
+	state.startNewHand(dealer);
 	calculateHandsIds();
 }
 
@@ -65,7 +70,7 @@ void AbstractInfoset::nextState(uint8_t actionId)
 	}
 
 	calculateLegalActions();
-	calculateNextStatesIds();
+	calculateActionSeqIds();
 }
 
 void AbstractInfoset::setAction(uint8_t actionId)
@@ -101,7 +106,7 @@ void AbstractInfoset::setAction(uint8_t actionId)
 	}
 }
 
-egn::chips AbstractInfoset::getBetValue(uint8_t raiseId)
+egn::chips AbstractInfoset::getBetValue(uint8_t raiseId) const
 {
 	if (raiseId < endRaiseId)
 		return (egn::chips)std::round(BET_SIZES[state.round][nRaises][raiseId] * state.pot);
@@ -115,16 +120,21 @@ void AbstractInfoset::calculateLegalActions()
 
 	if (state.actions[state.nActions - 1] == egn::RAISE) {
 
-		// Add the all-in bet.
-		++nActions;
-
-		if (state.allin <= state.minRaise)
+		// The all-in bet is already counted
+		// with the raise action in state.nActions.
+		if (state.allin <= state.minRaise) {
+			beginRaiseId = 0;
+			endRaiseId = 0;
 			return;
+		}
+
+		beginRaiseId = 0;
+#pragma warning (suppress: 4267)
+		endRaiseId = BET_SIZES[state.round][nRaises].size();
 
 		// Find the minimum idx for which
 		// the corresponding bet value >= minRaise.
-		beginRaiseId = 0;
-		float minRaiseSize = state.minRaise / state.pot;
+		float minRaiseSize = (float)state.minRaise / state.pot;
 		while (BET_SIZES[state.round][nRaises][beginRaiseId] < minRaiseSize) {
 			if (++beginRaiseId == BET_SIZES[state.round][nRaises].size())
 				return;
@@ -132,8 +142,7 @@ void AbstractInfoset::calculateLegalActions()
 
 		// Find the maximum idx for which
 		// the previous corresponding bet value < allin.
-		endRaiseId = BET_SIZES[state.round][nRaises].size();
-		float allinSize = state.allin / state.pot;
+		float allinSize = (float)state.allin / state.pot;
 		while (BET_SIZES[state.round][nRaises][endRaiseId - 1] >= allinSize) {
 			if (--endRaiseId == beginRaiseId)
 				return;
@@ -152,22 +161,30 @@ void AbstractInfoset::calculateHandsIds()
 	} while (state.nextAlive(i) != state.mFirstAlive);
 }
 
-void AbstractInfoset::calculateNextStatesIds()
+void AbstractInfoset::calculateActionSeqIds()
 {
-	nextStatesIds.clear();
-	for (uint8_t a = 0; a < nActions; ++a)
-		nextStatesIds.push_back(calculateNextStateIdx(a));
+	actionSeqIds.clear();
+	for (uint8_t a = 0; a < nActions; ++a) {
+		roundActions.push_back(a);
+		actionSeqIds.push_back(
+			actionSeqIndexer.actionSeqIndex(roundActions));
+		roundActions.pop_back();
+	}
 }
 
-// Hash the key composed of the following integers:
-// - state.round
-// - nPlayers
-// - handsIds[state.actingPlayer]
-// - roundActions
-// - nextActionId
-infoIdx_t AbstractInfoset::calculateNextStateIdx(uint8_t nextActionId)
+uint8_t AbstractInfoset::roundIdx() const
 {
+	return state.round;
+}
 
+bckSize_t AbstractInfoset::handIdx() const
+{
+	return handsIds[state.actingPlayer];
+}
+
+actionSeqIdx_t AbstractInfoset::actionSeqIdx(uint8_t a) const
+{
+	return actionSeqIds[a];
 }
 
 } // bp

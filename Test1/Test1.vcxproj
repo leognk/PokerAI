@@ -146,6 +146,9 @@
     <ClCompile Include="Test1.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Blueprint\Blueprint.vcxproj">
+      <Project>{51da6b52-6211-4c04-9b87-071d4b3e23e3}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\GameEngine\GameEngine.vcxproj">
       <Project>{d600e3c1-f1a0-42d2-bc70-d143b14aac40}</Project>
     </ProjectReference>

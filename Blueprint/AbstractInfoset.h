@@ -2,6 +2,7 @@
 #define BP_ABSTRACTINFOSET_H
 
 #include "../LossyAbstraction/LossyIndexer.h"
+#include "ActionSeqIndexer.h"
 #include "../GameEngine/GameState.h"
 
 namespace bp {
@@ -9,7 +10,7 @@ namespace bp {
 typedef uint8_t bckSize_t;
 static const bckSize_t N_BCK_PER_ROUND = 5;
 
-typedef uint64_t infoIdx_t;
+typedef uint32_t actionSeqIdx_t;
 
 // Available bet sizes after action abstraction
 // expressed in terms of fraction of the pot.
@@ -55,25 +56,33 @@ public:
 	// illegal actions being skipped.
 	void nextState(uint8_t actionId);
 
-	uint8_t nActions;
-	// Indices of the children abstract infosets (each associated to a legal action).
-	// An index is the bucket's index to which the infoset belongs.
-	std::vector<infoIdx_t> nextStatesIds;
+	// The pair composed of an abstract infoset and
+	// one of its legal action is identified by:
+	// - the current round
+	// - the acting player's hand's bucket
+	// - the index (given by a perfect hash function) of the action
+	//   sequence leading to the legal action.
+	uint8_t roundIdx() const;
+	bckSize_t handIdx() const;
+	actionSeqIdx_t actionSeqIdx(uint8_t a) const;
 
-private:
-	void setAction(uint8_t actionId);
-	egn::chips getBetValue(uint8_t raiseId);
-	void calculateLegalActions();
-	void calculateHandsIds();
-	void calculateNextStatesIds();
-	infoIdx_t calculateNextStateIdx(uint8_t nextActionId);
+	uint8_t nActions;
 
 	egn::GameState state;
 
+private:
+	void setAction(uint8_t actionId);
+	egn::chips getBetValue(uint8_t raiseId) const;
+	void calculateLegalActions();
+
+	void calculateHandsIds();
+	void calculateActionSeqIds();
+
+	static const uint8_t dealer = opt::MAX_PLAYERS - 1;
 	std::array<egn::chips, opt::MAX_PLAYERS> initialStakes;
 	uint8_t initialNActions;
 	uint8_t initialBeginRaiseId, initialEndRaiseId;
-	std::vector<infoIdx_t> initialNextStatesIds;
+	std::vector<actionSeqIdx_t> initialActionSeqIds;
 
 	// Number of raises done in the current round.
 	uint8_t nRaises;
@@ -88,6 +97,10 @@ private:
 
 	static abc::LossyIndexer<bckSize_t, N_BCK_PER_ROUND> handIndexer;
 	std::array<bckSize_t, omp::MAX_PLAYERS> handsIds;
+
+	static ActionSeqIndexer<actionSeqIdx_t> actionSeqIndexer;
+	// Indices of the action sequences leading to each legal actions.
+	std::vector<actionSeqIdx_t> actionSeqIds;
 
 }; // AbstractInfoset
 
