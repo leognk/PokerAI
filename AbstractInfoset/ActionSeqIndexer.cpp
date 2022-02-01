@@ -1,4 +1,5 @@
 #include "ActionSeqIndexer.h"
+#include <fstream>
 
 namespace abc {
 
@@ -7,54 +8,125 @@ ActionSeqIndexer::ActionSeqIndexer(
 	egn::chips bigBlind,
 	egn::chips initialStake,
 	const std::vector<std::vector<std::vector<float>>>& betSizes,
+	const std::string& indexerName,
 	int nThreads, double gamma) :
 
 	traverser(ante, bigBlind, initialStake, betSizes, true, false),
 	nThreads(nThreads),
-	gamma(gamma)
+	gamma(gamma),
+	preflopPHFPath(phfDir + indexerName + "_PREFLOP_MPHF.bin"),
+	flopPHFPath(phfDir + indexerName + "_FLOP_MPHF.bin"),
+	turnPHFPath(phfDir + indexerName + "_TURN_MPHF.bin"),
+	riverPHFPath(phfDir + indexerName + "_RIVER_MPHF.bin")
 {
-	init();
 }
 
-void ActionSeqIndexer::init()
+void ActionSeqIndexer::buildPHF()
 {
-	std::cout << "begin preflop PHF" << "\n";
-	initPreflopPHF();
-	std::cout << "begin flop PHF" << "\n";
-	initFlopPHF();
-	std::cout << "begin turn PHF" << "\n";
-	initTurnPHF();
-	std::cout << "begin river PHF" << "\n";
-	initRiverPHF();
-	std::cout << "finished PHF" << "\n";
+	buildPreflopPHF();
+	buildFlopPHF();
+	buildTurnPHF();
+	buildRiverPHF();
 }
 
-void ActionSeqIndexer::initPreflopPHF()
+void ActionSeqIndexer::savePHF()
+{
+	savePreflopPHF();
+	saveFlopPHF();
+	saveTurnPHF();
+	saveRiverPHF();
+}
+
+void ActionSeqIndexer::loadPHF()
+{
+	loadPreflopPHF();
+	loadFlopPHF();
+	loadTurnPHF();
+	loadRiverPHF();
+}
+
+void ActionSeqIndexer::buildPreflopPHF()
 {
 	std::vector<seq_t> actionSeqs;
 	traverser.traverseRoundTree(egn::PREFLOP, actionSeqs);
 	preflopPHF = phf_t(actionSeqs.size(), actionSeqs, nThreads, gamma);
 }
 
-void ActionSeqIndexer::initFlopPHF()
+void ActionSeqIndexer::buildFlopPHF()
 {
 	std::vector<seq_t> actionSeqs;
 	traverser.traverseRoundTree(egn::FLOP, actionSeqs);
 	flopPHF = phf_t(actionSeqs.size(), actionSeqs, nThreads, gamma);
 }
 
-void ActionSeqIndexer::initTurnPHF()
+void ActionSeqIndexer::buildTurnPHF()
 {
 	std::vector<seq_t> actionSeqs;
 	traverser.traverseRoundTree(egn::TURN, actionSeqs);
 	turnPHF = phf_t(actionSeqs.size(), actionSeqs, nThreads, gamma);
 }
 
-void ActionSeqIndexer::initRiverPHF()
+void ActionSeqIndexer::buildRiverPHF()
 {
 	std::vector<seq_t> actionSeqs;
 	traverser.traverseRoundTree(egn::RIVER, actionSeqs);
 	riverPHF = phf_t(actionSeqs.size(), actionSeqs, nThreads, gamma);
+}
+
+void ActionSeqIndexer::savePreflopPHF()
+{
+	auto file = std::fstream(preflopPHFPath, std::ios::out | std::ios::binary);
+	preflopPHF.save(file);
+	file.close();
+}
+
+void ActionSeqIndexer::saveFlopPHF()
+{
+	auto file = std::fstream(flopPHFPath, std::ios::out | std::ios::binary);
+	flopPHF.save(file);
+	file.close();
+}
+
+void ActionSeqIndexer::saveTurnPHF()
+{
+	auto file = std::fstream(turnPHFPath, std::ios::out | std::ios::binary);
+	turnPHF.save(file);
+	file.close();
+}
+
+void ActionSeqIndexer::saveRiverPHF()
+{
+	auto file = std::fstream(riverPHFPath, std::ios::out | std::ios::binary);
+	riverPHF.save(file);
+	file.close();
+}
+
+void ActionSeqIndexer::loadPreflopPHF()
+{
+	auto file = std::fstream(preflopPHFPath, std::ios::in | std::ios::binary);
+	preflopPHF.load(file);
+	file.close();
+}
+
+void ActionSeqIndexer::loadFlopPHF()
+{
+	auto file = std::fstream(flopPHFPath, std::ios::in | std::ios::binary);
+	flopPHF.load(file);
+	file.close();
+}
+
+void ActionSeqIndexer::loadTurnPHF()
+{
+	auto file = std::fstream(turnPHFPath, std::ios::in | std::ios::binary);
+	turnPHF.load(file);
+	file.close();
+}
+
+void ActionSeqIndexer::loadRiverPHF()
+{
+	auto file = std::fstream(riverPHFPath, std::ios::in | std::ios::binary);
+	riverPHF.load(file);
+	file.close();
 }
 
 uint64_t ActionSeqIndexer::index(egn::Round round, const seq_t& actionSeq)

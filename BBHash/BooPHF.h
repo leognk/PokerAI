@@ -257,7 +257,8 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 			 _nchar = r._nchar;
 			 _ranks = r._ranks;
 			 _bitArray = (uint64_t *) calloc (_nchar,sizeof(uint64_t));
-			 memcpy(_bitArray, r._bitArray, _nchar*sizeof(uint64_t) );
+			 if (_bitArray)
+				memcpy(_bitArray, r._bitArray, _nchar*sizeof(uint64_t) );
 		 }
 		
 		// Copy assignment operator
@@ -271,13 +272,14 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 				if(_bitArray != nullptr)
 					free(_bitArray);
 				_bitArray = (uint64_t *) calloc (_nchar,sizeof(uint64_t));
-				memcpy(_bitArray, r._bitArray, _nchar*sizeof(uint64_t) );
+				if (_bitArray)
+					memcpy(_bitArray, r._bitArray, _nchar*sizeof(uint64_t) );
 			}
 			return *this;
 		}
 	
 		// Move assignment operator
-		bitVector &operator=(bitVector &&r)
+		bitVector &operator=(bitVector &&r) noexcept
 		{
 			if (&r != this)
 			{
@@ -294,7 +296,7 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 		}
 
 		// Move constructor
-		bitVector(bitVector &&r) : _bitArray ( nullptr),_size(0)
+		bitVector(bitVector &&r) noexcept : _bitArray ( nullptr),_size(0)
 		{
 			*this = std::move(r);
 		}
@@ -302,7 +304,8 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 		void resize(uint64_t newsize)
 		{
 			_nchar  = (1ULL+newsize/64ULL);
-			_bitArray = (uint64_t *) realloc(_bitArray,_nchar*sizeof(uint64_t));
+#pragma warning(suppress: 6308)
+			_bitArray = (uint64_t*)realloc(_bitArray, _nchar * sizeof(uint64_t));
 			_size = newsize;
 		}
 
@@ -664,7 +667,6 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 
 		void save(std::ostream& os) const
 		{
-
 			os.write(reinterpret_cast<char const*>(&_gamma), sizeof(_gamma));
 			os.write(reinterpret_cast<char const*>(&_nb_levels), sizeof(_nb_levels));
 			os.write(reinterpret_cast<char const*>(&_lastbitsetrank), sizeof(_lastbitsetrank));
@@ -689,7 +691,6 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 
 		void load(std::istream& is)
 		{
-
 			is.read(reinterpret_cast<char*>(&_gamma), sizeof(_gamma));
 			is.read(reinterpret_cast<char*>(&_nb_levels), sizeof(_nb_levels));
 			is.read(reinterpret_cast<char*>(&_lastbitsetrank), sizeof(_lastbitsetrank));

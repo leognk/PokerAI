@@ -1,7 +1,7 @@
 #ifndef BP_BLUEPRINTCALCULATOR_H
 #define BP_BLUEPRINTCALCULATOR_H
 
-#include "AbstractInfoset.h"
+#include "../AbstractInfoset/AbstractInfoset.h"
 
 namespace bp {
 
@@ -16,7 +16,7 @@ public:
 	void computeStrategy();
 
 private:
-	AbstractInfoset abcInfo;
+	//abc::AbstractInfoset abcInfo;
 
 }; // BlueprintCalculator
 

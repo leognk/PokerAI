@@ -50,7 +50,7 @@ int main()
 	//for (const T& key : keys)
 	//	std::cout << phf.lookup(key) << "\n";
 
-	abc::ActionSeqIndexer indexer(bp::ANTE, bp::BIG_BLIND, bp::INITIAL_STAKE, bp::BET_SIZES, 8, 2.0);
+	abc::ActionSeqIndexer indexer(bp::ANTE, bp::BIG_BLIND, bp::INITIAL_STAKE, bp::BET_SIZES, 1, 2.0);
 
 	std::cout << indexer.index(egn::PREFLOP, { 1, 0, 0 }) << "\n";
 }
