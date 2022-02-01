@@ -296,8 +296,6 @@ private:
 u_int64_t nelem = 1000*1000;
 uint nthreads = 1; //warning must be a divisor of nBuckets
 double gammaFactor = 1.0;
-bool write_each = false;
-
 u_int64_t nb_in_bench_file;
 
 
@@ -319,14 +317,13 @@ vector<boophf_t> MPHFs(nBuckets*nMphfByBucket);
 void multipleMPHF(const vector<vector<u_int64_t>>& datas, uint start, uint n,uint bucketNum){
 	for(uint ii(start);ii<start+n;++ii){
 		auto data_iterator2 = boomphf::range(static_cast<const u_int64_t*>(&datas[ii][0]), static_cast<const u_int64_t*>(&datas[ii][0]+datas[ii].size()));
-		MPHFs[bucketNum*nMphfByBucket+ii]=  boomphf::mphf<u_int64_t,hasher_t>(datas[ii].size(),data_iterator2,1,gammaFactor,write_each,false);
+		MPHFs[bucketNum*nMphfByBucket+ii]=  boomphf::mphf<u_int64_t,hasher_t>(datas[ii].size(),data_iterator2,1,gammaFactor,false);
 	}
 }
 
 
 void compactBucket(uint start, uint n){
 	//foreach bucket
-
 	for(uint i(start);i<start+n;++i){
 		auto data_iterator = file_binary(("bucket"+to_string(i)).c_str());
 		vector<vector<u_int64_t>> datas(nMphfByBucket);
@@ -374,9 +371,7 @@ int check_mphf_correctness (phf_t * bphf, Range const& input_range){
 			}
 			else
 			{
-				//printf("collision for val %lli : \n",mphf_value);
-				printf("collision for %llu  mphf_value %llu\n",val,mphf_value);
-
+				printf("collision for val %lli \n",mphf_value);
 				nb_collision_detected++;
 			}
 		}
@@ -456,20 +451,19 @@ int main (int argc, char* argv[]){
 	bool from_disk = true;
 	bool bench_lookup_out = false;
 	bool on_the_fly= false;
-	 write_each = true;
+	
 	if(argc <4 ){
 		printf("Usage :\n");
 		printf("%s <nelem> <nthreads> <gamma>  [options]\n",argv[0]);
 		printf("Options:\n");
-		printf("\t-check  (check correctness of mphf)\n");
-		printf("\t-bench  (bench query time of mphf)\n");
+		printf("\t-check\n");
+		printf("\t-bench\n");
 		printf("\t-save\n");
 		printf("\t-load\n");
 		printf("\t-inram\n");
-		printf("\t-nodisk  (do not write each intermediate level on disk)\n");
 		printf("\t-buckets\n");
-		printf("\t-outquery (bench the fp rate of the mphf)\n");  // bench fp rate
-		printf("\t-onthefly (generates key on the fly without storing them on disk or in ram)\n");
+		printf("\t-outquery\n");  // bench fp rate
+		printf("\t-onthefly\n"); //will generate keys on the fly without storing them at all in ram or on disk
 	
 
 
@@ -482,9 +476,7 @@ int main (int argc, char* argv[]){
 		gammaFactor = atoi(argv[3]);
 	}
 
-
-	
-	for (int ii=4; ii<argc; ii++){
+	for (int ii=3; ii<argc; ii++){
 		if(!strcmp("-check",argv[ii])) check_correctness= true;
 		if(!strcmp("-bench",argv[ii])) bench_lookup= true;
 		if(!strcmp("-save",argv[ii])) save_mphf= true;
@@ -493,16 +485,7 @@ int main (int argc, char* argv[]){
 		if(!strcmp("-buckets",argv[ii])) buckets= true;
 		if(!strcmp("-outquery",argv[ii])) bench_lookup_out= true;
 		if(!strcmp("-onthefly",argv[ii])) on_the_fly= true;
-		if(!strcmp("-nodisk",argv[ii])) write_each= false;
 
-	}
-
-	
-	if(gammaFactor == 0) {
-		fprintf(stderr,"gamma value error\n");
-		fprintf(stderr,"Usage should be \n");
-		fprintf(stderr,"%s <nelem> <nthreads> <gamma>  [options]\n",argv[0]);
-		exit(1);
 	}
 
 	
@@ -561,7 +544,6 @@ int main (int argc, char* argv[]){
 			for (u_int64_t i = 0; i < nelem; i++)
 			{
 				fwrite(&current, sizeof(u_int64_t), 1, key_file);
-				//printf("%llu \n",current);
 				current = current + step;
 			}
 			fclose(key_file);
@@ -606,9 +588,6 @@ int main (int argc, char* argv[]){
 
 		printf("splitting keys ..\n");
 		
-		double tick_split = get_time_usecs();
-
-		
 		int buffsize = 10000;
 		vector < vector<u_int64_t> > buffers (nBuckets);
 		for(int ii=0; ii<nBuckets;ii++)
@@ -641,9 +620,6 @@ int main (int argc, char* argv[]){
 		for(int ii=1; ii<nBuckets*nMphfByBucket; ii++ ){
 			nb_elem_in_previous_buckets[ii] = nb_elem_in_previous_buckets[ii-1] + elinbuckets[ii-1];
 		}
-
-		double elapsed_split = get_time_usecs() - tick_split;
-		printf("time key split  %.2f s \n", elapsed_split/1000000.0);
 
 		printf("Go compactions !!!\n");
 
@@ -688,7 +664,7 @@ int main (int argc, char* argv[]){
 				}
 				else
 				{
-					//printf("collision for val %lli \n",mphf_value);
+					printf("collision for val %lli \n",mphf_value);
 					nb_collision_detected++;
 				}
 				current2 += step2;
@@ -770,17 +746,17 @@ int main (int argc, char* argv[]){
 		if (on_the_fly)
 		{
 			auto data_iterator =  uint64_range(nelem,nelem) ;
-			bphf = new boomphf::mphf<u_int64_t,hasher_t>(nelem,data_iterator,nthreads,gammaFactor,write_each);
+			bphf = new boomphf::mphf<u_int64_t,hasher_t>(nelem,data_iterator,nthreads,gammaFactor);
 		}
 		else if(from_disk)
 		{
 			auto data_iterator = file_binary("keyfile");
-			bphf = new boomphf::mphf<u_int64_t,hasher_t>(nelem,data_iterator,nthreads,gammaFactor,write_each);
+			bphf = new boomphf::mphf<u_int64_t,hasher_t>(nelem,data_iterator,nthreads,gammaFactor);
 		}
 		else
 		{
 			auto data_iterator = boomphf::range(static_cast<const u_int64_t*>(data), static_cast<const u_int64_t*>(data+nelem));
-			bphf = new boomphf::mphf<u_int64_t,hasher_t>(nelem,data_iterator,nthreads,gammaFactor,write_each);
+			bphf = new boomphf::mphf<u_int64_t,hasher_t>(nelem,data_iterator,nthreads,gammaFactor);
 		}
 
 		gettimeofday(&timet, NULL); t_end = timet.tv_sec +(timet.tv_usec/1000000.0);

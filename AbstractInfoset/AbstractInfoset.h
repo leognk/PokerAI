@@ -8,8 +8,6 @@
 
 namespace abc {
 
-class TreeTraverser;
-
 // Class representing an abstract infoset.
 // It is like a regular infoset, but using abstracted
 // hands (with information abstraction) and abstracted actions
@@ -127,8 +125,6 @@ private:
 	static abc::ActionSeqIndexer actionSeqIndexer;
 	// Indices of the action sequences leading to each legal actions.
 	std::vector<uint64_t> actionSeqIds;
-
-	friend class TreeTraverser;
 
 }; // AbstractInfoset
 

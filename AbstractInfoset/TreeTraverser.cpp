@@ -70,7 +70,7 @@ void TreeTraverser::traverseRoundTreeFixedPlayers(
 
 	prepareAbcInfoset(round, nPlayers);
 
-	opt::FastVector<abcInfo_t> hist;
+	opt::FastVector<SimpleAbstractInfoset> hist;
 	hist.push_back(abcInfo);
 	// lastChild[i] indicates whether hist[i] is the last child of its parent node.
 	// We use uint8_t instead of bool because vector<bool> behaves weirdly.
@@ -98,7 +98,7 @@ void TreeTraverser::traverseRoundTreeFixedPlayers(
 		if (hist.size() - 1 > height) height = hist.size() - 1;
 		if (saveActionSeqs) actionSeqs.emplace_back(abcInfo.roundActions);
 
-		if (abcInfo.roundIdx() != round || abcInfo.state.finished) {
+		if (abcInfo.state.round != round || abcInfo.state.finished) {
 
 			if (abcInfo.state.finished) ++nFinishedSeq;
 			else ++nContinuingSeq;
@@ -144,10 +144,10 @@ void TreeTraverser::prepareAbcInfoset(egn::Round round, uint8_t nPlayers)
 		abcInfo.nextState(0);
 	if (round == egn::PREFLOP) return;
 	// Go to the flop by making everyone call.
-	while (abcInfo.roundIdx() != egn::FLOP)
+	while (abcInfo.state.round != egn::FLOP)
 		abcInfo.nextState(1);
 	// Make everyone check until reaching the target round.
-	while (abcInfo.roundIdx() != round)
+	while (abcInfo.state.round != round)
 		abcInfo.nextState(0);
 }
 

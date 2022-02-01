@@ -1,10 +1,11 @@
 #include "../AbstractInfoset/TreeTraverser.h"
 #include "../Blueprint/Constants.h"
+#include "../LosslessAbstraction/hand_index.h"
 
 int main()
 {
 	abc::TreeTraverser traverser(
-		bp::ANTE, bp::BIG_BLIND, bp::INITIAL_STAKES, bp::BET_SIZES, false, true);
+		bp::ANTE, bp::BIG_BLIND, bp::INITIAL_STAKE, bp::BET_SIZES, false, true);
 
 	uint64_t nNodes = 0;
 	for (uint8_t i = 0; i < egn::N_ROUNDS; ++i) {

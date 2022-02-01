@@ -15,26 +15,11 @@
 #include <assert.h>
 #include <string.h>
 #include <memory> // for make_shared
-#include <cstdint>
-#include <pthread.h>
-#include <process.h>
 #include <Windows.h>
+#include <pthread.h>
 
-
-
-#pragma warning(push)
-#pragma warning(disable: 26495)
 namespace boomphf {
-	
-	inline uint64_t printPt( pthread_t pt) {
-	  unsigned char *ptc = (unsigned char*)(void*)(&pt);
-		uint64_t res =0;
-	  for (size_t i=0; i<sizeof(pt); i++) {
-		  res+= (unsigned)(ptc[i]);
-	  }
-		return res;
-	}
-	
+
 	inline unsigned int popcount_32(unsigned int x)
 	{
 		unsigned int m1 = 0x55555555;
@@ -47,7 +32,6 @@ namespace boomphf {
 		return (x * h01) >> 24;           /* returns left 8 bits of x + (x<<8) + ... */
 	}
 
-
 	inline unsigned int popcount_64(uint64_t x)
 	{
 		unsigned int low = x & 0xffffffff ;
@@ -59,7 +43,6 @@ namespace boomphf {
 
 	typedef std::array<uint64_t,10> hash_set_t;
 	typedef std::array<uint64_t,2> hash_pair_t;
-
 
 
 	template <typename Item> class HashFunctors
@@ -95,7 +78,6 @@ namespace boomphf {
 		}
 
 	private:
-
 
 		inline static uint64_t hash64 (Item key, uint64_t seed)
 		{
@@ -148,8 +130,6 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 		HashFunctors<Item> hashFunctors;
 	};
 
-
-
     template <typename Item, class SingleHasher_t> class XorshiftHashFunctors
     {
         /*  Xorshift128*
@@ -181,7 +161,6 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 
         public:
 
-
 		uint64_t h0(hash_pair_t  & s, const Item& key )
 		{
 			s[0] =  singleHasher (key, 0xAAAAAAAA55555555ULL);
@@ -193,7 +172,6 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 			s[1] =  singleHasher (key, 0x33333333CCCCCCCCULL);
 			return s[1];
 		}
-
 
 		//return next hash an update state s
 		uint64_t next(hash_pair_t  & s ) {
@@ -228,7 +206,6 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
         SingleHasher_t singleHasher;
     };
 
-
 	template <typename Iterator>
 	struct iter_range
 	{
@@ -251,7 +228,6 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 	{
 		return iter_range<Iterator>(begin, end);
 	}
-
 
 	class bitVector {
 
@@ -280,9 +256,8 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 			 _size =  r._size;
 			 _nchar = r._nchar;
 			 _ranks = r._ranks;
-			 _bitArray = (uint64_t *) calloc(_nchar, sizeof(uint64_t));
-			 if (_bitArray)
-				memcpy(_bitArray, r._bitArray, _nchar * sizeof(uint64_t));
+			 _bitArray = (uint64_t *) calloc (_nchar,sizeof(uint64_t));
+			 memcpy(_bitArray, r._bitArray, _nchar*sizeof(uint64_t) );
 		 }
 		
 		// Copy assignment operator
@@ -295,15 +270,14 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 				_ranks = r._ranks;
 				if(_bitArray != nullptr)
 					free(_bitArray);
-				_bitArray = (uint64_t *) calloc(_nchar, sizeof(uint64_t));
-				if (_bitArray)
-					memcpy(_bitArray, r._bitArray, _nchar * sizeof(uint64_t));
+				_bitArray = (uint64_t *) calloc (_nchar,sizeof(uint64_t));
+				memcpy(_bitArray, r._bitArray, _nchar*sizeof(uint64_t) );
 			}
 			return *this;
 		}
 	
 		// Move assignment operator
-		bitVector &operator=(bitVector &&r) noexcept
+		bitVector &operator=(bitVector &&r)
 		{
 			if (&r != this)
 			{
@@ -318,18 +292,17 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 			}
 			return *this;
 		}
+
 		// Move constructor
-		bitVector(bitVector &&r) noexcept : _bitArray ( nullptr),_size(0)
+		bitVector(bitVector &&r) : _bitArray ( nullptr),_size(0)
 		{
 			*this = std::move(r);
 		}
 		
-		
 		void resize(uint64_t newsize)
 		{
 			_nchar  = (1ULL+newsize/64ULL);
-#pragma warning(suppress: 6308)
-			_bitArray = (uint64_t *)realloc(_bitArray, _nchar * sizeof(uint64_t));
+			_bitArray = (uint64_t *) realloc(_bitArray,_nchar*sizeof(uint64_t));
 			_size = newsize;
 		}
 
@@ -360,7 +333,6 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 			cc->clear();
 		}
 
-
 		//clear interval, only works with start and size multiple of 64
 		void clear(uint64_t start, size_t size)
 		{
@@ -372,11 +344,7 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 		//return value at pos
 		uint64_t operator[](uint64_t pos) const
 		{
-			//unsigned char * _bitArray8 = (unsigned char *) _bitArray;
-			//return (_bitArray8[pos >> 3ULL] >> (pos & 7 ) ) & 1;
-
 			return (_bitArray[pos >> 6ULL] >> (pos & 63 ) ) & 1;
-
 		}
 
 		//atomically   return old val and set to 1
@@ -386,7 +354,6 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 
 			return  ( oldval >> (pos & 63 ) ) & 1;
 		}
-
 
 		uint64_t get(uint64_t pos) const
 		{
@@ -417,7 +384,7 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 		// add offset to  all ranks  computed
 		uint64_t build_ranks(uint64_t offset =0)
 		{
-			_ranks.reserve(2+ _size/_nb_bits_per_rank_sample);
+			_ranks.reserve(2 + _size/_nb_bits_per_rank_sample);
 
 			uint64_t curent_rank = offset;
 			for (size_t ii = 0; ii < _nchar; ii++) {
@@ -445,8 +412,6 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 			return r;
 		}
 
-
-
 		void save(std::ostream& os) const
 		{
 			os.write(reinterpret_cast<char const*>(&_size), sizeof(_size));
@@ -470,29 +435,17 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 			is.read(reinterpret_cast<char*>(_ranks.data()), (std::streamsize)(sizeof(_ranks[0]) * _ranks.size()));
 		}
 
-
 	protected:
 		uint64_t*  _bitArray;
-		//uint64_t* _bitArray;
 		uint64_t _size;
 		uint64_t _nchar;
 
-		 // epsilon =  64 / _nb_bits_per_rank_sample   bits
+		// epsilon =  64 / _nb_bits_per_rank_sample   bits
 		// additional size for rank is epsilon * _size
 		static const uint64_t _nb_bits_per_rank_sample = 512; //512 seems ok
 		std::vector<uint64_t> _ranks;
 	};
 
-	
-	static inline uint64_t fastrange64(uint64_t word, uint64_t p) {
-		//return word %  p;
-
-		uint64_t highProduct;
-		_umul128(word, p, &highProduct);
-		return highProduct;
-
-	}
-	
 	class level{
 	public:
 		level(){ }
@@ -502,9 +455,7 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 
 		uint64_t get(uint64_t hash_raw)
 		{
-		//	uint64_t hashi =    hash_raw %  hash_domain; //
-			//uint64_t hashi = (uint64_t)(  ((__uint128_t) hash_raw * (__uint128_t) hash_domain) >> 64ULL);
-			uint64_t hashi = fastrange64(hash_raw,hash_domain);
+			uint64_t hashi =    hash_raw %  hash_domain;
 			return bitset.get(hashi);
 		}
 		
@@ -513,9 +464,7 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 		bitVector  bitset;
 	};
 
-
 #define NBBUFF 10000
-//#define NBBUFF 2
 
 	template<typename Range,typename Iterator>
 	struct thread_args
@@ -532,7 +481,6 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
     template <typename elem_t, typename Hasher_t, typename Range, typename it_type>
 	void * thread_processLevel(void * args);
 
-
     /* Hasher_t returns a single hash when operator()(elem_t key) is called.
        if used with XorshiftHashFunctors, it must have the following operator: operator()(elem_t key, uint64_t seed) */
     template <typename elem_t, typename Hasher_t>
@@ -544,30 +492,27 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 		//typedef IndepHashFunctors<elem_t,Hasher_t> MultiHasher_t; //faster than xorshift
 
 	public:
+
 		mphf() : _built(false)
 		{}
-
 
 		~mphf()
 		{
 
 		}
 
-		
 		// allow perc_elem_loaded  elements to be loaded in ram for faster construction (default 3%), set to 0 to desactivate
 		template <typename Range>
-		mphf( size_t n, Range const& input_range,int num_thread = 1,  double gamma = 2.0, float perc_elem_loaded = 0.03) :
+		mphf(size_t n, Range const& input_range, int num_thread = 1, double gamma = 2.0 , float perc_elem_loaded = 0.03) :
 		_gamma(gamma), _hash_domain(size_t(ceil(double(n) * gamma))), _nelem(n), _num_thread(num_thread), _percent_elem_loaded_for_fastMode (perc_elem_loaded)
 		{
-			if(n ==0) return;
+			if(n == 0) return;
 			
 			_fastmode = false;
 			
-
-			
 			if(_percent_elem_loaded_for_fastMode > 0.0 )
 				_fastmode =true;
-			
+
 			setup();
 
 			uint64_t offset = 0;
@@ -578,7 +523,7 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 				processLevel(input_range,ii);
 
 				_levels[ii].bitset.clearCollisions(0 , _levels[ii].hash_domain , _tempBitset);
-				
+
 				offset = _levels[ii].bitset.build_ranks(offset);
 
 				delete _tempBitset;
@@ -588,20 +533,17 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 
 			std::vector<elem_t>().swap(setLevelFastmode);   // clear setLevelFastmode reallocating
 
-
 			pthread_mutex_destroy(&_mutex);
 			
 			_built = true;
 		}
 
-
 		uint64_t lookup(const elem_t &elem)
 		{
-			if(! _built) return ULLONG_MAX;
+			if(!_built) return ULLONG_MAX;
 			
 			//auto hashes = _hasher(elem);
 			uint64_t non_minimal_hp,minimal_hp;
-
 
 			hash_pair_t bbhash;  int level;
 			uint64_t level_hash = getLevel(bbhash,elem,&level);
@@ -617,12 +559,16 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 				else
 				{
 					minimal_hp =  in_final_map->second + _lastbitsetrank;
-
 					return minimal_hp;
 				}
+//				minimal_hp = _final_hash[elem] + _lastbitsetrank;
+//				return minimal_hp;
 			}
 			else
-				non_minimal_hp = fastrange64(level_hash,_levels[level].hash_domain);
+			{
+				non_minimal_hp =  level_hash %  _levels[level].hash_domain; // in fact non minimal hp would be  + _levels[level]->idx_begin
+			}
+
 			minimal_hp = _levels[level].bitset.rank(non_minimal_hp );
 
 			return minimal_hp;
@@ -635,7 +581,6 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 
 		uint64_t totalBitSize()
 		{
-
 			uint64_t totalsizeBitset = 0;
 			for(int ii=0; ii<_nb_levels; ii++)
 			{
@@ -648,14 +593,12 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 		}
 
 		template <typename Iterator>  //typename Range,
-        void pthread_processLevel( std::vector<elem_t>  & buffer , std::shared_ptr<Iterator> shared_it, std::shared_ptr<Iterator> until_p, int i)
+        void pthread_processLevel(std::vector<elem_t>& buffer, std::shared_ptr<Iterator> shared_it, std::shared_ptr<Iterator> until_p, int i)
 		{
 			uint64_t nb_done =0;
-			unsigned tid =  InterlockedIncrement(&_nb_living);
 			auto until = *until_p;
 			uint64_t inbuff =0;
 
-			
 			for (bool isRunning=true;  isRunning ; )
 			{
 
@@ -665,38 +608,23 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 				{
                     buffer[inbuff]= *(*shared_it); inbuff++;
 				}
-				if((*shared_it)==until) isRunning =false;
+                if((*shared_it)==until) isRunning =false;
 				pthread_mutex_unlock(&_mutex);
 
-
 				//do work on the n elems of the buffer
-
                 for(uint64_t ii=0; ii<inbuff ; ii++)
 				{
 					elem_t val = buffer[ii];
 
 					//auto hashes = _hasher(val);
 					hash_pair_t bbhash;  int level;
-					uint64_t level_hash;
-					getLevel(bbhash,val,&level, i);
+					uint64_t level_hash = getLevel(bbhash,val,&level, i);
 
-					
-					//uint64_t level_hash = getLevel(bbhash,val,&level, i);
-
-					//__sync_fetch_and_add(& _cptTotalProcessed,1);
-					
 					if(level == i) //insert into lvl i
 					{
-						
-						//	__sync_fetch_and_add(& _cptLevel,1);
-
-	
-
-						
 						if(_fastmode && i == _fastModeLevel)
 						{
-
-							uint64_t idxl2 = InterlockedIncrement(& _idxLevelsetLevelFastmode);
+							uint64_t idxl2 = InterlockedIncrement(&_idxLevelsetLevelFastmode);
 							//si depasse taille attendue pour setLevelFastmode, fall back sur slow mode mais devrait pas arriver si hash ok et proba avec nous
 							if(idxl2>= setLevelFastmode.size())
 								_fastmode = false;
@@ -707,8 +635,7 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 						//insert to level i+1 : either next level of the cascade or final hash if last level reached
 						if(i == _nb_levels-1) //stop cascade here, insert into exact hash
 						{
-
-							uint64_t hashidx = InterlockedIncrement(& _hashidx);
+							uint64_t hashidx = InterlockedIncrement(&_hashidx);
 
 							pthread_mutex_lock(&_mutex); //see later if possible to avoid this, mais pas bcp item vont la
 							// calc rank de fin  precedent level qq part, puis init hashidx avec ce rank, direct minimal, pas besoin inser ds bitset et rank
@@ -717,12 +644,10 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 						}
 						else
 						{
-							
 							//computes next hash
-
-							if ( level == 0)
+							if (level == 0)
 								level_hash = _hasher.h0(bbhash,val);
-							else if ( level == 1)
+							else if (level == 1)
 								level_hash = _hasher.h1(bbhash,val);
 							else
 							{
@@ -731,17 +656,12 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 							insertIntoLevel(level_hash,i); //should be safe
 						}
 					}
-
 					nb_done++;
-
 				}
-
 				inbuff = 0;
 			}
-
 		}
 
-		
 		void save(std::ostream& os) const
 		{
 
@@ -759,14 +679,12 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 
 			os.write(reinterpret_cast<char const*>(&final_hash_size), sizeof(size_t));
 
-
 			// typename std::unordered_map<elem_t,uint64_t,Hasher_t>::iterator
 			for (auto it = _final_hash.begin(); it != _final_hash.end(); ++it )
 			{
 				os.write(reinterpret_cast<char const*>(&(it->first)), sizeof(elem_t));
 				os.write(reinterpret_cast<char const*>(&(it->second)), sizeof(uint64_t));
 			}
-
 		}
 
 		void load(std::istream& is)
@@ -778,15 +696,12 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 			is.read(reinterpret_cast<char*>(&_nelem), sizeof(_nelem));
 			
 			_levels.resize(_nb_levels);
-			
 
 			for(int ii=0; ii<_nb_levels; ii++)
 			{
 				//_levels[ii].bitset = new bitVector();
 				_levels[ii].bitset.load(is);
 			}
-
-
 
 			//mini setup, recompute size of each level
 			_proba_collision = 1.0 -  pow(((_gamma*(double)_nelem -1 ) / (_gamma*(double)_nelem)),_nelem-1);
@@ -822,28 +737,16 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 			_built = true;
 		}
 
-
 		private :
 
 		void setup()
 		{
 			pthread_mutex_init(&_mutex, NULL);
 
-#pragma warning(suppress: 4244)
-			_pid = _getpid() + printPt(pthread_self());
-
-			_cptTotalProcessed=0;
-
-			
 			if(_fastmode)
-			{
 #pragma warning(suppress: 4244)
 				setLevelFastmode.resize(_percent_elem_loaded_for_fastMode * (double)_nelem );
-			}
 
-			
-			bufferperThread.resize(_num_thread);
-			
 			_proba_collision = 1.0 -  pow(((_gamma*(double)_nelem -1 ) / (_gamma*(double)_nelem)),_nelem-1);
 
 			double sum_geom =_gamma * ( 1.0 +  _proba_collision / (1.0 - _proba_collision));
@@ -855,7 +758,6 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 			uint64_t previous_idx =0;
 			for(int ii=0; ii<_nb_levels; ii++)
 			{
-
 				_levels[ii].idx_begin = previous_idx;
 
 				// round size to nearest superior multiple of 64, makes it easier to clear a level
@@ -875,32 +777,26 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 			}
 		}
 
-
 		//compute level and returns hash of last level reached
-		uint64_t getLevel(hash_pair_t & bbhash, const elem_t &val, int * res_level, int maxlevel = 100, int minlevel =0)
-		//uint64_t getLevel(hash_pair_t & bbhash, elem_t val,int * res_level, int maxlevel = 100, int minlevel =0)
-
+		uint64_t getLevel(hash_pair_t & bbhash, const elem_t &val, int * res_level, int maxlevel = 100)
 		{
 			int level = 0;
 			uint64_t hash_raw=0;
 
-			for (int ii = 0; ii<(_nb_levels-1) &&  ii < maxlevel ; ii++ )
+			for (int ii=0; ii<(_nb_levels-1) &&  ii < maxlevel ; ii++ )
 			{
+                //calc le hash suivant
+                if ( ii == 0)
+                    hash_raw = _hasher.h0(bbhash,val);
+                else 
+                {
+                    if ( ii == 1)
+                        hash_raw = _hasher.h1(bbhash,val);
+                    else
+                        hash_raw = _hasher.next(bbhash);
+                }
 
-				//calc le hash suivant
-				 if ( ii == 0)
-					hash_raw = _hasher.h0(bbhash,val);
-				else if ( ii == 1)
-					hash_raw = _hasher.h1(bbhash,val);
-				else
-				{
-					hash_raw = _hasher.next(bbhash);
-				}
-
-
-				if( ii >= minlevel && _levels[ii].get(hash_raw) ) //
-				//if(  _levels[ii].get(hash_raw) ) //
-
+				if( _levels[ii].get(hash_raw) )
 				{
 					break;
 				}
@@ -916,8 +812,7 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 		//insert into bitarray
 		void insertIntoLevel(uint64_t level_hash, int i)
 		{
-		//	uint64_t hashl =  level_hash % _levels[i].hash_domain;
-			uint64_t hashl = fastrange64( level_hash,_levels[i].hash_domain);
+			uint64_t hashl =  level_hash % _levels[i].hash_domain;
 
 			if( _levels[i].bitset.atomic_test_and_set(hashl) )
 			{
@@ -929,11 +824,11 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 
 		//loop to insert into level i
 		template <typename Range>
-		void processLevel(Range const& input_range,int i)
+		void processLevel(Range const& input_range, int i)
 		{
 			////alloc the bitset for this level
 			_levels[i].bitset =  bitVector(_levels[i].hash_domain); ;
-			
+
 			_cptLevel = 0;
 			_hashidx = 0;
 			_idxLevelsetLevelFastmode =0;
@@ -947,38 +842,36 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 			t_arg.it_p =  std::static_pointer_cast<void>(std::make_shared<it_type>(input_range.begin()));
 			t_arg.until_p =  std::static_pointer_cast<void>(std::make_shared<it_type>(input_range.end()));
 
-
 			t_arg.level = i;
-			
 			if(_fastmode && i >= (_fastModeLevel+1))
 			{
-
-				/* we'd like to do t_arg.it = data_iterator.begin() but types are different;
-					so, casting to (void*) because of that; and we remember the type in the template */
 				typedef decltype(setLevelFastmode.begin()) fastmode_it_type;
 				t_arg.it_p =  std::static_pointer_cast<void>(std::make_shared<fastmode_it_type>(setLevelFastmode.begin()));
 				t_arg.until_p =  std::static_pointer_cast<void>(std::make_shared<fastmode_it_type>(setLevelFastmode.end()));
-					
-				/* we'd like to do t_arg.it = data_iterator.begin() but types are different;
-					so, casting to (void*) because of that; and we remember the type in the template */
-					
-				for(int ii=0;ii<_num_thread;ii++)
-					pthread_create (&tab_threads[ii], NULL,  thread_processLevel<elem_t, Hasher_t, Range, fastmode_it_type>, &t_arg); //&t_arg[ii]
-					
-					
+				
+                /* we'd like to do t_arg.it = data_iterator.begin() but types are different;
+                    so, casting to (void*) because of that; and we remember the type in the template */
+
+                for(int ii=0;ii<_num_thread;ii++)
+                    pthread_create (&tab_threads[ii], NULL,  thread_processLevel<elem_t, Hasher_t, Range, fastmode_it_type>, &t_arg); //&t_arg[ii]
 			}
 			else
 			{
-				for(int ii=0;ii<_num_thread;ii++)
-					pthread_create (&tab_threads[ii], NULL,  thread_processLevel<elem_t, Hasher_t, Range, decltype(input_range.begin())>, &t_arg); //&t_arg[ii]
+			    for(int ii=0;ii<_num_thread;ii++)
+                    pthread_create (&tab_threads[ii], NULL,  thread_processLevel<elem_t, Hasher_t, Range, decltype(input_range.begin())>, &t_arg); //&t_arg[ii]
 			}
 			//joining
 			for(int ii=0;ii<_num_thread;ii++)
+			{
 				pthread_join(tab_threads[ii], NULL);
-			if(_fastmode && i == _fastModeLevel) //shrink to actual number of elements in set
-				setLevelFastmode.resize(_idxLevelsetLevelFastmode);
-			delete [] tab_threads;
 
+			}
+
+			if(_fastmode && i == _fastModeLevel) //shrink to actual number of elements in set
+			{
+				setLevelFastmode.resize(_idxLevelsetLevelFastmode);
+			}
+			delete [] tab_threads;
 		}
 
 	private:
@@ -992,35 +885,28 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 		uint64_t _hash_domain;
 		uint64_t _nelem;
         std::unordered_map<elem_t,uint64_t,Hasher_t> _final_hash;
-		unsigned _nb_living;
+		int _nb_living;
 		int _num_thread;
 		uint64_t _hashidx;
 		double _proba_collision;
 		uint64_t _lastbitsetrank;
 		uint64_t _idxLevelsetLevelFastmode;
 		uint64_t _cptLevel;
-		uint64_t _cptTotalProcessed;
 
 		// fast build mode , requires  that _percent_elem_loaded_for_fastMode %   elems are loaded in ram
 		float _percent_elem_loaded_for_fastMode ;
 		bool _fastmode;
 		std::vector< elem_t > setLevelFastmode;
-	//	std::vector< elem_t > setLevelFastmode_next; // todo shrinker le set e nram a chaque niveau  ?
-		
-		std::vector< std::vector< elem_t > > bufferperThread;
-
 		int _fastModeLevel;
 		bool _built;
-		int _pid;
 	public:
 		pthread_mutex_t _mutex;
 	};
 
-
     template <typename elem_t, typename Hasher_t, typename Range, typename it_type>
 	void * thread_processLevel(void * args)
 	{
-		if(args ==NULL) return NULL;
+		if(args == NULL) return NULL;
 
 		thread_args<Range,it_type> *targ = (thread_args<Range,it_type>*) args;
 
@@ -1041,4 +927,3 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 		return NULL;
 	}
 }
-#pragma warning(pop)

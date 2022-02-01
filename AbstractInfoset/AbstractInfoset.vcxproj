@@ -33,10 +33,12 @@
     <ClInclude Include="AbstractInfoset.h" />
     <ClInclude Include="ActionAbstraction.h" />
     <ClInclude Include="ActionSeqIndexer.h" />
+    <ClInclude Include="SimpleAbstractInfoset.h" />
     <ClInclude Include="TreeTraverser.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ActionAbstraction.cpp" />
+    <ClCompile Include="ActionSeqIndexer.cpp" />
     <ClCompile Include="TreeTraverser.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

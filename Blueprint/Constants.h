@@ -11,7 +11,7 @@ static const bckSize_t N_BCK = 200;
 
 static const egn::chips ANTE = 0;
 static const egn::chips BIG_BLIND = 100;
-static const egn::chips INITIAL_STAKES = 20000;
+static const egn::chips INITIAL_STAKE = 20000;
 
 static const std::vector<std::vector<std::vector<float>>> BET_SIZES = {
 	{

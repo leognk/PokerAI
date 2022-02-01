@@ -12,6 +12,7 @@
 namespace abc {
 	template<typename bckSize_t, bckSize_t nBck>
 	class AbstractInfoset;
+	class SimpleAbstractInfoset;
 }
 
 namespace egn {
@@ -251,6 +252,7 @@ protected:
 
 	template<typename bckSize_t, bckSize_t nBck>
 	friend class abc::AbstractInfoset;
+	friend class abc::SimpleAbstractInfoset;
 
 }; // GameState
 
