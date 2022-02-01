@@ -16,20 +16,21 @@ public:
 	}
 };
 
-template<typename actionSeqIdx_t>
 class ActionSeqIndexer
 {
 public:
-	typedef boomphf::mphf<T, ActionSeqHasher> phf_t;
+	//typedef boomphf::mphf<T, ActionSeqHasher> phf_t;
+
+	ActionSeqIndexer();
 
 	static void init()
 	{
-		phf_t phf(keys.size(), keys);
+		//phf_t phf(keys.size(), keys);
 	}
 
-	static actionSeqIdx_t actionSeqIndex(const std::vector<uint8_t>& actionSeq)
+	static uint64_t actionSeqIndex(const std::vector<uint8_t>& actionSeq)
 	{
-		return phf.lookup(actionSeq);
+		return 0;// phf.lookup(actionSeq);
 	}
 
 private:

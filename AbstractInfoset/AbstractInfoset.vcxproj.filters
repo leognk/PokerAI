@@ -15,15 +15,24 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ActionSeqIndexer.h">
+    <ClInclude Include="AbstractInfoset.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ActionAbstraction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ActionSeqIndexer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TreeTraverser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ActionAbstraction.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TreeTraverser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

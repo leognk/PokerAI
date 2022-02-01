@@ -1,16 +1,17 @@
-#include "../Blueprint/CountNodes.cpp"
+#include "../AbstractInfoset/TreeTraverser.h"
+#include "../Blueprint/Constants.h"
 
 int main()
 {
-	std::vector<uint32_t> nInfoBuckets = { 169, 200, 200, 200 };
-	egn::chips ante = 0, bigBlind = 100, initialStake = 20000;
+	abc::TreeTraverser traverser(
+		bp::ANTE, bp::BIG_BLIND, bp::INITIAL_STAKES, bp::BET_SIZES, false, true);
 
 	uint64_t nNodes = 0;
 	for (uint8_t i = 0; i < egn::N_ROUNDS; ++i) {
-		uint64_t nActionNodes = 0;
-		bp::countRoundNodes(ante, bigBlind, initialStake, egn::Round(i), nActionNodes);
+		bp::bckSize_t nBck = (i == egn::PREFLOP) ? abc::PREFLOP_SIZE : bp::N_BCK;
+		uint64_t nActionNodes = traverser.traverseRoundTree(egn::Round(i));
 		std::cout << "\n";
-		nNodes += nInfoBuckets[i] * nActionNodes;
+		nNodes += nBck * nActionNodes;
 	}
 
 	std::cout

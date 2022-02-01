@@ -9,7 +9,10 @@
 #include <iostream>
 #include "../tracy/Tracy.hpp"
 
-namespace bp { class AbstractInfoset; }
+namespace abc {
+	template<typename bckSize_t, bckSize_t nBck>
+	class AbstractInfoset;
+}
 
 namespace egn {
 
@@ -246,7 +249,8 @@ protected:
 	std::array<uint16_t, opt::MAX_PLAYERS> mRanks{};
 	omp::HandEvaluator mEval;
 
-	friend class bp::AbstractInfoset;
+	template<typename bckSize_t, bckSize_t nBck>
+	friend class abc::AbstractInfoset;
 
 }; // GameState
 

@@ -18,18 +18,12 @@
     <ClInclude Include="BlueprintCalculator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AbstractInfoset.h">
+    <ClInclude Include="Constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BlueprintCalculator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AbstractInfoset.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CountNodes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

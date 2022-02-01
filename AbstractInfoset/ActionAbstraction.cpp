@@ -8,6 +8,15 @@ ActionAbstraction::ActionAbstraction(
 {
 }
 
+ActionAbstraction& ActionAbstraction::operator=(const ActionAbstraction& other)
+{
+	if (this == &other)
+		return *this;
+	beginRaiseId = other.beginRaiseId;
+	endRaiseId = other.endRaiseId;
+	return *this;
+}
+
 void ActionAbstraction::setAction(
 	uint8_t actionId, egn::GameState& state, uint8_t& nRaises)
 {
@@ -63,7 +72,7 @@ uint8_t ActionAbstraction::calculateLegalActions(
 		if (state.allin <= state.minRaise) {
 			beginRaiseId = 0;
 			endRaiseId = 0;
-			return;
+			return nActions;
 		}
 
 		beginRaiseId = 0;
@@ -75,7 +84,7 @@ uint8_t ActionAbstraction::calculateLegalActions(
 		float minRaiseSize = (float)state.minRaise / state.pot;
 		while (betSizes[state.round][nRaises][beginRaiseId] < minRaiseSize) {
 			if (++beginRaiseId == betSizes[state.round][nRaises].size())
-				return;
+				return nActions;
 		}
 
 		// Find the maximum idx for which
@@ -83,7 +92,7 @@ uint8_t ActionAbstraction::calculateLegalActions(
 		float allinSize = (float)state.allin / state.pot;
 		while (betSizes[state.round][nRaises][endRaiseId - 1] >= allinSize) {
 			if (--endRaiseId == beginRaiseId)
-				return;
+				return nActions;
 		}
 
 		nActions += endRaiseId - beginRaiseId;

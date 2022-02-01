@@ -14,6 +14,9 @@ public:
 	// shape: n_rounds x n_raises_in_round x n_possible_bet_sizes
 	ActionAbstraction(const std::vector<std::vector<std::vector<float>>>& betSizes);
 
+	// The copy assignment does not copy betSizes which is constant.
+	ActionAbstraction& operator=(const ActionAbstraction& other);
+
 	// actionId must be chosen between 0 and nActions excluded.
 	// Actions are indexed using the following order:
 	// fold, call, raiseSize1, raiseSize2, ..., raiseSizeLast, all-in,
@@ -24,7 +27,7 @@ public:
 private:
 	egn::chips getBetValue(uint8_t raiseId, const egn::GameState& state, uint8_t nRaises) const;
 
-	std::vector<std::vector<std::vector<float>>> betSizes;
+	const std::vector<std::vector<std::vector<float>>> betSizes;
 
 	// Legal bet size ids will be between
 	// beginRaiseId included and endRaiseId excluded.
