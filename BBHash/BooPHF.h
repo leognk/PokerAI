@@ -684,7 +684,12 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 			// typename std::unordered_map<elem_t,uint64_t,Hasher_t>::iterator
 			for (auto it = _final_hash.begin(); it != _final_hash.end(); ++it )
 			{
-				os.write(reinterpret_cast<char const*>(&(it->first)), sizeof(elem_t));
+				// leognk: elem_t is a vector.
+				//os.write(reinterpret_cast<char const*>(&(it->first)), sizeof(elem_t));
+				// For the loading, save the vector's size which is less than 256 so fit in 1 byte.
+				size_t size = it->first.size();
+				os.write(reinterpret_cast<char const*>(&size), sizeof(uint8_t));
+				os.write(reinterpret_cast<char const*>(it->first.data()), size * sizeof(elem_t::value_type));
 				os.write(reinterpret_cast<char const*>(&(it->second)), sizeof(uint64_t));
 			}
 		}
@@ -727,10 +732,16 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 
 			for(unsigned int ii=0; ii<final_hash_size; ii++)
 			{
+				// leognk: elem_t is a vector.
+				uint8_t size;
 				elem_t key;
 				uint64_t value;
 
-				is.read(reinterpret_cast<char *>(&key), sizeof(elem_t));
+				//is.read(reinterpret_cast<char *>(&key), sizeof(elem_t));
+				// Read the vector's size.
+				is.read(reinterpret_cast<char *>(&size), sizeof(uint8_t));
+				key.resize(size);
+				is.read(reinterpret_cast<char *>(key.data()), key.size() * sizeof(elem_t::value_type));
 				is.read(reinterpret_cast<char *>(&value), sizeof(uint64_t));
 
 				_final_hash[key] = value;

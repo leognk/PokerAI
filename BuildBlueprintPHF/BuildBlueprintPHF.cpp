@@ -5,7 +5,7 @@
 int main()
 {
 	const std::string indexerName = "BLUEPRINT";
-	int nThreads = 4;
+	int nThreads = 8;
 	double gamma = 2.0;
 
 	abc::ActionSeqIndexer indexer(
@@ -13,10 +13,12 @@ int main()
 		indexerName, nThreads, gamma);
 
 	auto startTime = std::chrono::high_resolution_clock::now();
+
 	indexer.buildPHF();
+
 	auto endTime = std::chrono::high_resolution_clock::now();
 	auto duration = 1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
-	std::cout << "Duration: " << std::round(duration) << "s\n";
+	std::cout << "Duration: " << std::round(duration) << " sec\n";
 
 	indexer.savePHF();
 }

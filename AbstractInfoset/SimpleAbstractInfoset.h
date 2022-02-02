@@ -40,13 +40,7 @@ public:
 	void nextState(uint8_t actionId)
 	{
 		actionAbc.setAction(actionId, state, nRaises);
-
-		// If the first players on the preflop fold, remove them and
-		// proceed as if they did not exist.
-		if (state.round == egn::PREFLOP && roundActions.empty() && actionId == 0)
-			--nPlayers;
-		else
-			roundActions.push_back(actionId);
+		roundActions.push_back(actionId);
 
 		egn::Round oldRound = state.round;
 		state.nextState();

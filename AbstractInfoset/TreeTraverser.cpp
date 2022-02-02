@@ -25,19 +25,13 @@ uint64_t TreeTraverser::traverseRoundTree(
 	uint64_t nNodes = 0, nFinishedSeq = 0, nContinuingSeq = 0;
 	uint32_t height = 0;
 
-	for (uint8_t nPlayers = 2; nPlayers <= opt::MAX_PLAYERS; ++nPlayers) {
+	// For preflop, the number of players is always the max.
+	uint8_t minNPlayers = (round == egn::PREFLOP) ? opt::MAX_PLAYERS : 2;
+	for (uint8_t nPlayers = minNPlayers; nPlayers <= opt::MAX_PLAYERS; ++nPlayers) {
 		traverseRoundTreeFixedPlayers(
 			round, nPlayers,
 			nNodes, nFinishedSeq, nContinuingSeq,
 			height, actionSeqs);
-	}
-
-	if (round == egn::PREFLOP) {
-		// We must add MAX_PLAYERS - 1 nodes and 1 finishedSeq which correspond to
-		// the situation where all players fold at the beginning except the big blind
-		// because this situation is not treated when we fix the number of players.
-		nNodes += opt::MAX_PLAYERS - 1;
-		++nFinishedSeq;
 	}
 
 	if (verbose) {
@@ -77,12 +71,9 @@ void TreeTraverser::traverseRoundTreeFixedPlayers(
 	opt::FastVector<uint8_t> lastChild;
 	lastChild.push_back(true);
 
-	// If the target round is the preflop, we don't make
-	// the first player fold because it was taken care in prepareAbcInfoset.
-	uint8_t firstIdx = (round == egn::PREFLOP) ? 1 : 0;
-	opt::FastVector<uint8_t> stack(abcInfo.nActions - firstIdx);
+	opt::FastVector<uint8_t> stack(abcInfo.nActions);
 	for (uint8_t i = 0; i < stack.size(); ++i)
-		stack[i] = firstIdx + i;
+		stack[i] = i;
 
 	while (true) {
 
@@ -96,7 +87,17 @@ void TreeTraverser::traverseRoundTreeFixedPlayers(
 		++nNodes;
 #pragma warning(suppress: 4267)
 		if (hist.size() - 1 > height) height = hist.size() - 1;
-		if (saveActionSeqs) actionSeqs.emplace_back(abcInfo.roundActions);
+
+		if (saveActionSeqs) {
+			if (round == egn::PREFLOP)
+				actionSeqs.emplace_back(abcInfo.roundActions);
+			// For rounds other than preflop, include the number of players.
+			else {
+				abcInfo.roundActions.push_back(nPlayers);
+				actionSeqs.emplace_back(abcInfo.roundActions);
+				abcInfo.roundActions.pop_back();
+			}
+		}
 
 		if (abcInfo.state.round != round || abcInfo.state.finished) {
 
@@ -138,14 +139,16 @@ void TreeTraverser::traverseRoundTreeFixedPlayers(
 void TreeTraverser::prepareAbcInfoset(egn::Round round, uint8_t nPlayers)
 {
 	abcInfo.startNewHand();
+	if (round == egn::PREFLOP) return;
 	// Make MAX_PLAYERS - nPlayers fold at the beginning so that
 	// there remains nPlayers in the game.
 	for (uint8_t i = 0; i < opt::MAX_PLAYERS - nPlayers; ++i)
 		abcInfo.nextState(0);
-	if (round == egn::PREFLOP) return;
-	// Go to the flop by making everyone call.
-	while (abcInfo.state.round != egn::FLOP)
+	// Go to the flop by making everyone but the big blind call
+	// and the big blind check.
+	for (uint8_t i = 0; i < nPlayers - 1; ++i)
 		abcInfo.nextState(1);
+	abcInfo.nextState(0);
 	// Make everyone check until reaching the target round.
 	while (abcInfo.state.round != round)
 		abcInfo.nextState(0);

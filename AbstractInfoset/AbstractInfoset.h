@@ -21,13 +21,17 @@ public:
 		egn::chips ante,
 		egn::chips bigBlind,
 		egn::chips initialStake,
-		const std::vector<std::vector<std::vector<float>>>& betSizes) :
+		const std::vector<std::vector<std::vector<float>>>& betSizes,
+		const std::string& actionSeqIndexerName = "BLUEPRINT") :
 		state(ante, bigBlind, {}),
-		actionAbc(betSizes)
+		actionAbc(betSizes),
+		actionSeqIndexer(ante, bigBlind, initialStake, betSizes, actionSeqIndexerName)
 	{
 		std::fill(initialStakes.begin(), initialStakes.end(), initialStake);
 		// Load information abstraction lookup tables.
 		handIndexer.loadLUT();
+		// Load action sequences perfect hash functions.
+		actionSeqIndexer.loadPHF();
 	}
 
 	void startNewHand()
@@ -48,13 +52,7 @@ public:
 	void nextState(uint8_t actionId)
 	{
 		actionAbc.setAction(actionId, state, nRaises);
-
-		// If the first players on the preflop fold, remove them and
-		// proceed as if they did not exist.
-		if (state.round == egn::PREFLOP && roundActions.empty() && actionId == 0)
-			--nPlayers;
-		else
-			roundActions.push_back(actionId);
+		roundActions.push_back(actionId);
 
 		egn::Round oldRound = state.round;
 		state.nextState();
@@ -73,10 +71,11 @@ public:
 
 	// The pair composed of an abstract infoset and
 	// one of its legal action is identified by:
-	// - the current round
-	// - the acting player's hand's bucket
+	// - the current round.
+	// - the acting player's hand's bucket.
 	// - the index (given by a perfect hash function) of the action
-	//   sequence leading to the legal action.
+	//   sequence leading to the legal action, with the number of players
+	//   included for rounds other than preflop.
 	uint8_t roundIdx() const { return state.round; }
 	bckSize_t handIdx() const { return handsIds[state.actingPlayer]; }
 	uint64_t actionSeqIdx(uint8_t a) const { return actionSeqIds[a]; }
@@ -99,11 +98,24 @@ private:
 	void calculateActionSeqIds()
 	{
 		actionSeqIds.clear();
-		for (uint8_t a = 0; a < nActions; ++a) {
-			roundActions.push_back(a);
-			actionSeqIds.push_back(
-				actionSeqIndexer.actionSeqIndex(roundActions));
-			roundActions.pop_back();
+		if (state.round == egn::PREFLOP) {
+			for (uint8_t a = 0; a < nActions; ++a) {
+				roundActions.push_back(a);
+				actionSeqIds.push_back(
+					actionSeqIndexer.index(state.round, roundActions));
+				roundActions.pop_back();
+			}
+		}
+		// For rounds other than preflop, include the number of players.
+		else {
+			for (uint8_t a = 0; a < nActions; ++a) {
+				roundActions.push_back(a);
+				roundActions.push_back(nPlayers);
+				actionSeqIds.push_back(
+					actionSeqIndexer.index(state.round, roundActions));
+				roundActions.pop_back();
+				roundActions.pop_back();
+			}
 		}
 	}
 
@@ -122,17 +134,15 @@ private:
 	std::array<bckSize_t, omp::MAX_PLAYERS> handsIds;
 
 	abc::ActionAbstraction actionAbc;
-	static abc::ActionSeqIndexer actionSeqIndexer;
-	// Indices of the action sequences leading to each legal actions.
+	abc::ActionSeqIndexer actionSeqIndexer;
+	// Indices of the action sequences leading to each legal actions
+	// with the number of players included for rounds other than preflop.
 	std::vector<uint64_t> actionSeqIds;
 
 }; // AbstractInfoset
 
 template<typename bckSize_t, bckSize_t nBck>
 abc::LossyIndexer<bckSize_t, nBck> AbstractInfoset<bckSize_t, nBck>::handIndexer;
-
-template<typename bckSize_t, bckSize_t nBck>
-abc::ActionSeqIndexer AbstractInfoset<bckSize_t, nBck>::actionSeqIndexer;
 
 } // abc
 
