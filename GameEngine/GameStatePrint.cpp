@@ -9,7 +9,7 @@ namespace egn {
 #pragma warning(suppress: 26495)
 GameStatePrint::GameStatePrint(
     chips ante, chips bigBlind,
-    const std::array<chips, opt::MAX_PLAYERS>& stakes,
+    const std::array<chips, MAX_PLAYERS>& stakes,
     unsigned rngSeed,
     std::string separatorLine) :
 
@@ -22,15 +22,15 @@ void GameStatePrint::startNewHand(uint8_t dealerIdx)
 {
     mFirstActive = dealerIdx;
     nextActive(mFirstActive);
-    for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i)
+    for (uint8_t i = 0; i < MAX_PLAYERS; ++i)
         mLastActions[i] = "";
     mPrevActionRound = PREFLOP;
-    mPrevActing = opt::MAX_PLAYERS + 1;
+    mPrevActing = MAX_PLAYERS + 1;
 
     GameState::startNewHand(dealerIdx);
 
     // Initialize mRoundBets.
-    for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i) {
+    for (uint8_t i = 0; i < MAX_PLAYERS; ++i) {
         if (mBets[i] > mAnte)
             mRoundBets[i] = mBets[i] - mAnte;
         else
@@ -43,12 +43,12 @@ void GameStatePrint::nextState()
     // We went to the next round.
     if (mPrevActionRound != round) {
         // Reset mLastActions.
-        for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i) {
+        for (uint8_t i = 0; i < MAX_PLAYERS; ++i) {
             if (mLastActions[i] != "fold"
                 && mLastActions[i] != "all-in")
                 mLastActions[i] = "";
         }
-        for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i)
+        for (uint8_t i = 0; i < MAX_PLAYERS; ++i)
             mRoundBets[i] = 0;
     }
 
@@ -93,7 +93,7 @@ void GameStatePrint::nextState()
 uint8_t& GameStatePrint::nextActiveInGame(uint8_t& i) const
 {
     do {
-        (++i) %= opt::MAX_PLAYERS;
+        (++i) %= MAX_PLAYERS;
     } while (!stakes[i] && !isAlive(i));
     return i;
 }

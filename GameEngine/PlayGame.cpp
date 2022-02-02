@@ -6,8 +6,8 @@ namespace egn {
 #pragma warning(suppress: 26495)
 PlayGame::PlayGame(
 	chips ante, chips bigBlind,
-	const std::array<chips, opt::MAX_PLAYERS>& stakes,
-	const std::array<Player*, opt::MAX_PLAYERS>& players,
+	const std::array<chips, MAX_PLAYERS>& stakes,
+	const std::array<Player*, MAX_PLAYERS>& players,
 	uint8_t dealerIdx,
 	unsigned rngSeed) :
 

@@ -27,6 +27,7 @@ public:
 
 	// indexerName is used in the MPHF files names.
 	ActionSeqIndexer(
+		uint8_t maxPlayers,
 		egn::chips ante,
 		egn::chips bigBlind,
 		egn::chips initialStake,

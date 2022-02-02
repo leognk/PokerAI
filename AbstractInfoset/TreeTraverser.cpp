@@ -4,6 +4,7 @@
 namespace abc {
 
 TreeTraverser::TreeTraverser(
+	uint8_t maxPlayers,
 	egn::chips ante,
 	egn::chips bigBlind,
 	egn::chips initialStake,
@@ -11,7 +12,8 @@ TreeTraverser::TreeTraverser(
 	bool saveActionSeqs,
 	bool verbose) :
 
-	abcInfo(ante, bigBlind, initialStake, betSizes),
+	maxPlayers(maxPlayers),
+	abcInfo(maxPlayers, ante, bigBlind, initialStake, betSizes),
 	saveActionSeqs(saveActionSeqs),
 	verbose(verbose)
 {
@@ -26,8 +28,8 @@ uint64_t TreeTraverser::traverseRoundTree(
 	uint32_t height = 0;
 
 	// For preflop, the number of players is always the max.
-	uint8_t minNPlayers = (round == egn::PREFLOP) ? opt::MAX_PLAYERS : 2;
-	for (uint8_t nPlayers = minNPlayers; nPlayers <= opt::MAX_PLAYERS; ++nPlayers) {
+	uint8_t minNPlayers = (round == egn::PREFLOP) ? maxPlayers : 2;
+	for (uint8_t nPlayers = minNPlayers; nPlayers <= maxPlayers; ++nPlayers) {
 		traverseRoundTreeFixedPlayers(
 			round, nPlayers,
 			nNodes, nFinishedSeq, nContinuingSeq,
@@ -37,7 +39,7 @@ uint64_t TreeTraverser::traverseRoundTree(
 	if (verbose) {
 		std::cout
 			<< "ROUND: " << round
-			<< " - TOTAL (" << std::to_string(opt::MAX_PLAYERS) << " players)\n";
+			<< " - TOTAL (" << std::to_string(maxPlayers) << " players)\n";
 		printProgress(nNodes, nFinishedSeq, nContinuingSeq, height, startTime);
 	}
 
@@ -140,9 +142,9 @@ void TreeTraverser::prepareAbcInfoset(egn::Round round, uint8_t nPlayers)
 {
 	abcInfo.startNewHand();
 	if (round == egn::PREFLOP) return;
-	// Make MAX_PLAYERS - nPlayers fold at the beginning so that
+	// Make maxPlayers - nPlayers fold at the beginning so that
 	// there remains nPlayers in the game.
-	for (uint8_t i = 0; i < opt::MAX_PLAYERS - nPlayers; ++i)
+	for (uint8_t i = 0; i < maxPlayers - nPlayers; ++i)
 		abcInfo.nextState(0);
 	// Go to the flop by making everyone but the big blind call
 	// and the big blind check.

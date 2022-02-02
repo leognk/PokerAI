@@ -13,7 +13,7 @@ struct State
 {
 	unsigned idx;
 
-	std::array<egn::chips, opt::MAX_PLAYERS> stakes{};
+	std::array<egn::chips, egn::MAX_PLAYERS> stakes{};
 
 	uint8_t actingPlayer;
 	egn::chips call, minRaise, allin;
@@ -33,11 +33,11 @@ struct History
 	egn::chips ante;
 	egn::chips bb;
 	uint8_t dealer;
-	std::array<egn::Hand, opt::MAX_PLAYERS> hands{};
+	std::array<egn::Hand, egn::MAX_PLAYERS> hands{};
 	egn::Hand boardCards;
-	std::array<egn::chips, opt::MAX_PLAYERS> initialStakes{};
+	std::array<egn::chips, egn::MAX_PLAYERS> initialStakes{};
 	std::vector<State> states;
-	std::array<egn::dchips, opt::MAX_PLAYERS> rewards{};
+	std::array<egn::dchips, egn::MAX_PLAYERS> rewards{};
 };
 
 bool boolFromString(const std::string& str)

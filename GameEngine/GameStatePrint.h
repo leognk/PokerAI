@@ -11,7 +11,7 @@ class GameStatePrint : public GameState
 public:
 	GameStatePrint(
 		chips ante, chips bigBlind,
-		const std::array<chips, opt::MAX_PLAYERS>& stakes,
+		const std::array<chips, MAX_PLAYERS>& stakes,
 		unsigned rngSeed = 0,
 		std::string separatorLine = "");
 
@@ -32,9 +32,9 @@ private:
 	std::string mSeparatorLine;
 
 	uint8_t mFirstActive;
-	std::array<chips, opt::MAX_PLAYERS> mRoundBets;
-	std::array<std::string, opt::MAX_PLAYERS> mLastActions;
-	std::array<chips, opt::MAX_PLAYERS> mLastBets{};
+	std::array<chips, MAX_PLAYERS> mRoundBets;
+	std::array<std::string, MAX_PLAYERS> mLastActions;
+	std::array<chips, MAX_PLAYERS> mLastBets{};
 	Round mPrevActionRound;
 	uint8_t mPrevActing;
 

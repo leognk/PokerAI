@@ -10,6 +10,7 @@ class TreeTraverser
 {
 public:
 	TreeTraverser(
+		uint8_t maxPlayers,
 		egn::chips ante,
 		egn::chips bigBlind,
 		egn::chips initialStake,
@@ -41,6 +42,8 @@ private:
 		uint64_t nContinuingSeq,
 		uint32_t height,
 		std::chrono::high_resolution_clock::time_point startTime);
+
+	uint8_t maxPlayers;
 
 	SimpleAbstractInfoset abcInfo;
 

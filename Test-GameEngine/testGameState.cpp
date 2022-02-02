@@ -57,10 +57,10 @@ TEST(GameStateTest, CoherentWithData)
         hdt::HandHistory hist;
         if (!(hdt::readCompressedData(file, hist))) break;
 
-        EXPECT_LE(hist.maxPlayers, opt::MAX_PLAYERS);
+        EXPECT_LE(hist.maxPlayers, egn::MAX_PLAYERS);
 
         // Create stakes array.
-        std::array<egn::chips, opt::MAX_PLAYERS> stakes{};
+        std::array<egn::chips, egn::MAX_PLAYERS> stakes{};
         for (uint8_t i = 0; i < hist.initialStakes.size(); ++i)
             stakes[i] = hist.initialStakes[i];
 
@@ -158,7 +158,7 @@ TEST(GameStateTest, VerifyWithCustomStates)
         // Initialize GameState.
         egn::GameState state(hist.ante, hist.bb, hist.initialStakes);
         state.setBoardCards(hist.boardCards);
-        for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i)
+        for (uint8_t i = 0; i < egn::MAX_PLAYERS; ++i)
             state.setHoleCards(i, hist.hands[i]);
         state.startNewHand(hist.dealer, false);
 
@@ -166,7 +166,7 @@ TEST(GameStateTest, VerifyWithCustomStates)
         for (const cus::State& cState : hist.states) {
 
             EXPECT_EQ(state.finished, cState.finished);
-            for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i)
+            for (uint8_t i = 0; i < egn::MAX_PLAYERS; ++i)
                 EXPECT_EQ(state.stakes[i], cState.stakes[i]);
 
             if (cState.finished) break;
@@ -185,7 +185,7 @@ TEST(GameStateTest, VerifyWithCustomStates)
             state.nextState();
         }
 
-        for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i)
+        for (uint8_t i = 0; i < egn::MAX_PLAYERS; ++i)
             EXPECT_EQ(state.rewards[i], hist.rewards[i]);
     }
 }

@@ -4,6 +4,7 @@
 namespace abc {
 
 ActionSeqIndexer::ActionSeqIndexer(
+	uint8_t maxPlayers,
 	egn::chips ante,
 	egn::chips bigBlind,
 	egn::chips initialStake,
@@ -11,7 +12,7 @@ ActionSeqIndexer::ActionSeqIndexer(
 	const std::string& indexerName,
 	int nThreads, double gamma) :
 
-	traverser(ante, bigBlind, initialStake, betSizes, true, false),
+	traverser(maxPlayers, ante, bigBlind, initialStake, betSizes, true, false),
 	nThreads(nThreads),
 	gamma(gamma),
 	preflopPHFPath(phfDir + indexerName + "_PREFLOP_MPHF.bin"),

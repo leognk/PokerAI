@@ -14,6 +14,7 @@ class SimpleAbstractInfoset
 public:
 
 	SimpleAbstractInfoset(
+		uint8_t maxPlayers,
 		egn::chips ante,
 		egn::chips bigBlind,
 		egn::chips initialStake,
@@ -21,14 +22,14 @@ public:
 		state(ante, bigBlind, {}),
 		actionAbc(betSizes)
 	{
-		std::fill(initialStakes.begin(), initialStakes.end(), initialStake);
+		std::fill(initialStakes.begin(), initialStakes.begin() + maxPlayers, initialStake);
 	}
 
 	void startNewHand()
 	{
 		// Reset member variables.
 		nRaises = 0;
-		nPlayers = opt::MAX_PLAYERS;
+		nPlayers = egn::MAX_PLAYERS;
 		roundActions.clear();
 
 		state.stakes = initialStakes;
@@ -61,8 +62,8 @@ public:
 
 private:
 
-	static const uint8_t dealer = opt::MAX_PLAYERS - 1;
-	std::array<egn::chips, opt::MAX_PLAYERS> initialStakes;
+	static const uint8_t dealer = egn::MAX_PLAYERS - 1;
+	std::array<egn::chips, egn::MAX_PLAYERS> initialStakes{};
 
 	// Number of raises done in the current round.
 	uint8_t nRaises;

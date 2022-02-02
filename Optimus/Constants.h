@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-namespace opt {
+namespace egn {
 
 static const uint8_t MAX_PLAYERS = 6;
 

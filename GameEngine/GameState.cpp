@@ -4,13 +4,13 @@
 
 namespace egn {
 
-std::array<std::array<uint8_t, opt::MAX_PLAYERS>,
+std::array<std::array<uint8_t, MAX_PLAYERS>,
     GameState::NEXT_LOOKUP_SIZE> GameState::NEXT_LOOKUP{};
 
 #pragma warning(suppress: 26495)
 GameState::GameState(
     chips ante, chips bigBlind,
-    const std::array<chips, opt::MAX_PLAYERS>& stakes,
+    const std::array<chips, MAX_PLAYERS>& stakes,
     unsigned rngSeed) :
 
     stakes(stakes),
@@ -62,7 +62,7 @@ void GameState::resetPlayers()
     mActing = 0;
     mNAlive = 0;
     mNActing = 0;
-    for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i) {
+    for (uint8_t i = 0; i < MAX_PLAYERS; ++i) {
         // Ignore inactive players.
         if (stakes[i]) {
             addAlive(i);
@@ -228,10 +228,10 @@ void GameState::chargeBlinds()
 void GameState::populateNextLookup()
 {
     for (uint16_t playerMask = 1; playerMask < NEXT_LOOKUP_SIZE; ++playerMask) {
-        for (uint8_t current = 0; current < opt::MAX_PLAYERS; ++current) {
+        for (uint8_t current = 0; current < MAX_PLAYERS; ++current) {
             uint8_t next = current;
             do {
-                (++next) %= opt::MAX_PLAYERS;
+                (++next) %= MAX_PLAYERS;
             } while (!(opt::checkBit(playerMask, next)));
 #pragma warning(suppress: 28020)
             NEXT_LOOKUP[playerMask][current] = next;
@@ -252,7 +252,7 @@ bool GameState::isActing(uint8_t i) const
 uint8_t& GameState::nextActive(uint8_t& i) const
 {
     do {
-        (++i) %= opt::MAX_PLAYERS;
+        (++i) %= MAX_PLAYERS;
     } while (!stakes[i]);
     return i;
 }
@@ -481,7 +481,7 @@ void GameState::showdown()
                 continue;
             // Build the pot corresponding to the winner's bet.
             chips currentPot = 0;
-            for (uint8_t player = 0; player < opt::MAX_PLAYERS; ++player) {
+            for (uint8_t player = 0; player < MAX_PLAYERS; ++player) {
                 if (!mBets[player])
                     continue;
                 chips due = std::min(winnerBet, mBets[player]);
@@ -529,7 +529,7 @@ void GameState::showdown()
             }
             // Build the pot corresponding to winnerBet.
             chips currentPot = 0;
-            for (uint8_t player = 0; player < opt::MAX_PLAYERS; ++player) {
+            for (uint8_t player = 0; player < MAX_PLAYERS; ++player) {
                 if (!mBets[player])
                     continue;
                 chips due = std::min(mSortedBets[b], mBets[player]);
@@ -633,7 +633,7 @@ omp::Hand GameState::getPlayerHand(uint8_t i) const
 
 void GameState::setRewards()
 {
-    for (uint8_t i = 0; i < opt::MAX_PLAYERS; ++i)
+    for (uint8_t i = 0; i < MAX_PLAYERS; ++i)
         rewards[i] = dchips(stakes[i]) - dchips(mInitialStakes[i]);
 }
 

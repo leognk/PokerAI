@@ -17,10 +17,10 @@ int main()
 
 
     // Define game variables.
-    std::array<egn::chips, opt::MAX_PLAYERS> stakes{
+    std::array<egn::chips, egn::MAX_PLAYERS> stakes{
         stake, stake, stake, stake, stake, stake };
     opt::RandomAI randomAI(foldProba, callProba, rngSeed);
-    std::array<egn::Player*, opt::MAX_PLAYERS> players{
+    std::array<egn::Player*, egn::MAX_PLAYERS> players{
         &randomAI, &randomAI, &randomAI, &randomAI, &randomAI, &randomAI };
     egn::PlayGame play(ante, bigBlind, stakes, players, 0, rngSeed);
 

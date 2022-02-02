@@ -14,8 +14,8 @@ public:
 	// Set rngSeed to 0 to set a random seed.
 	PlayGame(
 		chips ante, chips bigBlind,
-		const std::array<chips, opt::MAX_PLAYERS>& stakes,
-		const std::array<Player*, opt::MAX_PLAYERS>& players,
+		const std::array<chips, MAX_PLAYERS>& stakes,
+		const std::array<Player*, MAX_PLAYERS>& players,
 		uint8_t dealerIdx,
 		unsigned rngSeed = 0);
 
@@ -26,9 +26,9 @@ private:
 	void playOneHand();
 
 	GameState mState;
-	std::array<Player*, opt::MAX_PLAYERS> mPlayers;
+	std::array<Player*, MAX_PLAYERS> mPlayers;
 	uint8_t mDealer;
-	std::array<chips, opt::MAX_PLAYERS> mStakes;
+	std::array<chips, MAX_PLAYERS> mStakes;
 
 }; // PlayGame
 

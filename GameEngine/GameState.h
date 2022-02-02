@@ -99,7 +99,7 @@ public:
 	// Set rngSeed to 0 to set a random seed.
 	GameState(
 		chips ante, chips bigBlind,
-		const std::array<chips, opt::MAX_PLAYERS>& stakes,
+		const std::array<chips, MAX_PLAYERS>& stakes,
 		unsigned rngSeed = 0);
 
 	void setAnte(chips ante);
@@ -121,9 +121,9 @@ public:
 	// Do NOT use it when a hand is running (because of all-in players).
 	uint8_t& nextActive(uint8_t& i) const;
 
-	std::array<chips, opt::MAX_PLAYERS> stakes{};
+	std::array<chips, MAX_PLAYERS> stakes{};
 	std::array<std::array<uint8_t, omp::HOLE_CARDS>,
-		opt::MAX_PLAYERS> hands;
+		MAX_PLAYERS> hands;
 	std::array<uint8_t, omp::BOARD_CARDS> boardCards;
 
 	// action must be set before calling nextState.
@@ -159,7 +159,7 @@ public:
 	// Whether the hand is finished.
 	bool finished;
 	// Rewards obtained by each player after the end of the hand.
-	std::array<dchips, opt::MAX_PLAYERS> rewards{};
+	std::array<dchips, MAX_PLAYERS> rewards{};
 
 protected:
 	typedef omp::XoroShiro128Plus Rng;
@@ -197,17 +197,17 @@ protected:
 	chips mAnte, mSB, mBB;
 
 	// Stakes at the beginning of the hand.
-	std::array<chips, opt::MAX_PLAYERS> mInitialStakes{};
+	std::array<chips, MAX_PLAYERS> mInitialStakes{};
 	// Bets since the start of a hand.
-	std::array<chips, opt::MAX_PLAYERS> mBets{};
+	std::array<chips, MAX_PLAYERS> mBets{};
 	// Acted on the current round.
-	std::array<bool, opt::MAX_PLAYERS> mActed{};
+	std::array<bool, MAX_PLAYERS> mActed{};
 
 	// Next player's index lookup table.
 	// Give the mask of players and the current player to get
 	// the next player.
-	static const uint16_t NEXT_LOOKUP_SIZE = 1U << opt::MAX_PLAYERS;
-	static std::array<std::array<uint8_t, opt::MAX_PLAYERS>,
+	static const uint16_t NEXT_LOOKUP_SIZE = 1U << MAX_PLAYERS;
+	static std::array<std::array<uint8_t, MAX_PLAYERS>,
 		NEXT_LOOKUP_SIZE> NEXT_LOOKUP;
 
 	// Alive players, ie. were dealt cards and did not fold.
@@ -232,22 +232,22 @@ protected:
 	chips mLargestRaise;
 
 	// Players ranked from best to worst hand (they are mNAlive).
-	std::array<uint8_t, opt::MAX_PLAYERS> mRankings{};
+	std::array<uint8_t, MAX_PLAYERS> mRankings{};
 	// Cumulated number of players with the same rank ordered
 	// from best to worst rank, such that players from
 	// mRankings[mCumNSameRanks[i-1]] to mRankings[mCumNSameRanks[i]]
 	// (excluded) are players with the i-th best rank.
 	// NB: mCumNSameRanks[0] = 0
-	std::array<uint8_t, opt::MAX_PLAYERS + 1> mCumNSameRanks{};
+	std::array<uint8_t, MAX_PLAYERS + 1> mCumNSameRanks{};
 	// Size of mCumNSameRanks - 1
 	uint8_t mNRanks;
 
 	// Used in showdown.
-	std::array<chips, opt::MAX_PLAYERS> mSortedBets{};
-	std::array<bool, opt::MAX_PLAYERS> mGiveGain{};
+	std::array<chips, MAX_PLAYERS> mSortedBets{};
+	std::array<bool, MAX_PLAYERS> mGiveGain{};
 
 	// Used in setRankings.
-	std::array<uint16_t, opt::MAX_PLAYERS> mRanks{};
+	std::array<uint16_t, MAX_PLAYERS> mRanks{};
 	omp::HandEvaluator mEval;
 
 	template<typename bckSize_t, bckSize_t nBck>

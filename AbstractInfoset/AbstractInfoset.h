@@ -18,6 +18,7 @@ class AbstractInfoset
 public:
 
 	AbstractInfoset(
+		uint8_t maxPlayers,
 		egn::chips ante,
 		egn::chips bigBlind,
 		egn::chips initialStake,
@@ -25,9 +26,9 @@ public:
 		const std::string& actionSeqIndexerName = "BLUEPRINT") :
 		state(ante, bigBlind, {}),
 		actionAbc(betSizes),
-		actionSeqIndexer(ante, bigBlind, initialStake, betSizes, actionSeqIndexerName)
+		actionSeqIndexer(maxPlayers, ante, bigBlind, initialStake, betSizes, actionSeqIndexerName)
 	{
-		std::fill(initialStakes.begin(), initialStakes.end(), initialStake);
+		std::fill(initialStakes.begin(), initialStakes.begin() + maxPlayers, initialStake);
 		// Load information abstraction lookup tables.
 		handIndexer.loadLUT();
 		// Load action sequences perfect hash functions.
@@ -38,7 +39,7 @@ public:
 	{
 		// Reset member variables.
 		nRaises = 0;
-		nPlayers = opt::MAX_PLAYERS;
+		nPlayers = egn::MAX_PLAYERS;
 		roundActions.clear();
 
 		state.stakes = initialStakes;
@@ -119,8 +120,8 @@ private:
 		}
 	}
 
-	static const uint8_t dealer = opt::MAX_PLAYERS - 1;
-	std::array<egn::chips, opt::MAX_PLAYERS> initialStakes;
+	static const uint8_t dealer = egn::MAX_PLAYERS - 1;
+	std::array<egn::chips, egn::MAX_PLAYERS> initialStakes{};
 
 	// Number of raises done in the current round.
 	uint8_t nRaises;

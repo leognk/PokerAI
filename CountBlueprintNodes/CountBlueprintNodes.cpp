@@ -5,7 +5,7 @@
 int main()
 {
 	abc::TreeTraverser traverser(
-		bp::ANTE, bp::BIG_BLIND, bp::INITIAL_STAKE, bp::BET_SIZES, false, true);
+		bp::MAX_PLAYERS, bp::ANTE, bp::BIG_BLIND, bp::INITIAL_STAKE, bp::BET_SIZES, false, true);
 
 	uint64_t nNodes = 0;
 	for (uint8_t i = 0; i < egn::N_ROUNDS; ++i) {
@@ -16,7 +16,7 @@ int main()
 	}
 
 	std::cout
-		<< "TOTAL (" << std::to_string(opt::MAX_PLAYERS) << " players)\n"
+		<< "TOTAL (" << std::to_string(bp::MAX_PLAYERS) << " players)\n"
 		<< "nodes: " << nNodes
 		<< (" (" + std::to_string((uint32_t)std::round(nNodes / 1e6)) + "M)")
 		<< "\n";
