@@ -504,7 +504,7 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 
 		}
 
-		// allow perc_elem_loaded  elements to be loaded in ram for faster construction (default 3%), set to 0 to desactivate
+		// allow perc_elem_loaded elements to be loaded in ram for faster construction (default 3%), set to 0 to desactivate
 		template <typename Range>
 		mphf(size_t n, Range const& input_range, int num_thread = 1, double gamma = 2.0 , float perc_elem_loaded = 0.03) :
 		_gamma(gamma), _hash_domain(size_t(ceil(double(n) * gamma))), _nelem(n), _num_thread(num_thread), _percent_elem_loaded_for_fastMode (perc_elem_loaded)
@@ -543,36 +543,31 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 
 		uint64_t lookup(const elem_t &elem)
 		{
-			if(!_built) return ULLONG_MAX;
+			if (!_built) return ULLONG_MAX;
 			
 			//auto hashes = _hasher(elem);
-			uint64_t non_minimal_hp,minimal_hp;
+			uint64_t non_minimal_hp, minimal_hp;
 
-			hash_pair_t bbhash;  int level;
-			uint64_t level_hash = getLevel(bbhash,elem,&level);
+			hash_pair_t bbhash; int level;
+			uint64_t level_hash = getLevel(bbhash, elem, &level);
 
-			if( level == (_nb_levels-1))
-			{
-				auto in_final_map  = _final_hash.find (elem);
-				if ( in_final_map == _final_hash.end() )
-				{
+			if(level == (_nb_levels-1)) {
+				auto in_final_map = _final_hash.find(elem);
+				if (in_final_map == _final_hash.end()) {
 					//elem was not in orignal set of keys
-					return ULLONG_MAX; //  means elem not in set
+					return ULLONG_MAX; // means elem not in set
 				}
-				else
-				{
-					minimal_hp =  in_final_map->second + _lastbitsetrank;
+				else {
+					minimal_hp = in_final_map->second + _lastbitsetrank;
 					return minimal_hp;
 				}
 //				minimal_hp = _final_hash[elem] + _lastbitsetrank;
 //				return minimal_hp;
 			}
 			else
-			{
-				non_minimal_hp =  level_hash %  _levels[level].hash_domain; // in fact non minimal hp would be  + _levels[level]->idx_begin
-			}
+				non_minimal_hp = level_hash % _levels[level].hash_domain; // in fact non minimal hp would be  + _levels[level]->idx_begin
 
-			minimal_hp = _levels[level].bitset.rank(non_minimal_hp );
+			minimal_hp = _levels[level].bitset.rank(non_minimal_hp);
 
 			return minimal_hp;
 		}
@@ -604,7 +599,6 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 
 			for (bool isRunning=true;  isRunning ; )
 			{
-
 				//safely copy n items into buffer
 				pthread_mutex_lock(&_mutex);
                 for(; inbuff<NBBUFF && (*shared_it)!=until;  ++(*shared_it))
@@ -620,12 +614,12 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 					elem_t val = buffer[ii];
 
 					//auto hashes = _hasher(val);
-					hash_pair_t bbhash;  int level;
+					hash_pair_t bbhash; int level;
 					uint64_t level_hash = getLevel(bbhash,val,&level, i);
 
-					if(level == i) //insert into lvl i
+					if (level == i) //insert into lvl i
 					{
-						if(_fastmode && i == _fastModeLevel)
+						if (_fastmode && i == _fastModeLevel)
 						{
 							uint64_t idxl2 = InterlockedIncrement(&_idxLevelsetLevelFastmode);
 							//si depasse taille attendue pour setLevelFastmode, fall back sur slow mode mais devrait pas arriver si hash ok et proba avec nous
@@ -636,7 +630,7 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 						}
 
 						//insert to level i+1 : either next level of the cascade or final hash if last level reached
-						if(i == _nb_levels-1) //stop cascade here, insert into exact hash
+						if (i == _nb_levels-1) // stop cascade here, insert into exact hash
 						{
 							uint64_t hashidx = InterlockedIncrement(&_hashidx);
 
@@ -653,10 +647,8 @@ we need this 2-functors scheme because HashFunctors won't work with unordered_ma
 							else if (level == 1)
 								level_hash = _hasher.h1(bbhash,val);
 							else
-							{
 								level_hash = _hasher.next(bbhash);
-							}
-							insertIntoLevel(level_hash,i); //should be safe
+							insertIntoLevel(level_hash, i); //should be safe
 						}
 					}
 					nb_done++;

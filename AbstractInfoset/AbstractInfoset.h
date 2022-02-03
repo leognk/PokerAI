@@ -23,7 +23,7 @@ public:
 		egn::chips bigBlind,
 		egn::chips initialStake,
 		const std::vector<std::vector<std::vector<float>>>& betSizes,
-		const std::string& actionSeqIndexerName = "BLUEPRINT") :
+		const std::string& actionSeqIndexerName) :
 		state(ante, bigBlind, {}),
 		actionAbc(betSizes),
 		actionSeqIndexer(maxPlayers, ante, bigBlind, initialStake, betSizes, actionSeqIndexerName)
@@ -99,25 +99,38 @@ private:
 	void calculateActionSeqIds()
 	{
 		actionSeqIds.clear();
+
+		// Add one slot at the end of roundActions for the legal actions.
+		roundActions.push_back(0);
+
 		if (state.round == egn::PREFLOP) {
 			for (uint8_t a = 0; a < nActions; ++a) {
-				roundActions.push_back(a);
+				roundActions.back() = a;
 				actionSeqIds.push_back(
 					actionSeqIndexer.index(state.round, roundActions));
-				roundActions.pop_back();
 			}
 		}
+
 		// For rounds other than preflop, include the number of players.
 		else {
+
+			// Add one slot for the number of players.
+			roundActions.push_back(0);
+
 			for (uint8_t a = 0; a < nActions; ++a) {
-				roundActions.push_back(a);
-				roundActions.push_back(nPlayers);
+				// Second to last element.
+				roundActions.rbegin()[1] = a;
+				roundActions.back() = nPlayers;
 				actionSeqIds.push_back(
 					actionSeqIndexer.index(state.round, roundActions));
-				roundActions.pop_back();
-				roundActions.pop_back();
 			}
+
+			// Remove the slot.
+			roundActions.pop_back();
 		}
+
+		// Remove the slot.
+		roundActions.pop_back();
 	}
 
 	static const uint8_t dealer = egn::MAX_PLAYERS - 1;

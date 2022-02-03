@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{7e74eb77-ef76-484e-bd40-6590441d74cd}</ProjectGuid>
+    <ProjectGuid>{ec6d6581-93f9-4e9e-ac66-b5c2bfb9aa33}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
     <ConfigurationType>Application</ConfigurationType>
@@ -36,26 +36,23 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="testAbstractInfoset.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="testEquityCalculator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GameEngine\GameEngine.vcxproj">
-      <Project>{d600e3c1-f1a0-42d2-bc70-d143b14aac40}</Project>
+    <ProjectReference Include="..\AbstractInfoset\AbstractInfoset.vcxproj">
+      <Project>{3eb141be-3fd6-4b8f-bf45-c0db1e9f98d2}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\LossyAbstraction\LossyAbstraction.vcxproj">
-      <Project>{30a7bf15-f11f-43e4-bdeb-85528f77d8f2}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\Utils\Utils.vcxproj">
-      <Project>{2b261b87-ab22-4819-a536-8f50fb66a682}</Project>
+    <ProjectReference Include="..\Blueprint\Blueprint.vcxproj">
+      <Project>{51da6b52-6211-4c04-9b87-071d4b3e23e3}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemDefinitionGroup />

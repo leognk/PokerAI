@@ -50,28 +50,28 @@ void ActionSeqIndexer::buildPreflopPHF()
 {
 	std::vector<seq_t> actionSeqs;
 	traverser.traverseRoundTree(egn::PREFLOP, actionSeqs);
-	preflopPHF = phf_t(actionSeqs.size(), actionSeqs, nThreads, gamma);
+	preflopPHF = phf_t(actionSeqs.size(), actionSeqs, nThreads, gamma, 0);
 }
 
 void ActionSeqIndexer::buildFlopPHF()
 {
 	std::vector<seq_t> actionSeqs;
 	traverser.traverseRoundTree(egn::FLOP, actionSeqs);
-	flopPHF = phf_t(actionSeqs.size(), actionSeqs, nThreads, gamma);
+	flopPHF = phf_t(actionSeqs.size(), actionSeqs, nThreads, gamma, 0);
 }
 
 void ActionSeqIndexer::buildTurnPHF()
 {
 	std::vector<seq_t> actionSeqs;
 	traverser.traverseRoundTree(egn::TURN, actionSeqs);
-	turnPHF = phf_t(actionSeqs.size(), actionSeqs, nThreads, gamma);
+	turnPHF = phf_t(actionSeqs.size(), actionSeqs, nThreads, gamma, 0);
 }
 
 void ActionSeqIndexer::buildRiverPHF()
 {
 	std::vector<seq_t> actionSeqs;
 	traverser.traverseRoundTree(egn::RIVER, actionSeqs);
-	riverPHF = phf_t(actionSeqs.size(), actionSeqs, nThreads, gamma);
+	riverPHF = phf_t(actionSeqs.size(), actionSeqs, nThreads, gamma, 0);
 }
 
 void ActionSeqIndexer::savePreflopPHF()

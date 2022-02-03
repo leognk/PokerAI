@@ -9,53 +9,85 @@ namespace bp {
 typedef uint8_t bckSize_t;
 static const bckSize_t N_BCK = 200;
 
-static const uint8_t MAX_PLAYERS = 3;
-static const egn::chips ANTE = 0;
-//static const egn::chips BIG_BLIND = 100;
-//static const egn::chips INITIAL_STAKE = 20000;
-static const egn::chips BIG_BLIND = 2;
-static const egn::chips INITIAL_STAKE = 6;
+static const uint8_t MAX_PLAYERS = 6;
 
+static const egn::chips ANTE = 0;
+static const egn::chips BIG_BLIND = 100;
+static const egn::chips INITIAL_STAKE = 20000;
+
+static const std::string ACTION_SEQ_INDEXER_NAME = "BLUEPRINT";
+
+static const std::vector<std::vector<std::vector<float>>> BET_SIZES = {
+	{
+		{ 1, 1.25, 1.5, 1.75, 2, 3, 4, 6, 8, 15, 25, 35, 50 },
+		{ 0.5, 1, 2, 4, 8, 15, 25, 50 },
+		{ 0.5, 1, 2 },
+		{ 1 }
+	},
+	{
+		{ 0.25, 0.5, 1, 2, 4 },
+		{ 0.5, 1, 2 },
+		{ 1 }
+	},
+	{
+		{ 0.5, 1 },
+		{ 1 }
+	},
+	{
+		{ 0.5, 1 },
+		{ 1 }
+	}
+};
+
+//static const uint8_t MAX_PLAYERS = 3;
+//
+//static const egn::chips ANTE = 0;
+//static const egn::chips BIG_BLIND = 2;
+//static const egn::chips INITIAL_STAKE = 6;
+//
+//static const std::string ACTION_SEQ_INDEXER_NAME = "BLUEPRINT";
+//
 //static const std::vector<std::vector<std::vector<float>>> BET_SIZES = {
 //	{
-//		{ 1, 1.25, 1.5, 1.75, 2, 3, 4, 6, 8, 15, 25, 35, 50 },
-//		{ 0.5, 1, 2, 4, 8, 15, 25, 50 },
-//		{ 0.5, 1, 2 },
+//		{ 1, 2 },
 //		{ 1 }
 //	},
 //	{
-//		{ 0.25, 0.5, 1, 2, 4 },
-//		{ 0.5, 1, 2 },
+//		{ 1, 2 },
 //		{ 1 }
 //	},
 //	{
-//		{ 0.5, 1 },
+//		{ 1, 2 },
 //		{ 1 }
 //	},
 //	{
-//		{ 0.5, 1 },
+//		{ 1, 2 },
 //		{ 1 }
 //	}
 //};
 
-static const std::vector<std::vector<std::vector<float>>> BET_SIZES = {
-	{
-		{ 1, 2 },
-		{ 1 }
-	},
-	{
-		{ 1, 2 },
-		{ 1 }
-	},
-	{
-		{ 1, 2 },
-		{ 1 }
-	},
-	{
-		{ 1, 2 },
-		{ 1 }
-	}
-};
+//static const uint8_t MAX_PLAYERS = 3;
+//
+//static const egn::chips ANTE = 0;
+//static const egn::chips BIG_BLIND = 2;
+//static const egn::chips INITIAL_STAKE = 2;
+//
+//static const std::string ACTION_SEQ_INDEXER_NAME = "BLUEPRINT";
+//
+//static const std::vector<std::vector<std::vector<float>>> BET_SIZES = {
+//	{
+//		{ 1 }
+//	},
+//	{
+//		{ 1 }
+//	},
+//	{
+//		{ 1 }
+//	},
+//	{
+//		{ 1 }
+//	}
+//};
 
 }
 

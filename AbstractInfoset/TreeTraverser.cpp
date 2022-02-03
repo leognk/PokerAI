@@ -82,15 +82,11 @@ void TreeTraverser::traverseRoundTreeFixedPlayers(
 		// Process the next node.
 		uint8_t a = stack.back();
 		stack.pop_back();
-		abcInfo.nextState(a);
 
-		hist.push_back(abcInfo);
-		lastChild.push_back(a == 0);
-		++nNodes;
-#pragma warning(suppress: 4267)
-		if (hist.size() - 1 > height) height = hist.size() - 1;
-
+		// Add the action sequence in the list before going to the next state
+		// because if the round changes, roundActions is emptied.
 		if (saveActionSeqs) {
+			abcInfo.roundActions.push_back(a);
 			if (round == egn::PREFLOP)
 				actionSeqs.emplace_back(abcInfo.roundActions);
 			// For rounds other than preflop, include the number of players.
@@ -99,8 +95,19 @@ void TreeTraverser::traverseRoundTreeFixedPlayers(
 				actionSeqs.emplace_back(abcInfo.roundActions);
 				abcInfo.roundActions.pop_back();
 			}
+			abcInfo.roundActions.pop_back();
 		}
 
+		abcInfo.nextState(a);
+
+		// Update variables.
+		hist.push_back(abcInfo);
+		lastChild.push_back(a == 0);
+		++nNodes;
+#pragma warning(suppress: 4267)
+		if (hist.size() - 1 > height) height = hist.size() - 1;
+
+		// Reached end of the round.
 		if (abcInfo.state.round != round || abcInfo.state.finished) {
 
 			if (abcInfo.state.finished) ++nFinishedSeq;

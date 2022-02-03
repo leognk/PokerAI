@@ -4,13 +4,12 @@
 
 int main()
 {
-	const std::string indexerName = "BLUEPRINT";
 	int nThreads = 8;
 	double gamma = 2.0;
 
 	abc::ActionSeqIndexer indexer(
-		bp::ANTE, bp::BIG_BLIND, bp::INITIAL_STAKE, bp::BET_SIZES,
-		indexerName, nThreads, gamma);
+		bp::MAX_PLAYERS, bp::ANTE, bp::BIG_BLIND, bp::INITIAL_STAKE, bp::BET_SIZES,
+		bp::ACTION_SEQ_INDEXER_NAME, nThreads, gamma);
 
 	auto startTime = std::chrono::high_resolution_clock::now();
 
