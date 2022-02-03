@@ -39,3 +39,48 @@ TEST(ActionSeqIndexerTest, HashIsMinimalPerfect)
 		for (bool flag : flags) EXPECT_TRUE(flag);
 	}
 }
+
+TEST(ActionAbstractionTest, TreeNodesCountIsCorrect)
+{
+	const uint8_t MAX_PLAYERS = 3;
+
+	const egn::chips ANTE = 0;
+	const egn::chips BIG_BLIND = 2;
+	const egn::chips INITIAL_STAKE = 6;
+
+	const std::vector<std::vector<std::vector<float>>> BET_SIZES = {
+		{
+			{ 1, 2 },
+			{ 1 }
+		},
+		{
+			{ 1, 2 },
+			{ 1 }
+		},
+		{
+			{ 1, 2 },
+			{ 1 }
+		},
+		{
+			{ 1, 2 },
+			{ 1 }
+		}
+	};
+
+	abc::TreeTraverser traverser(
+		MAX_PLAYERS, ANTE, BIG_BLIND, INITIAL_STAKE, BET_SIZES, false, false);
+
+	uint64_t count;
+
+	count = traverser.traverseRoundTree(egn::PREFLOP);
+	EXPECT_EQ(count, 45);
+
+	count = traverser.traverseRoundTree(egn::FLOP);
+	EXPECT_EQ(count, 32);
+
+	count = traverser.traverseRoundTree(egn::TURN);
+	EXPECT_EQ(count, 32);
+
+	count = traverser.traverseRoundTree(egn::RIVER);
+	EXPECT_EQ(count, 32);
+}

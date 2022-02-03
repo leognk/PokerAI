@@ -39,56 +39,6 @@ static const std::vector<std::vector<std::vector<float>>> BET_SIZES = {
 	}
 };
 
-//static const uint8_t MAX_PLAYERS = 3;
-//
-//static const egn::chips ANTE = 0;
-//static const egn::chips BIG_BLIND = 2;
-//static const egn::chips INITIAL_STAKE = 6;
-//
-//static const std::string ACTION_SEQ_INDEXER_NAME = "BLUEPRINT";
-//
-//static const std::vector<std::vector<std::vector<float>>> BET_SIZES = {
-//	{
-//		{ 1, 2 },
-//		{ 1 }
-//	},
-//	{
-//		{ 1, 2 },
-//		{ 1 }
-//	},
-//	{
-//		{ 1, 2 },
-//		{ 1 }
-//	},
-//	{
-//		{ 1, 2 },
-//		{ 1 }
-//	}
-//};
-
-//static const uint8_t MAX_PLAYERS = 3;
-//
-//static const egn::chips ANTE = 0;
-//static const egn::chips BIG_BLIND = 2;
-//static const egn::chips INITIAL_STAKE = 2;
-//
-//static const std::string ACTION_SEQ_INDEXER_NAME = "BLUEPRINT";
-//
-//static const std::vector<std::vector<std::vector<float>>> BET_SIZES = {
-//	{
-//		{ 1 }
-//	},
-//	{
-//		{ 1 }
-//	},
-//	{
-//		{ 1 }
-//	},
-//	{
-//		{ 1 }
-//	}
-//};
-
 }
 
 #endif // BP_CONSTANTS_H
