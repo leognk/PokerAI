@@ -17,21 +17,20 @@ public:
 	// The copy assignment does not copy betSizes which is constant.
 	ActionAbstraction& operator=(const ActionAbstraction& other);
 
-	// actionId must be chosen between 0 and nActions excluded.
+	// action must be an element of the vector legalActions.
+	void setAction(uint8_t action, egn::GameState& state, uint8_t& nRaises);
+	void calculateLegalActions(const egn::GameState& state, uint8_t nRaises);
+
 	// Actions are indexed using the following order:
-	// fold, call, raiseSize1, raiseSize2, ..., raiseSizeLast, all-in,
-	// illegal actions being skipped.
-	void setAction(uint8_t actionId, egn::GameState& state, uint8_t& nRaises);
-	uint8_t calculateLegalActions(const egn::GameState& state, uint8_t nRaises);
+	// 0: fold
+	// 1: call
+	// 2: all-in
+	// 3 ~ n-1: raiseSize1 ~ raiseSizeLast
+	// legalActions contains all these indexes excluding illegal ones.
+	std::vector<uint8_t> legalActions;
 
 private:
-	egn::chips getBetValue(uint8_t raiseId, const egn::GameState& state, uint8_t nRaises) const;
-
 	const std::vector<std::vector<std::vector<float>>> betSizes;
-
-	// Legal bet size ids will be between
-	// beginRaiseId included and endRaiseId excluded.
-	uint8_t beginRaiseId, endRaiseId;
 
 }; // ActionAbstraction
 

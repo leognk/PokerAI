@@ -35,13 +35,13 @@ public:
 		state.stakes = initialStakes;
 		state.startNewHand(dealer);
 
-		nActions = actionAbc.calculateLegalActions(state, nRaises);
+		actionAbc.calculateLegalActions(state, nRaises);
 	}
 
 	void nextState(uint8_t actionId)
 	{
-		actionAbc.setAction(actionId, state, nRaises);
-		roundActions.push_back(actionId);
+		actionAbc.setAction(actionAbc.legalActions[actionId], state, nRaises);
+		roundActions.push_back(actionAbc.legalActions[actionId]);
 
 		egn::Round oldRound = state.round;
 		state.nextState();
@@ -53,10 +53,11 @@ public:
 			roundActions.clear();
 		}
 
-		nActions = actionAbc.calculateLegalActions(state, nRaises);
+		actionAbc.calculateLegalActions(state, nRaises);
 	}
 
-	uint8_t nActions;
+#pragma warning(suppress: 4267)
+	uint8_t nActions() const { return actionAbc.legalActions.size(); }
 
 	egn::GameState state;
 

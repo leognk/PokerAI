@@ -73,7 +73,7 @@ void TreeTraverser::traverseRoundTreeFixedPlayers(
 	opt::FastVector<uint8_t> lastChild;
 	lastChild.push_back(true);
 
-	opt::FastVector<uint8_t> stack(abcInfo.nActions);
+	opt::FastVector<uint8_t> stack(abcInfo.nActions());
 	for (uint8_t i = 0; i < stack.size(); ++i)
 		stack[i] = i;
 
@@ -139,7 +139,7 @@ void TreeTraverser::traverseRoundTreeFixedPlayers(
 
 		else {
 			// Add node's children to stack.
-			for (uint8_t a = 0; a < abcInfo.nActions; ++a)
+			for (uint8_t a = 0; a < abcInfo.nActions(); ++a)
 				stack.push_back(a);
 		}
 	}

@@ -46,14 +46,15 @@ public:
 		state.startNewHand(dealer);
 
 		calculateHandsIds();
-		nActions = actionAbc.calculateLegalActions(state, nRaises);
+		actionAbc.calculateLegalActions(state, nRaises);
 		calculateActionSeqIds();
 	}
 
+	// actionId must be between 0 and nActions() excluded.
 	void nextState(uint8_t actionId)
 	{
-		actionAbc.setAction(actionId, state, nRaises);
-		roundActions.push_back(actionId);
+		actionAbc.setAction(actionAbc.legalActions[actionId], state, nRaises);
+		roundActions.push_back(actionAbc.legalActions[actionId]);
 
 		egn::Round oldRound = state.round;
 		state.nextState();
@@ -66,7 +67,7 @@ public:
 			calculateHandsIds();
 		}
 
-		nActions = actionAbc.calculateLegalActions(state, nRaises);
+		actionAbc.calculateLegalActions(state, nRaises);
 		calculateActionSeqIds();
 	}
 
@@ -79,9 +80,10 @@ public:
 	//   included for rounds other than preflop.
 	uint8_t roundIdx() const { return state.round; }
 	bckSize_t handIdx() const { return handsIds[state.actingPlayer]; }
-	uint64_t actionSeqIdx(uint8_t a) const { return actionSeqIds[a]; }
+	// actionId must be between 0 and nActions() excluded.
+	uint64_t actionSeqIdx(uint8_t actionId) const { return actionSeqIds[actionId]; }
 
-	uint8_t nActions;
+	uint8_t nActions() const { return actionAbc.legalActions.size(); }
 
 	egn::GameState state;
 
@@ -104,7 +106,7 @@ private:
 		roundActions.push_back(0);
 
 		if (state.round == egn::PREFLOP) {
-			for (uint8_t a = 0; a < nActions; ++a) {
+			for (uint8_t a : actionAbc.legalActions) {
 				roundActions.back() = a;
 				actionSeqIds.push_back(
 					actionSeqIndexer.index(state.round, roundActions));
@@ -117,7 +119,7 @@ private:
 			// Add one slot for the number of players.
 			roundActions.push_back(0);
 
-			for (uint8_t a = 0; a < nActions; ++a) {
+			for (uint8_t a : actionAbc.legalActions) {
 				// Second to last element.
 				roundActions.rbegin()[1] = a;
 				roundActions.back() = nPlayers;

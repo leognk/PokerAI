@@ -12,93 +12,91 @@ ActionAbstraction& ActionAbstraction::operator=(const ActionAbstraction& other)
 {
 	if (this == &other)
 		return *this;
-	beginRaiseId = other.beginRaiseId;
-	endRaiseId = other.endRaiseId;
+	legalActions = other.legalActions;
 	return *this;
 }
 
 void ActionAbstraction::setAction(
-	uint8_t actionId, egn::GameState& state, uint8_t& nRaises)
+	uint8_t action, egn::GameState& state, uint8_t& nRaises)
 {
-	switch (state.legalCase) {
-	case 0:
-		state.action = state.actions[actionId];
-		return;
-	case 1:
-		if (actionId == 0) {
-			state.action = egn::CALL;
-			return;
-		}
-		else {
-			state.action = egn::RAISE;
-			state.bet = getBetValue(actionId - 1 + beginRaiseId, state, nRaises);
-			if (nRaises != betSizes[state.round].size() - 1) ++nRaises;
-			return;
-		}
-	case 2:
-		if (actionId < 2) {
-			state.action = state.actions[actionId];
-			return;
-		}
-		else {
-			state.action = egn::RAISE;
-			state.bet = getBetValue(actionId - 2 + beginRaiseId, state, nRaises);
-			if (nRaises != betSizes[state.round].size() - 1) ++nRaises;
-			return;
-		}
-	default:
-		throw std::runtime_error("Invalid legal case.");
+	// Fold or call
+	if (action < 2)
+		state.action = egn::Action(action);
+
+	// Raise
+	else {
+		state.action = egn::RAISE;
+
+		// All-in
+		if (action == 2) state.bet = state.allin;
+		// Regular raise
+		else state.bet = (egn::chips)std::round(
+			betSizes[state.round][nRaises][action - 3] * state.pot);
+
+		if (nRaises != betSizes[state.round].size() - 1) ++nRaises;
 	}
 }
 
-egn::chips ActionAbstraction::getBetValue(
-	uint8_t raiseId, const egn::GameState& state, uint8_t nRaises) const
-{
-	if (raiseId < endRaiseId)
-		return (egn::chips)std::round(betSizes[state.round][nRaises][raiseId] * state.pot);
-	else
-		return state.allin;
-}
-
-uint8_t ActionAbstraction::calculateLegalActions(
+void ActionAbstraction::calculateLegalActions(
 	const egn::GameState& state, uint8_t nRaises)
 {
-	uint8_t nActions = state.nActions;
+	if (state.legalCase == 0) {
+		// Fold & call
+		legalActions = { 0, 1 };
+		return;
+	}
 
-	if (state.actions[state.nActions - 1] == egn::RAISE) {
+	// Calculate beginRaiseId and endRaiseId.
+	// Legal bet size ids will be between
+	// beginRaiseId included and endRaiseId excluded.
 
-		// The all-in bet is already counted
-		// with the raise action in state.nActions.
-		if (state.allin <= state.minRaise) {
-			beginRaiseId = 0;
-			endRaiseId = 0;
-			return nActions;
-		}
-
-		beginRaiseId = 0;
+	uint8_t beginRaiseId = 0;
 #pragma warning (suppress: 4267)
-		endRaiseId = betSizes[state.round][nRaises].size();
+	uint8_t endRaiseId = betSizes[state.round][nRaises].size();
 
-		// Find the minimum idx for which
-		// the corresponding bet value >= minRaise.
-		float minRaiseSize = (float)state.minRaise / state.pot;
-		while (betSizes[state.round][nRaises][beginRaiseId] < minRaiseSize) {
-			if (++beginRaiseId == betSizes[state.round][nRaises].size())
-				return nActions;
-		}
+	// Find the minimum idx for which
+	// the corresponding bet value >= minRaise.
+	float minRaiseSize = (float)state.minRaise / state.pot;
+	while (betSizes[state.round][nRaises][beginRaiseId] < minRaiseSize)
+		if (++beginRaiseId == endRaiseId) break;
 
+	if (beginRaiseId != endRaiseId) {
 		// Find the maximum idx for which
 		// the previous corresponding bet value < allin.
 		float allinSize = (float)state.allin / state.pot;
-		while (betSizes[state.round][nRaises][endRaiseId - 1] >= allinSize) {
-			if (--endRaiseId == beginRaiseId)
-				return nActions;
-		}
-
-		nActions += endRaiseId - beginRaiseId;
+		while (betSizes[state.round][nRaises][endRaiseId - 1] >= allinSize)
+			if (--endRaiseId == beginRaiseId) break;
 	}
 
-	return nActions;
+	// Build vector legalActions.
+
+	uint8_t nLegalRaises = endRaiseId - beginRaiseId;
+
+	if (state.legalCase == 1) {
+#pragma warning(suppress: 26451)
+		legalActions.resize(nLegalRaises + 2);
+		// Call
+		legalActions[0] = 1;
+		// All-in
+		legalActions[1] = 2;
+		// Legal raises
+		for (uint8_t i = 2; i < nLegalRaises + 2; ++i)
+			legalActions[i] = beginRaiseId + i + 1;
+	}
+
+	else {
+#pragma warning(suppress: 26451)
+		legalActions.resize(nLegalRaises + 3);
+		// Fold
+		legalActions[0] = 0;
+		// Call
+		legalActions[1] = 1;
+		// All-in
+		legalActions[2] = 2;
+		// Legal raises
+		for (uint8_t i = 3; i < nLegalRaises + 3; ++i)
+			legalActions[i] = beginRaiseId + i;
+	}
 }
 
 } // abc
