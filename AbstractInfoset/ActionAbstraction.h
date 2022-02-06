@@ -14,9 +14,6 @@ public:
 	// shape: n_rounds x n_raises_in_round x n_possible_bet_sizes
 	ActionAbstraction(const std::vector<std::vector<std::vector<float>>>& betSizes);
 
-	// The copy assignment does not copy betSizes which is constant.
-	ActionAbstraction& operator=(const ActionAbstraction& other);
-
 	// action must be an element of the vector legalActions.
 	void setAction(uint8_t action, egn::GameState& state, uint8_t& nRaises);
 	void calculateLegalActions(const egn::GameState& state, uint8_t nRaises);
@@ -30,7 +27,7 @@ public:
 	std::vector<uint8_t> legalActions;
 
 private:
-	const std::vector<std::vector<std::vector<float>>> betSizes;
+	static std::vector<std::vector<std::vector<float>>> betSizes;
 
 }; // ActionAbstraction
 

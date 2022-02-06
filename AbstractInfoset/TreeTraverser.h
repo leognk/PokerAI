@@ -3,38 +3,34 @@
 
 #include "SimpleAbstractInfoset.h"
 #include <chrono>
+#include <unordered_set>
 
 namespace abc {
 
 class TreeTraverser
 {
 public:
+	typedef std::vector<uint8_t> seq_t;
+	typedef std::vector<seq_t> seqs_t;
+
 	TreeTraverser(
 		uint8_t maxPlayers,
 		egn::chips ante,
 		egn::chips bigBlind,
 		egn::chips initialStake,
 		const std::vector<std::vector<std::vector<float>>>& betSizes,
-		bool saveActionSeqs = false,
 		bool verbose = false);
 
-	// Return the number of nodes.
-	// Accumulate roundActions in actionSeqs if
-	// saveActionSeqs is set to true.
-	uint64_t traverseRoundTree(
-		egn::Round round,
-		std::vector<std::vector<uint8_t>>& actionSeqs);
-
-	uint64_t traverseRoundTree(egn::Round round);
+	// Generate the sets of all action sequences for each round.
+	void traverseTree(std::vector<seqs_t>& actionSeqs);
 
 private:
-	void traverseRoundTreeFixedPlayers(
-		egn::Round round, uint8_t nPlayers,
-		uint64_t& totNodes, uint64_t& totFinishedSeq, uint64_t& totContinuingSeq,
-		uint32_t& totHeight,
-		std::vector<std::vector<uint8_t>>& actionSeqs);
-
-	void prepareAbcInfoset(egn::Round round, uint8_t nPlayers);
+	// Return the number of nodes.
+	void traverseRoundTree(
+		egn::Round round,
+		const seqs_t& seqsToCurrentRound,
+		seqs_t& seqsToNextRound,
+		seqs_t& actionSeqs);
 
 	void printProgress(
 		uint64_t nNodes,
@@ -47,7 +43,6 @@ private:
 
 	SimpleAbstractInfoset abcInfo;
 
-	bool saveActionSeqs;
 	bool verbose;
 
 }; // TreeTraverser

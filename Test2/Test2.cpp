@@ -12,9 +12,6 @@
 
 int main()
 {
-	std::vector<int> a = { 7, 8, 2 };
-	a = { 1, 2 };
-	for (auto x : a)
-		std::cout << x << " ";
-	std::cout << "\n";
+	int x = 3;
+	std::cout << (x += 2) << "\n";
 }

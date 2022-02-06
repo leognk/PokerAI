@@ -2,18 +2,12 @@
 
 namespace abc {
 
-ActionAbstraction::ActionAbstraction(
-	const std::vector<std::vector<std::vector<float>>>& betSizes) :
-	betSizes(betSizes)
-{
-}
+std::vector<std::vector<std::vector<float>>> ActionAbstraction::betSizes;
 
-ActionAbstraction& ActionAbstraction::operator=(const ActionAbstraction& other)
+ActionAbstraction::ActionAbstraction(
+	const std::vector<std::vector<std::vector<float>>>& argBetSizes)
 {
-	if (this == &other)
-		return *this;
-	legalActions = other.legalActions;
-	return *this;
+	betSizes = argBetSizes;
 }
 
 void ActionAbstraction::setAction(

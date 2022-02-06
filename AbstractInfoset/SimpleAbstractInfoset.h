@@ -38,10 +38,10 @@ public:
 		actionAbc.calculateLegalActions(state, nRaises);
 	}
 
-	void nextState(uint8_t actionId)
+	void nextState(uint8_t action)
 	{
-		actionAbc.setAction(actionAbc.legalActions[actionId], state, nRaises);
-		roundActions.push_back(actionAbc.legalActions[actionId]);
+		actionAbc.setAction(action, state, nRaises);
+		roundActions.push_back(action);
 
 		egn::Round oldRound = state.round;
 		state.nextState();
