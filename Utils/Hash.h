@@ -2,7 +2,6 @@
 #define OPT_HASH_H
 
 #include "xxhash.h"
-#include "../BBHash/BooPHF.h"
 
 namespace opt {
 

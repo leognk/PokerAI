@@ -18,45 +18,48 @@ TreeTraverser::TreeTraverser(
 {
 }
 
-void TreeTraverser::traverseTree(std::vector<seqs_t>& actionSeqs)
+TreeTraverser::seqs_t TreeTraverser::traverseTree()
 {
-	actionSeqs.resize(egn::N_ROUNDS);
-	seqs_t seqsToCurrentRound(1);
+	seqs_t actionSeqs;
+
+	longSeqs_t seqsToCurrentRound;
+	seqsToCurrentRound.insert(longSeq_t());
 
 	for (uint8_t r = 0; r < egn::N_ROUNDS; ++r) {
-		seqs_t seqsToNextRound;
+		longSeqs_t seqsToNextRound;
 
-		traverseRoundTree(egn::Round(r), seqsToCurrentRound, seqsToNextRound, actionSeqs[r]);
+		traverseRoundTree(egn::Round(r), seqsToCurrentRound, seqsToNextRound, actionSeqs);
 
 		seqsToCurrentRound = seqsToNextRound;
 		if (verbose) std::cout << "\n";
 	}
+
+	return actionSeqs;
 }
 
 void TreeTraverser::traverseRoundTree(
 	egn::Round round,
-	const seqs_t& seqsToCurrentRound,
-	seqs_t& seqsToNextRound,
+	const longSeqs_t& seqsToCurrentRound,
+	longSeqs_t& seqsToNextRound,
 	seqs_t& actionSeqs)
 {
 	auto startTime = std::chrono::high_resolution_clock::now();
-	uint64_t nNodes = 0, nFinishedSeq = 0, nContinuingSeq = 0;
-	uint32_t height = 0;
-
-	std::unordered_set<uint64_t> actionSeqsHashes;
+	uint64_t nNodes = 0, nFinishedSeq = 0, nContinuingSeq = 0, height = 0;
 
 	// Set of pairs (nPlayers, pot).
 	std::unordered_set<std::array<egn::chips, 2>, opt::ContainerHash> nextRoundStates;
 
-	seq_t roundActions;
+	StdActionSeq roundActions;
 
-	for (size_t seqIdx = 0; seqIdx < seqsToCurrentRound.size(); ++seqIdx) {
+	size_t seqToCurrentRoundIdx = 0;
 
-		const size_t initialActionSeqsSize = actionSeqs.size();
+	for (const longSeq_t& seqToCurrentRound : seqsToCurrentRound) {
 
 		abcInfo.startNewHand();
-		for (uint8_t a : seqsToCurrentRound[seqIdx])
-			abcInfo.nextState(a);
+		ActionSeqIterator it;
+		it.clearIter();
+		while (!it.iterEnd(seqToCurrentRound))
+			abcInfo.nextState(it.iterNext(seqToCurrentRound));
 
 		opt::FastVector<SimpleAbstractInfoset> hist;
 		hist.push_back(abcInfo);
@@ -76,32 +79,17 @@ void TreeTraverser::traverseRoundTree(
 			stack.pop_back();
 
 			roundActions = abcInfo.roundActions;
-			roundActions.push_back(abcInfo.actionAbc.legalActions[a]);
+			roundActions.push_back(a);
 			uint8_t nPlayers = abcInfo.nPlayers;
 
 			// Save action sequence.
 			bool isNewSeq;
-
-			if (round == egn::PREFLOP) {
-				actionSeqs.push_back(roundActions);
-				isNewSeq = true;
-			}
-
+			if (round == egn::PREFLOP)
+				isNewSeq = actionSeqs.insert(roundActions).second;
 			// For rounds other than preflop, include the number of players.
 			else {
 				roundActions.push_back(nPlayers);
-
-				// Search whether the action sequence has already been generated before.
-				if (actionSeqsHashes.insert(opt::ContainerHash()(roundActions)).second)
-					isNewSeq = true;
-				else {
-					auto it = std::find(actionSeqs.begin(), actionSeqs.begin() + initialActionSeqsSize, roundActions);
-					isNewSeq = it != actionSeqs.begin() + initialActionSeqsSize;
-				}
-
-				// Add the action sequence only if it is a new one.
-				if (isNewSeq) actionSeqs.push_back(roundActions);
-
+				isNewSeq = actionSeqs.insert(roundActions).second;
 				roundActions.pop_back();
 			}
 
@@ -111,7 +99,6 @@ void TreeTraverser::traverseRoundTree(
 			hist.push_back(abcInfo);
 			lastChild.push_back(a == 0);
 			if (isNewSeq) ++nNodes;
-#pragma warning(suppress: 4267)
 			if (hist.size() - 1 > height) height = hist.size() - 1;
 
 			// Reached end of the round.
@@ -125,22 +112,20 @@ void TreeTraverser::traverseRoundTree(
 					if (isNewSeq) ++nContinuingSeq;
 
 					if (nextRoundStates.insert({ abcInfo.nPlayers, abcInfo.state.pot }).second) {
-						roundActions.insert(
-							roundActions.begin(),
-							seqsToCurrentRound[seqIdx].begin(),
-							seqsToCurrentRound[seqIdx].end());
-						seqsToNextRound.push_back(roundActions);
+						seqsToNextRound.insert(concatActionSeqs
+							<longSeq_t::nBitsPerAction, longSeq_t::maxSizeActionSeq>(seqToCurrentRound, roundActions));
 					}
 				}
 
 				if (stack.empty()) {
 
-					if (verbose && ((seqIdx + 1) % size_t(1e3) == 0
-						|| seqIdx == seqsToCurrentRound.size() - 1)) {
+					if (verbose && ((seqToCurrentRoundIdx + 1) % size_t(1e3) == 0
+						|| seqToCurrentRoundIdx == seqsToCurrentRound.size() - 1)) {
 
 						std::cout
 							<< "ROUND: " << round
-							<< " - STATE: " << std::setw(5) << seqIdx + 1 << "/" << seqsToCurrentRound.size() << "\n";
+							<< " - STATE: " << std::setw(5) << seqToCurrentRoundIdx + 1
+							<< "/" << seqsToCurrentRound.size() << "\n";
 						printProgress(nNodes, nFinishedSeq, nContinuingSeq, height, startTime);
 					}
 
@@ -163,6 +148,8 @@ void TreeTraverser::traverseRoundTree(
 					stack.push_back(a);
 			}
 		}
+
+		++seqToCurrentRoundIdx;
 	}
 }
 
@@ -170,7 +157,7 @@ void TreeTraverser::printProgress(
 	uint64_t nNodes,
 	uint64_t nFinishedSeq,
 	uint64_t nContinuingSeq,
-	uint32_t height,
+	uint64_t height,
 	std::chrono::high_resolution_clock::time_point startTime)
 {
 	uint64_t nActionSeq = nFinishedSeq + nContinuingSeq;

@@ -5,7 +5,7 @@
 #include "../LossyAbstraction/LossyIndexer.h"
 #include "ActionAbstraction.h"
 #include "ActionSeqIndexer.h"
-#include "ActionHist.h"
+#include "ActionSeq.h"
 
 namespace abc {
 
@@ -134,7 +134,7 @@ private:
 	// Number of players playing at the beginning of the current round.
 	uint8_t nPlayers;
 	// History of actions made in the current round stored in a compressed form.
-	ActionHist roundActions;
+	StdActionSeq roundActions;
 
 	static abc::LossyIndexer<bckSize_t, nBck> handIndexer;
 	std::array<bckSize_t, omp::MAX_PLAYERS> handsIds;
