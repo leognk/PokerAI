@@ -5,6 +5,7 @@
 #include "../LossyAbstraction/LossyIndexer.h"
 #include "ActionAbstraction.h"
 #include "ActionSeqIndexer.h"
+#include "ActionHist.h"
 
 namespace abc {
 
@@ -102,37 +103,26 @@ private:
 	{
 		actionSeqIds.clear();
 
-		// Add one slot at the end of roundActions for the legal actions.
-		roundActions.push_back(0);
-
 		if (state.round == egn::PREFLOP) {
 			for (uint8_t a : actionAbc.legalActions) {
-				roundActions.back() = a;
+				roundActions.push_back(a);
 				actionSeqIds.push_back(
 					actionSeqIndexer.index(state.round, roundActions));
+				roundActions.pop_back();
 			}
 		}
 
 		// For rounds other than preflop, include the number of players.
 		else {
-
-			// Add one slot for the number of players.
-			roundActions.push_back(0);
-
 			for (uint8_t a : actionAbc.legalActions) {
-				// Second to last element.
-				roundActions.rbegin()[1] = a;
-				roundActions.back() = nPlayers;
+				roundActions.push_back(a);
+				roundActions.push_back(nPlayers);
 				actionSeqIds.push_back(
 					actionSeqIndexer.index(state.round, roundActions));
+				roundActions.pop_back();
+				roundActions.pop_back();
 			}
-
-			// Remove the slot.
-			roundActions.pop_back();
 		}
-
-		// Remove the slot.
-		roundActions.pop_back();
 	}
 
 	static const uint8_t dealer = egn::MAX_PLAYERS - 1;
@@ -143,8 +133,8 @@ private:
 
 	// Number of players playing at the beginning of the current round.
 	uint8_t nPlayers;
-	// History of actions made in the current round.
-	std::vector<uint8_t> roundActions;
+	// History of actions made in the current round stored in a compressed form.
+	ActionHist roundActions;
 
 	static abc::LossyIndexer<bckSize_t, nBck> handIndexer;
 	std::array<bckSize_t, omp::MAX_PLAYERS> handsIds;

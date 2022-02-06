@@ -3,6 +3,7 @@
 
 #include "../GameEngine/GameState.h"
 #include "ActionAbstraction.h"
+#include "ActionHist.h"
 
 namespace abc {
 
@@ -71,10 +72,10 @@ private:
 
 	// Number of players playing at the beginning of the current round.
 	uint8_t nPlayers;
-	// History of actions made in the current round.
-	std::vector<uint8_t> roundActions;
+	// History of actions made in the current round stored in a compressed form.
+	ActionHist roundActions;
 
-	abc::ActionAbstraction actionAbc;
+	ActionAbstraction actionAbc;
 
 	friend class TreeTraverser;
 

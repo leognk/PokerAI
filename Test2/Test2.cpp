@@ -13,5 +13,8 @@
 int main()
 {
 	int x = 3;
-	std::cout << (x += 2) << "\n";
+	int y = 3;
+	bool b = true;
+	(b ? x : y) = 5;
+	std::cout << x << " " << y << "\n";
 }

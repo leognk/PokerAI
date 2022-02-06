@@ -30,7 +30,7 @@
     <ClInclude Include="SimpleAbstractInfoset.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ActionSeqIdx.h">
+    <ClInclude Include="ActionHist.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
