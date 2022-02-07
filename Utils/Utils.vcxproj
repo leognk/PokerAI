@@ -24,6 +24,7 @@
     <ClInclude Include="Hash.h" />
     <ClInclude Include="ioContainer.h" />
     <ClInclude Include="Random.h" />
+    <ClInclude Include="StringManip.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

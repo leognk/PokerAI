@@ -1,6 +1,7 @@
 #include "TreeTraverser.h"
 #include "../Utils/FastVector.h"
 #include "../Utils/Hash.h"
+#include "../Utils/StringManip.h"
 
 namespace abc {
 
@@ -24,9 +25,17 @@ std::vector<std::vector<TreeTraverser::seq_t>> TreeTraverser::traverseTree()
 	seqsToCurrentRound.insert(longSeq_t());
 
 	for (uint8_t r = 0; r < egn::N_ROUNDS; ++r) {
+
+		if (verbose)
+			std::cout
+				<< opt::toUpper((std::ostringstream() << egn::Round(r)).str()) << "\n"
+				<< "states: " << seqsToCurrentRound.size()
+				<< " (" << std::round(seqsToCurrentRound.size() / 1e3) << "k)\n";
+
 		longSeqs_t seqsToNextRound;
 		traverseRoundTree(egn::Round(r), seqsToCurrentRound, seqsToNextRound, actionSeqs[r]);
 		seqsToCurrentRound = seqsToNextRound;
+
 		if (verbose) std::cout << "\n";
 	}
 
@@ -133,13 +142,8 @@ void TreeTraverser::traverseRoundTree(
 							actionSeqs.insert(actionSeqs.end(), setActionSeqs.begin(), setActionSeqs.end());
 						}
 
-						if (verbose) {
-							std::cout
-								<< "ROUND: " << round
-								<< " - STATE: " << std::setw(5) << seqToCurrentRoundIdx + 1
-								<< "/" << seqsToCurrentRound.size() << "\n";
+						if (verbose)
 							printProgress(actionSeqs.size(), nFinishedSeq, nContinuingSeq, height, startTime);
-						}
 					}
 
 					// Go out from the current DFS.
@@ -197,7 +201,7 @@ void TreeTraverser::printProgress(
 {
 	uint64_t nActionSeq = nFinishedSeq + nContinuingSeq;
 	auto t = std::chrono::high_resolution_clock::now();
-	auto duration = 1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(t - startTime).count();
+	double duration = 1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(t - startTime).count();
 
 	std::cout
 
@@ -210,8 +214,8 @@ void TreeTraverser::printProgress(
 		<< " | finishedSeq: " << std::setw(8) << nFinishedSeq
 		<< std::setw(6) << (" (" + std::to_string((uint32_t)std::round(nFinishedSeq / 1e6)) + "M)")
 
-		<< " | continuingSeq: " << std::setw(8) << nContinuingSeq
-		<< std::setw(6) << (" (" + std::to_string((uint32_t)std::round(nContinuingSeq / 1e6)) + "M)")
+		<< " | continuingSeq: " << std::setw(7) << nContinuingSeq
+		<< std::setw(5) << (" (" + std::to_string((uint32_t)std::round(nContinuingSeq / 1e6)) + "M)")
 
 		<< " | height: " << std::setw(2) << height
 
