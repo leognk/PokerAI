@@ -5,7 +5,6 @@
 #include "ActionSeq.h"
 #include <chrono>
 #include <unordered_set>
-#include <set>
 
 namespace abc {
 
@@ -30,12 +29,13 @@ public:
 	std::vector<std::vector<seq_t>> traverseTree();
 
 private:
-	// Return the number of nodes.
 	void traverseRoundTree(
 		egn::Round round,
 		const longSeqs_t& seqsToCurrentRound,
 		longSeqs_t& seqsToNextRound,
 		std::vector<seq_t>& actionSeqs);
+
+	void initAbcInfo(const longSeq_t& seqToCurrentRound);
 
 	void addSubActionSeqs(seqs_t& actionSeqs);
 
@@ -45,8 +45,6 @@ private:
 		uint64_t nContinuingSeq,
 		uint64_t height,
 		std::chrono::high_resolution_clock::time_point startTime);
-
-	uint8_t maxPlayers;
 
 	SimpleAbstractInfoset abcInfo;
 

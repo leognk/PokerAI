@@ -72,7 +72,7 @@ private:
 
 	// Number of players playing at the beginning of the current round.
 	uint8_t nPlayers;
-	// History of actions made in the current round stored in a compressed form.
+	// History of actions made in the current round stored in a compressed format.
 	StdActionSeq roundActions;
 
 	ActionAbstraction actionAbc;

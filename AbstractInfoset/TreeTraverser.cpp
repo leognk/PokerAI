@@ -12,7 +12,6 @@ TreeTraverser::TreeTraverser(
 	const std::vector<std::vector<std::vector<float>>>& betSizes,
 	bool verbose) :
 
-	maxPlayers(maxPlayers),
 	abcInfo(maxPlayers, ante, bigBlind, initialStake, betSizes),
 	verbose(verbose)
 {
@@ -21,15 +20,12 @@ TreeTraverser::TreeTraverser(
 std::vector<std::vector<TreeTraverser::seq_t>> TreeTraverser::traverseTree()
 {
 	std::vector<std::vector<seq_t>> actionSeqs(egn::N_ROUNDS);
-
 	longSeqs_t seqsToCurrentRound;
 	seqsToCurrentRound.insert(longSeq_t());
 
 	for (uint8_t r = 0; r < egn::N_ROUNDS; ++r) {
 		longSeqs_t seqsToNextRound;
-
 		traverseRoundTree(egn::Round(r), seqsToCurrentRound, seqsToNextRound, actionSeqs[r]);
-
 		seqsToCurrentRound = seqsToNextRound;
 		if (verbose) std::cout << "\n";
 	}
@@ -46,24 +42,24 @@ void TreeTraverser::traverseRoundTree(
 	auto startTime = std::chrono::high_resolution_clock::now();
 	uint64_t nFinishedSeq = 0, nContinuingSeq = 0, height = 0;
 
-	seqs_t setActionSeqs;
-
 	// Set of pairs (nPlayers, pot).
 	std::unordered_set<std::array<egn::chips, 2>, opt::ContainerHash> nextRoundStates;
 
-	seq_t roundActions;
+	// Set of all action sequences of this round.
+	seqs_t setActionSeqs;
 
+	// Loop over each sequence leading to a state (nPlayers, pot) of the target round.
+	// The initial state of the infoset will be generated with these sequences.
 	size_t seqToCurrentRoundIdx = 0;
-
 	for (const longSeq_t& seqToCurrentRound : seqsToCurrentRound) {
 
-		abcInfo.startNewHand();
-		ActionSeqIterator iter(seqToCurrentRound);
-		while (!iter.end())
-			abcInfo.nextState(iter.next());
+		initAbcInfo(seqToCurrentRound);
+
+		// Variables for doing a DFS.
 
 		opt::FastVector<SimpleAbstractInfoset> hist;
 		hist.push_back(abcInfo);
+
 		// lastChild[i] indicates whether hist[i] is the last child of its parent node.
 		// We use uint8_t instead of bool because vector<bool> behaves weirdly.
 		opt::FastVector<uint8_t> lastChild;
@@ -77,13 +73,13 @@ void TreeTraverser::traverseRoundTree(
 		while (true) {
 
 			// Process the next node.
-			uint8_t a = stack.back();
+			uint8_t actionId = stack.back();
 			stack.pop_back();
 
 			// Keep action sequence in memory here before going to the next state
 			// because when the round changes, roundActions is emptied.
-			roundActions = abcInfo.roundActions;
-			roundActions.push_back(abcInfo.actionAbc.legalActions[a]);
+			seq_t roundActions = abcInfo.roundActions;
+			roundActions.push_back(abcInfo.actionAbc.legalActions[actionId]);
 			uint8_t nPlayers = abcInfo.nPlayers;
 
 			// For preflop, we are sure that the action sequence is unique,
@@ -93,15 +89,16 @@ void TreeTraverser::traverseRoundTree(
 
 			abcInfo.nextState(roundActions.back());
 
-			// Update variables.
+			// Update DFS variables.
 			hist.push_back(abcInfo);
-			lastChild.push_back(a == 0);
-			if (hist.size() - 1 > height) height = hist.size() - 1;
+			lastChild.push_back(actionId == 0);
+			if (hist.size() - 1 > height)
+				height = hist.size() - 1;
 
-			// Reached end of the round.
+			// Reached the end of the round.
 			if (abcInfo.state.round != round || abcInfo.state.finished) {
 
-				// Save complete action sequence for rounds other than preflop.
+				// Save the complete action sequence for rounds other than preflop.
 				// Sub-sequences will be generated at the end to minimize the use of sets
 				// which cost a lot.
 				bool isNewSeq = true;
@@ -119,16 +116,14 @@ void TreeTraverser::traverseRoundTree(
 				}
 				else {
 					if (isNewSeq) ++nContinuingSeq;
-
-					if (nextRoundStates.insert({ abcInfo.nPlayers, abcInfo.state.pot }).second) {
-						seqsToNextRound.insert(concatActionSeqs
-							<longSeq_t::nBitsPerAction, longSeq_t::maxSizeActionSeq>(seqToCurrentRound, roundActions));
-					}
+					if (nextRoundStates.insert({ abcInfo.nPlayers, abcInfo.state.pot }).second)
+						seqsToNextRound.insert(concatActionSeqs<longSeq_t>(seqToCurrentRound, roundActions));
 				}
 
 				// End of DFS.
 				if (stack.empty()) {
 
+					// End of tree traversals for all states of the round.
 					if (seqToCurrentRoundIdx == seqsToCurrentRound.size() - 1) {
 
 						// Generate the missing sub-sequences for rounds other than preflop.
@@ -147,6 +142,7 @@ void TreeTraverser::traverseRoundTree(
 						}
 					}
 
+					// Go out from the current DFS.
 					break;
 				}
 
@@ -160,6 +156,7 @@ void TreeTraverser::traverseRoundTree(
 				abcInfo = hist.back();
 			}
 
+			// Current action sequence continues.
 			else {
 				// Add node's children to the stack.
 				for (uint8_t a = 0; a < abcInfo.nActions(); ++a)
@@ -169,6 +166,14 @@ void TreeTraverser::traverseRoundTree(
 
 		++seqToCurrentRoundIdx;
 	}
+}
+
+void TreeTraverser::initAbcInfo(const longSeq_t& seqToCurrentRound)
+{
+	abcInfo.startNewHand();
+	ActionSeqIterator iter(seqToCurrentRound);
+	while (!iter.end())
+		abcInfo.nextState(iter.next());
 }
 
 // Loop over all the complete action sequences and insert their sub-sequences.

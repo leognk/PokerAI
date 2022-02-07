@@ -157,7 +157,7 @@ private:
 #pragma warning(push)
 #pragma warning(disable: 4244)
 // Data structure storing a sequence of actions.
-// Optimized version for nBitsPerAction = 4 and maxSizeActionSeq = 32.
+// Optimized version of ActionSeq with nBitsPerAction = 4 and maxSizeActionSeq = 32.
 class StdActionSeq
 {
 public:
@@ -379,10 +379,10 @@ private:
 };
 #pragma warning(pop)
 
-template<unsigned nBitsPerAction, unsigned maxSizeActionSeq, typename Seq1, typename Seq2>
-ActionSeq<nBitsPerAction, maxSizeActionSeq> concatActionSeqs(const Seq1& seq1, const Seq2& seq2)
+template<class ResSeq, class Seq1, class Seq2>
+ResSeq concatActionSeqs(const Seq1& seq1, const Seq2& seq2)
 {
-	ActionSeq<nBitsPerAction, maxSizeActionSeq> res;
+	ResSeq res;
 
 	typename Seq1::iter_t iter1(seq1);
 	while (!iter1.end())
