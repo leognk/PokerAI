@@ -78,6 +78,11 @@ public:
 		return currInt * nBitsPerInt + currBit;
 	}
 
+	size_t size() const
+	{
+		return sizeInBits() / nBitsPerAction;
+	}
+
 	bool operator==(const ActionSeq<nBitsPerAction, maxSizeActionSeq>& rhs) const
 	{
 		if (currBit != rhs.currBit || currInt != rhs.currInt) return false;
@@ -101,6 +106,37 @@ public:
 		}
 
 		return false;
+	}
+
+	// Return a sub-sequence of the current sequence from 0 to endIdx excluded.
+	ActionSeq<nBitsPerAction, maxSizeActionSeq> extractSubSeq(uint8_t endIdx) const
+	{
+		ActionSeq<nBitsPerAction, maxSizeActionSeq> res;
+		unsigned endBit = (unsigned)endIdx * nBitsPerAction;
+
+		res.currInt = endBit / nBitsPerInt;
+		res.currBit = endBit % nBitsPerInt;
+
+		for (uint8_t i = 0; i < res.currInt; ++i)
+			res.data[i] = data[i];
+		res.data[res.currInt] = data[res.currInt] & ((1ull << res.currBit) - 1);
+
+		return res;
+	}
+
+	bool isSubSeq(const ActionSeq<nBitsPerAction, maxSizeActionSeq>& seq) const
+	{
+		if (currInt > seq.currInt
+			|| (currInt == seq.currInt && currBit > seq.currBit))
+			return false;
+
+		for (uint8_t i = 0; i < currInt; ++i) {
+			if (data[i] != seq.data[i]) return false;
+		}
+
+		uint64_t subInt = seq.data[currInt] & ((1ull << currBit) - 1);
+
+		return data[currInt] == subInt;
 	}
 
 private:
@@ -176,6 +212,11 @@ public:
 		return onFirstInt ? currBit : (nBitsPerInt + currBit);
 	}
 
+	size_t size() const
+	{
+		return sizeInBits() / nBitsPerAction;
+	}
+
 	bool operator==(const StdActionSeq& rhs) const
 	{
 		return onFirstInt == rhs.onFirstInt && currBit == rhs.currBit
@@ -191,6 +232,44 @@ public:
 		else if (currBit != rhs.currBit) return false;
 
 		return (m2 < rhs.m2) || (m2 == rhs.m2 && m1 < rhs.m1);
+	}
+
+	// Return a sub-sequence of the current sequence from 0 to endIdx excluded.
+	StdActionSeq extractSubSeq(uint8_t endIdx) const
+	{
+		StdActionSeq res;
+		unsigned endBit = (unsigned)endIdx * nBitsPerAction;
+
+		res.onFirstInt = endBit < nBitsPerInt;
+		if (res.onFirstInt) {
+			res.currBit = endBit;
+			res.m1 = m1 & ((1ull << res.currBit) - 1);
+		}
+		else {
+			res.currBit = endBit - nBitsPerInt;
+			res.m1 = m1;
+			res.m2 = m2 & ((1ull << res.currBit) - 1);
+		}
+
+		return res;
+	}
+
+	bool isSubSeq(const StdActionSeq& seq) const
+	{
+		if ((!onFirstInt && seq.onFirstInt)
+			|| (onFirstInt == seq.onFirstInt && currBit > seq.currBit))
+			return false;
+
+		if (onFirstInt) {
+			uint8_t subInt = seq.m1 & ((1ull << currBit) - 1);
+			return m1 == subInt;
+		}
+
+		else {
+			if (m1 != seq.m1) return false;
+			uint8_t subInt = seq.m2 & ((1ull << currBit) - 1);
+			return m2 == subInt;
+		}
 	}
 
 private:
@@ -222,7 +301,7 @@ public:
 	}
 
 	// Reset the state such that the next call to next will return the first entry.
-	void clear()
+	void clear(uint8_t startIdx = 0)
 	{
 		currInt = 0;
 		currBit = 0;
@@ -267,7 +346,7 @@ public:
 	}
 
 	// Reset the state such that the next call to next will return the first entry.
-	void clear()
+	void clear(uint8_t startIdx = 0)
 	{
 		onFirstInt = true;
 		currBit = 0;

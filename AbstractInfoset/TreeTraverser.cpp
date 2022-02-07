@@ -18,9 +18,9 @@ TreeTraverser::TreeTraverser(
 {
 }
 
-std::vector<TreeTraverser::seqs_t> TreeTraverser::traverseTree()
+std::vector<std::vector<TreeTraverser::seq_t>> TreeTraverser::traverseTree()
 {
-	std::vector<seqs_t> actionSeqs(egn::N_ROUNDS);
+	std::vector<std::vector<seq_t>> actionSeqs(egn::N_ROUNDS);
 
 	longSeqs_t seqsToCurrentRound;
 	seqsToCurrentRound.insert(longSeq_t());
@@ -41,10 +41,12 @@ void TreeTraverser::traverseRoundTree(
 	egn::Round round,
 	const longSeqs_t& seqsToCurrentRound,
 	longSeqs_t& seqsToNextRound,
-	seqs_t& actionSeqs)
+	std::vector<seq_t>& actionSeqs)
 {
 	auto startTime = std::chrono::high_resolution_clock::now();
-	uint64_t nNodes = 0, nFinishedSeq = 0, nContinuingSeq = 0, height = 0;
+	uint64_t nFinishedSeq = 0, nContinuingSeq = 0, height = 0;
+
+	seqs_t setActionSeqs;
 
 	// Set of pairs (nPlayers, pot).
 	std::unordered_set<std::array<egn::chips, 2>, opt::ContainerHash> nextRoundStates;
@@ -71,43 +73,50 @@ void TreeTraverser::traverseRoundTree(
 		for (uint8_t i = 0; i < stack.size(); ++i)
 			stack[i] = i;
 
+		// Do a DFS.
 		while (true) {
 
 			// Process the next node.
 			uint8_t a = stack.back();
 			stack.pop_back();
 
+			// Keep action sequence in memory here before going to the next state
+			// because when the round changes, roundActions is emptied.
 			roundActions = abcInfo.roundActions;
 			roundActions.push_back(abcInfo.actionAbc.legalActions[a]);
 			uint8_t nPlayers = abcInfo.nPlayers;
 
-			// Save action sequence before going to the next state because
-			// if the round changes, roundActions is emptied.
-			bool isNewSeq;
+			// For preflop, we are sure that the action sequence is unique,
+			// so no need to use a set which costs a lot.
 			if (round == egn::PREFLOP)
-				isNewSeq = actionSeqs.insert(roundActions).second;
-			// For rounds other than preflop, include the number of players.
-			else {
-				roundActions.push_back(nPlayers);
-				isNewSeq = actionSeqs.insert(roundActions).second;
-				roundActions.pop_back();
-			}
+				actionSeqs.push_back(roundActions);
 
 			abcInfo.nextState(roundActions.back());
 
 			// Update variables.
 			hist.push_back(abcInfo);
 			lastChild.push_back(a == 0);
-			if (isNewSeq) ++nNodes;
 			if (hist.size() - 1 > height) height = hist.size() - 1;
 
 			// Reached end of the round.
 			if (abcInfo.state.round != round || abcInfo.state.finished) {
 
+				// Save complete action sequence for rounds other than preflop.
+				// Sub-sequences will be generated at the end to minimize the use of sets
+				// which cost a lot.
+				bool isNewSeq = true;
+				// For rounds other than preflop, we need to use a set
+				// and to include the number of players.
+				if (round != egn::PREFLOP) {
+					roundActions.push_back(nPlayers);
+					isNewSeq = setActionSeqs.insert(roundActions).second;
+					roundActions.pop_back();
+				}
+
+				// Update some variables.
 				if (abcInfo.state.finished) {
 					if (isNewSeq) ++nFinishedSeq;
 				}
-
 				else {
 					if (isNewSeq) ++nContinuingSeq;
 
@@ -117,16 +126,25 @@ void TreeTraverser::traverseRoundTree(
 					}
 				}
 
+				// End of DFS.
 				if (stack.empty()) {
 
-					if (verbose && ((seqToCurrentRoundIdx + 1) % size_t(1e3) == 0
-						|| seqToCurrentRoundIdx == seqsToCurrentRound.size() - 1)) {
+					if (seqToCurrentRoundIdx == seqsToCurrentRound.size() - 1) {
 
-						std::cout
-							<< "ROUND: " << round
-							<< " - STATE: " << std::setw(5) << seqToCurrentRoundIdx + 1
-							<< "/" << seqsToCurrentRound.size() << "\n";
-						printProgress(nNodes, nFinishedSeq, nContinuingSeq, height, startTime);
+						// Generate the missing sub-sequences for rounds other than preflop.
+						if (round != egn::PREFLOP) {
+							addSubActionSeqs(setActionSeqs);
+							// Copy the set of action sequences into the vector.
+							actionSeqs.insert(actionSeqs.end(), setActionSeqs.begin(), setActionSeqs.end());
+						}
+
+						if (verbose) {
+							std::cout
+								<< "ROUND: " << round
+								<< " - STATE: " << std::setw(5) << seqToCurrentRoundIdx + 1
+								<< "/" << seqsToCurrentRound.size() << "\n";
+							printProgress(actionSeqs.size(), nFinishedSeq, nContinuingSeq, height, startTime);
+						}
 					}
 
 					break;
@@ -143,13 +161,25 @@ void TreeTraverser::traverseRoundTree(
 			}
 
 			else {
-				// Add node's children to stack.
+				// Add node's children to the stack.
 				for (uint8_t a = 0; a < abcInfo.nActions(); ++a)
 					stack.push_back(a);
 			}
 		}
 
 		++seqToCurrentRoundIdx;
+	}
+}
+
+// Loop over all the complete action sequences and insert their sub-sequences.
+void TreeTraverser::addSubActionSeqs(seqs_t& actionSeqs)
+{
+	const seqs_t completeSeqs = actionSeqs;
+	for (const auto& seq : completeSeqs) {
+		for (uint8_t length = 1; length < seq.size(); ++length) {
+			seq_t subSeq = seq.extractSubSeq(length);
+			actionSeqs.insert(subSeq);
+		}
 	}
 }
 

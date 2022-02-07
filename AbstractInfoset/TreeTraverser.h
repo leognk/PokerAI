@@ -18,9 +18,6 @@ public:
 	typedef std::unordered_set<seq_t, seq_t::hasher_t> seqs_t;
 	typedef std::unordered_set<longSeq_t, longSeq_t::hasher_t> longSeqs_t;
 
-	//typedef std::set<seq_t> seqs_t;
-	//typedef std::set<longSeq_t> longSeqs_t;
-
 	TreeTraverser(
 		uint8_t maxPlayers,
 		egn::chips ante,
@@ -30,7 +27,7 @@ public:
 		bool verbose = false);
 
 	// Return the sets of all action sequences of each round.
-	std::vector<seqs_t> traverseTree();
+	std::vector<std::vector<seq_t>> traverseTree();
 
 private:
 	// Return the number of nodes.
@@ -38,7 +35,9 @@ private:
 		egn::Round round,
 		const longSeqs_t& seqsToCurrentRound,
 		longSeqs_t& seqsToNextRound,
-		seqs_t& actionSeqs);
+		std::vector<seq_t>& actionSeqs);
+
+	void addSubActionSeqs(seqs_t& actionSeqs);
 
 	void printProgress(
 		uint64_t nNodes,
