@@ -12,15 +12,14 @@ namespace abc {
 class TreeTraverser
 {
 public:
-	//typedef StdActionSeq seq_t;
-	typedef ActionSeq<4, 32> seq_t;
+	typedef StdActionSeq seq_t;
 	typedef ActionSeq<4, 50> longSeq_t;
 
-	//typedef std::unordered_set<seq_t, seq_t::hasher_t> seqs_t;
-	//typedef std::unordered_set<longSeq_t, longSeq_t::hasher_t> longSeqs_t;
+	typedef std::unordered_set<seq_t, seq_t::hasher_t> seqs_t;
+	typedef std::unordered_set<longSeq_t, longSeq_t::hasher_t> longSeqs_t;
 
-	typedef std::set<seq_t> seqs_t;
-	typedef std::set<longSeq_t> longSeqs_t;
+	//typedef std::set<seq_t> seqs_t;
+	//typedef std::set<longSeq_t> longSeqs_t;
 
 	TreeTraverser(
 		uint8_t maxPlayers,

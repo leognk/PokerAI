@@ -30,6 +30,7 @@ class ActionSeq
 public:
 	typedef ActionSeqIterator<nBitsPerAction, maxSizeActionSeq> iter_t;
 	typedef ActionSeqHash hasher_t;
+
 	static const unsigned nBitsPerAction = nBitsPerAction;
 	static const unsigned maxSizeActionSeq = maxSizeActionSeq;
 
@@ -70,6 +71,11 @@ public:
 			return data[currInt - 1] >> (nBitsPerInt - nBitsPerAction);
 		else
 			return data[currInt] >> (currBit - nBitsPerAction);
+	}
+
+	size_t sizeInBits() const
+	{
+		return currInt * nBitsPerInt + currBit;
 	}
 
 	bool operator==(const ActionSeq<nBitsPerAction, maxSizeActionSeq>& rhs) const
@@ -121,6 +127,7 @@ class StdActionSeq
 public:
 	typedef StdActionSeqIterator iter_t;
 	typedef StdActionSeqHash hasher_t;
+
 	static const unsigned nBitsPerAction = 4;
 	static const unsigned maxSizeActionSeq = 32;
 
@@ -162,6 +169,11 @@ public:
 			return m1 >> (nBitsPerInt - nBitsPerAction);
 		else
 			return (onFirstInt ? m1 : m2) >> (currBit - nBitsPerAction);
+	}
+
+	size_t sizeInBits() const
+	{
+		return onFirstInt ? currBit : (nBitsPerInt + currBit);
 	}
 
 	bool operator==(const StdActionSeq& rhs) const
@@ -318,22 +330,22 @@ std::vector<uint8_t> seqToVect(const Seq& seq)
 class ActionSeqHash
 {
 public:
-	template<unsigned nBitsPerAction = 4, unsigned maxSizeActionSeq = 32>
+	template<unsigned nBitsPerAction, unsigned maxSizeActionSeq>
 	uint64_t operator()(const ActionSeq<nBitsPerAction, maxSizeActionSeq>& h, uint64_t seed = 0) const
 	{
-		return XXH3_64bits_withSeed(h.data.data(), sizeof(h.data), seed);
+		std::array<uint64_t, h.nInts + 1> buffer = { h.sizeInBits() };
+		std::copy(h.data.begin(), h.data.end(), buffer.begin() + 1);
+		return XXH3_64bits_withSeed(buffer.data(), sizeof(buffer), seed);
 	}
 };
 
 class StdActionSeqHash
 {
 public:
-	// Source: https://stackoverflow.com/questions/35985960/c-why-is-boosthash-combine-the-best-way-to-combine-hash-values
 	uint64_t operator()(const StdActionSeq& h, uint64_t seed = 0) const
 	{
-		seed ^= h.m1 + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-		seed ^= h.m2 + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-		return seed;
+		uint64_t buffer[3] = { h.sizeInBits(), h.m1, h.m2 };
+		return XXH3_64bits_withSeed(buffer, sizeof(buffer), seed);
 	}
 };
 
