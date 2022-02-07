@@ -5,15 +5,22 @@
 #include "ActionSeq.h"
 #include <chrono>
 #include <unordered_set>
+#include <set>
 
 namespace abc {
 
 class TreeTraverser
 {
 public:
+	//typedef StdActionSeq seq_t;
+	typedef ActionSeq<4, 32> seq_t;
 	typedef ActionSeq<4, 50> longSeq_t;
-	typedef std::unordered_set<longSeq_t, ActionSeqHash> longSeqs_t;
-	typedef std::unordered_set<StdActionSeq, StdActionSeqHash> seqs_t;
+
+	//typedef std::unordered_set<seq_t, seq_t::hasher_t> seqs_t;
+	//typedef std::unordered_set<longSeq_t, longSeq_t::hasher_t> longSeqs_t;
+
+	typedef std::set<seq_t> seqs_t;
+	typedef std::set<longSeq_t> longSeqs_t;
 
 	TreeTraverser(
 		uint8_t maxPlayers,
@@ -23,8 +30,8 @@ public:
 		const std::vector<std::vector<std::vector<float>>>& betSizes,
 		bool verbose = false);
 
-	// Return the set of all action sequences of all rounds.
-	seqs_t traverseTree();
+	// Return the sets of all action sequences of each round.
+	std::vector<seqs_t> traverseTree();
 
 private:
 	// Return the number of nodes.

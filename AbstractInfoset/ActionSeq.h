@@ -13,8 +13,12 @@ constexpr T ceilIntDiv(const T x, const T y)
 	return (x + y - 1) / y;
 }
 
+template<unsigned nBitsPerAction, unsigned maxSizeActionSeq>
 class ActionSeqIterator;
 class StdActionSeqIterator;
+
+class ActionSeqHash;
+class StdActionSeqHash;
 
 #pragma warning(push)
 #pragma warning(disable: 4244)
@@ -24,7 +28,8 @@ template<unsigned nBitsPerAction = 4, unsigned maxSizeActionSeq = 32>
 class ActionSeq
 {
 public:
-	typedef ActionSeqIterator iter_t;
+	typedef ActionSeqIterator<nBitsPerAction, maxSizeActionSeq> iter_t;
+	typedef ActionSeqHash hasher_t;
 	static const unsigned nBitsPerAction = nBitsPerAction;
 	static const unsigned maxSizeActionSeq = maxSizeActionSeq;
 
@@ -69,28 +74,40 @@ public:
 
 	bool operator==(const ActionSeq<nBitsPerAction, maxSizeActionSeq>& rhs) const
 	{
+		if (currBit != rhs.currBit || currInt != rhs.currInt) return false;
 		for (uint8_t i = 0; i < nInts; ++i) {
-			if (data[i] != rhs.data[i])
-				return false;
+			if (data[i] != rhs.data[i]) return false;
 		}
 		return true;
+	}
+
+	bool operator<(const ActionSeq<nBitsPerAction, maxSizeActionSeq>& rhs) const
+	{
+		if (currInt < rhs.currInt) return true;
+		else if (currInt != rhs.currInt) return false;
+
+		if (currBit < rhs.currBit) return true;
+		else if (currBit != rhs.currBit) return false;
+
+		for (uint8_t i = nInts; i > 0; --i) {
+			if (data[i - 1] < rhs.data[i - 1]) return true;
+			else if (data[i - 1] != rhs.data[i - 1]) return false;
+		}
+
+		return false;
 	}
 
 private:
 	static const unsigned nBitsPerInt = 64;
 	static const unsigned nInts = ceilIntDiv(nBitsPerAction * maxSizeActionSeq, nBitsPerInt);
-	static const unsigned nActionsPerInt = nBitsPerInt / nBitsPerAction;
 
 	std::array<uint64_t, nInts> data{};
 
 	uint8_t currInt = 0;
 	uint8_t currBit = 0;
 
-	uint8_t currIntIter = 0;
-	uint8_t currBitIter = 0;
-
-	friend class ActionSeqIterator;
-	friend class ActionSeqHash;
+	friend class iter_t;
+	friend class hasher_t;
 
 };
 #pragma warning(pop)
@@ -103,6 +120,7 @@ class StdActionSeq
 {
 public:
 	typedef StdActionSeqIterator iter_t;
+	typedef StdActionSeqHash hasher_t;
 	static const unsigned nBitsPerAction = 4;
 	static const unsigned maxSizeActionSeq = 32;
 
@@ -148,7 +166,19 @@ public:
 
 	bool operator==(const StdActionSeq& rhs) const
 	{
-		return m1 == rhs.m1 && m2 == rhs.m2;
+		return onFirstInt == rhs.onFirstInt && currBit == rhs.currBit
+			&& m1 == rhs.m1 && m2 == rhs.m2;
+	}
+
+	bool operator<(const StdActionSeq& rhs) const
+	{
+		if (onFirstInt && !rhs.onFirstInt) return true;
+		else if (onFirstInt != rhs.onFirstInt) return false;
+
+		if (currBit < rhs.currBit) return true;
+		else if (currBit != rhs.currBit) return false;
+
+		return (m2 < rhs.m2) || (m2 == rhs.m2 && m1 < rhs.m1);
 	}
 
 private:
@@ -161,8 +191,8 @@ private:
 	bool onFirstInt = true;
 	uint8_t currBit = 0;
 
-	friend class StdActionSeqIterator;
-	friend class StdActionSeqHash;
+	friend class iter_t;
+	friend class hasher_t;
 
 };
 #pragma warning(pop)
@@ -170,37 +200,43 @@ private:
 #pragma warning(push)
 #pragma warning(disable: 4244)
 // A class to iterate over elements contained in ActionSeq.
+template<unsigned nBitsPerAction, unsigned maxSizeActionSeq>
 class ActionSeqIterator
 {
 public:
-	// Reset the state such that the next call to iterNext will return the first entry.
-	void clearIter()
+	ActionSeqIterator(const ActionSeq<nBitsPerAction, maxSizeActionSeq>& seq) :
+		seq(&seq)
+	{
+	}
+
+	// Reset the state such that the next call to next will return the first entry.
+	void clear()
 	{
 		currInt = 0;
 		currBit = 0;
 	}
 
 	// Return the entry in seq after the one returned by the previous call to this function.
-	template<unsigned nBitsPerAction, unsigned maxSizeActionSeq>
-	uint8_t iterNext(const ActionSeq<nBitsPerAction, maxSizeActionSeq>& seq)
+	uint8_t next()
 	{
-		uint8_t res = seq.data[currInt] >> currBit;
+		uint8_t res = (seq->data[currInt] >> currBit) & ((1ull << nBitsPerAction) - 1);
 		currBit += nBitsPerAction;
-		if (currBit == seq.nBitsPerInt) {
+		if (currBit == seq->nBitsPerInt) {
 			++currInt;
 			currBit = 0;
 		}
 		return res;
 	}
 
-	// Return whether the last call to iterNext returned the last entry of seq.
-	template<unsigned nBitsPerAction, unsigned maxSizeActionSeq>
-	bool iterEnd(const ActionSeq<nBitsPerAction, maxSizeActionSeq>& seq) const
+	// Return whether the last call to next returned the last entry of seq.
+	bool end() const
 	{
-		return currInt == seq.currInt && currBit == seq.currBit;
+		return currInt == seq->currInt && currBit == seq->currBit;
 	}
 
 private:
+	const ActionSeq<nBitsPerAction, maxSizeActionSeq>* seq;
+
 	uint8_t currInt = 0;
 	uint8_t currBit = 0;
 
@@ -213,32 +249,39 @@ private:
 class StdActionSeqIterator
 {
 public:
-	// Reset the state such that the next call to iterNext will return the first entry.
-	void clearIter()
+	StdActionSeqIterator(const StdActionSeq& seq) :
+		seq(&seq)
+	{
+	}
+
+	// Reset the state such that the next call to next will return the first entry.
+	void clear()
 	{
 		onFirstInt = true;
 		currBit = 0;
 	}
 
 	// Return the entry in seq after the one returned by the previous call to this function.
-	uint8_t iterNext(const StdActionSeq& seq)
+	uint8_t next()
 	{
-		uint8_t res = (onFirstInt ? seq.m1 : seq.m2) >> currBit;
-		currBit += seq.nBitsPerAction;
-		if (currBit == seq.nBitsPerInt) {
+		uint8_t res = ((onFirstInt ? seq->m1 : seq->m2) >> currBit) & ((1ull << seq->nBitsPerAction) - 1);
+		currBit += seq->nBitsPerAction;
+		if (currBit == seq->nBitsPerInt) {
 			onFirstInt = false;
 			currBit = 0;
 		}
 		return res;
 	}
 
-	// Return whether the last call to iterNext returned the last entry of seq.
-	bool iterEnd(const StdActionSeq& seq) const
+	// Return whether the last call to next returned the last entry of seq.
+	bool end() const
 	{
-		return onFirstInt == seq.onFirstInt && currBit == seq.currBit;
+		return onFirstInt == seq->onFirstInt && currBit == seq->currBit;
 	}
 
 private:
+	const StdActionSeq* seq;
+
 	bool onFirstInt = true;
 	uint8_t currBit = 0;
 
@@ -250,16 +293,25 @@ ActionSeq<nBitsPerAction, maxSizeActionSeq> concatActionSeqs(const Seq1& seq1, c
 {
 	ActionSeq<nBitsPerAction, maxSizeActionSeq> res;
 
-	typename Seq1::iter_t iter1;
-	iter1.clearIter();
-	while (!iter1.iterEnd(seq1))
-		res.push_back(iter1.iterNext(seq1));
+	typename Seq1::iter_t iter1(seq1);
+	while (!iter1.end())
+		res.push_back(iter1.next());
 
-	typename Seq2::iter_t iter2;
-	iter2.clearIter();
-	while (!iter2.iterEnd(seq2))
-		res.push_back(iter2.iterNext(seq2));
+	typename Seq2::iter_t iter2(seq2);
+	while (!iter2.end())
+		res.push_back(iter2.next());
 
+	return res;
+}
+
+template<class Seq>
+std::vector<uint8_t> seqToVect(const Seq& seq)
+{
+	std::vector<uint8_t> res;
+	res.reserve(seq.maxSizeActionSeq);
+	typename Seq::iter_t iter(seq);
+	while (!iter.end())
+		res.push_back(iter.next());
 	return res;
 }
 

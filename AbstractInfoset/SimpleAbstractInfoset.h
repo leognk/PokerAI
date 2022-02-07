@@ -39,10 +39,10 @@ public:
 		actionAbc.calculateLegalActions(state, nRaises);
 	}
 
-	void nextState(uint8_t actionId)
+	void nextState(uint8_t action)
 	{
-		actionAbc.setAction(actionAbc.legalActions[actionId], state, nRaises);
-		roundActions.push_back(actionAbc.legalActions[actionId]);
+		actionAbc.setAction(action, state, nRaises);
+		roundActions.push_back(action);
 
 		egn::Round oldRound = state.round;
 		state.nextState();
@@ -73,7 +73,7 @@ private:
 	// Number of players playing at the beginning of the current round.
 	uint8_t nPlayers;
 	// History of actions made in the current round stored in a compressed form.
-	StdActionSeq roundActions;
+	ActionSeq<4, 32> roundActions;
 
 	ActionAbstraction actionAbc;
 

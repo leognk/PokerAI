@@ -2,12 +2,18 @@
 
 namespace abc {
 
-std::vector<std::vector<std::vector<float>>> ActionAbstraction::betSizes;
-
 ActionAbstraction::ActionAbstraction(
-	const std::vector<std::vector<std::vector<float>>>& argBetSizes)
+	const std::vector<std::vector<std::vector<float>>>& betSizes) :
+	betSizes(&betSizes)
 {
-	betSizes = argBetSizes;
+}
+
+ActionAbstraction& ActionAbstraction::operator=(const ActionAbstraction& other)
+{
+	if (this == &other)
+		return *this;
+	legalActions = other.legalActions;
+	return *this;
 }
 
 void ActionAbstraction::setAction(
@@ -25,9 +31,9 @@ void ActionAbstraction::setAction(
 		if (action == 2) state.bet = state.allin;
 		// Regular raise
 		else state.bet = (egn::chips)std::round(
-			betSizes[state.round][nRaises][action - 3] * state.pot);
+			(*betSizes)[state.round][nRaises][action - 3] * state.pot);
 
-		if (nRaises != betSizes[state.round].size() - 1) ++nRaises;
+		if (nRaises != (*betSizes)[state.round].size() - 1) ++nRaises;
 	}
 }
 
@@ -46,19 +52,19 @@ void ActionAbstraction::calculateLegalActions(
 
 	uint8_t beginRaiseId = 0;
 #pragma warning (suppress: 4267)
-	uint8_t endRaiseId = betSizes[state.round][nRaises].size();
+	uint8_t endRaiseId = (*betSizes)[state.round][nRaises].size();
 
 	// Find the minimum idx for which
 	// the corresponding bet value >= minRaise.
 	float minRaiseSize = (float)state.minRaise / state.pot;
-	while (betSizes[state.round][nRaises][beginRaiseId] < minRaiseSize)
+	while ((*betSizes)[state.round][nRaises][beginRaiseId] < minRaiseSize)
 		if (++beginRaiseId == endRaiseId) break;
 
 	if (beginRaiseId != endRaiseId) {
 		// Find the maximum idx for which
 		// the previous corresponding bet value < allin.
 		float allinSize = (float)state.allin / state.pot;
-		while (betSizes[state.round][nRaises][endRaiseId - 1] >= allinSize)
+		while ((*betSizes)[state.round][nRaises][endRaiseId - 1] >= allinSize)
 			if (--endRaiseId == beginRaiseId) break;
 	}
 

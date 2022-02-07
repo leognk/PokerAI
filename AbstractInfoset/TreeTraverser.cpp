@@ -18,9 +18,9 @@ TreeTraverser::TreeTraverser(
 {
 }
 
-TreeTraverser::seqs_t TreeTraverser::traverseTree()
+std::vector<TreeTraverser::seqs_t> TreeTraverser::traverseTree()
 {
-	seqs_t actionSeqs;
+	std::vector<seqs_t> actionSeqs(egn::N_ROUNDS);
 
 	longSeqs_t seqsToCurrentRound;
 	seqsToCurrentRound.insert(longSeq_t());
@@ -28,7 +28,7 @@ TreeTraverser::seqs_t TreeTraverser::traverseTree()
 	for (uint8_t r = 0; r < egn::N_ROUNDS; ++r) {
 		longSeqs_t seqsToNextRound;
 
-		traverseRoundTree(egn::Round(r), seqsToCurrentRound, seqsToNextRound, actionSeqs);
+		traverseRoundTree(egn::Round(r), seqsToCurrentRound, seqsToNextRound, actionSeqs[r]);
 
 		seqsToCurrentRound = seqsToNextRound;
 		if (verbose) std::cout << "\n";
@@ -49,17 +49,16 @@ void TreeTraverser::traverseRoundTree(
 	// Set of pairs (nPlayers, pot).
 	std::unordered_set<std::array<egn::chips, 2>, opt::ContainerHash> nextRoundStates;
 
-	StdActionSeq roundActions;
+	seq_t roundActions;
 
 	size_t seqToCurrentRoundIdx = 0;
 
 	for (const longSeq_t& seqToCurrentRound : seqsToCurrentRound) {
 
 		abcInfo.startNewHand();
-		ActionSeqIterator it;
-		it.clearIter();
-		while (!it.iterEnd(seqToCurrentRound))
-			abcInfo.nextState(it.iterNext(seqToCurrentRound));
+		ActionSeqIterator iter(seqToCurrentRound);
+		while (!iter.end())
+			abcInfo.nextState(iter.next());
 
 		opt::FastVector<SimpleAbstractInfoset> hist;
 		hist.push_back(abcInfo);
@@ -79,10 +78,11 @@ void TreeTraverser::traverseRoundTree(
 			stack.pop_back();
 
 			roundActions = abcInfo.roundActions;
-			roundActions.push_back(a);
+			roundActions.push_back(abcInfo.actionAbc.legalActions[a]);
 			uint8_t nPlayers = abcInfo.nPlayers;
 
-			// Save action sequence.
+			// Save action sequence before going to the next state because
+			// if the round changes, roundActions is emptied.
 			bool isNewSeq;
 			if (round == egn::PREFLOP)
 				isNewSeq = actionSeqs.insert(roundActions).second;
