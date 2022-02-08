@@ -13,11 +13,11 @@ int main()
 
 	auto startTime = std::chrono::high_resolution_clock::now();
 
-	indexer.buildPHF();
+	indexer.buildMPHF();
 
 	auto endTime = std::chrono::high_resolution_clock::now();
 	auto duration = 1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
 	std::cout << "Duration: " << std::round(duration) << " sec\n";
 
-	indexer.savePHF();
+	indexer.saveMPHF();
 }

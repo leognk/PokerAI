@@ -23,7 +23,7 @@ public:
 		egn::chips ante,
 		egn::chips bigBlind,
 		egn::chips initialStake,
-		const std::vector<std::vector<std::vector<float>>>& betSizes,
+		const betSizes_t& betSizes,
 		const std::string& actionSeqIndexerName) :
 		state(ante, bigBlind, {}),
 		actionAbc(betSizes),

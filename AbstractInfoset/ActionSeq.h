@@ -1,7 +1,6 @@
 #ifndef ABC_ACTIONSEQ_H
 #define ABC_ACTIONSEQ_H
 
-#include <array>
 #include "xxhash.h"
 
 namespace abc {
@@ -13,12 +12,9 @@ constexpr T ceilIntDiv(const T x, const T y)
 	return (x + y - 1) / y;
 }
 
-template<unsigned nBitsPerAction, unsigned maxSizeActionSeq>
+template<class Seq>
 class ActionSeqIterator;
 class StdActionSeqIterator;
-
-class ActionSeqHash;
-class StdActionSeqHash;
 
 #pragma warning(push)
 #pragma warning(disable: 4244)
@@ -28,11 +24,12 @@ template<unsigned nBitsPerAction = 4, unsigned maxSizeActionSeq = 32>
 class ActionSeq
 {
 public:
-	typedef ActionSeqIterator<nBitsPerAction, maxSizeActionSeq> iter_t;
-	typedef ActionSeqHash hasher_t;
+	typedef ActionSeqIterator<ActionSeq<nBitsPerAction, maxSizeActionSeq>> iter_t;
 
 	static const unsigned nBitsPerAction = nBitsPerAction;
 	static const unsigned maxSizeActionSeq = maxSizeActionSeq;
+	static const unsigned nBitsPerInt = 64;
+	static const unsigned nInts = ceilIntDiv(nBitsPerAction * maxSizeActionSeq, nBitsPerInt);
 
 	void clear()
 	{
@@ -50,6 +47,7 @@ public:
 			++currInt;
 			currBit = 0;
 		}
+		++data[nInts];
 	}
 
 	// Pop the last entry.
@@ -62,6 +60,7 @@ public:
 		else
 			currBit -= nBitsPerAction;
 		data[currInt] &= (1ull << currBit) - 1;
+		--data[nInts];
 	}
 
 	// Return the last entry.
@@ -73,14 +72,9 @@ public:
 			return data[currInt] >> (currBit - nBitsPerAction);
 	}
 
-	size_t sizeInBits() const
-	{
-		return currInt * nBitsPerInt + currBit;
-	}
-
 	size_t size() const
 	{
-		return sizeInBits() / nBitsPerAction;
+		return data[nInts];
 	}
 
 	bool operator==(const ActionSeq<nBitsPerAction, maxSizeActionSeq>& rhs) const
@@ -139,17 +133,15 @@ public:
 		return data[currInt] == subInt;
 	}
 
+	// The nInts first elements are the integers containing the sequence
+	// and the last element is the size of the sequence.
+	uint64_t data[nInts + 1] = { 0 };
+
 private:
-	static const unsigned nBitsPerInt = 64;
-	static const unsigned nInts = ceilIntDiv(nBitsPerAction * maxSizeActionSeq, nBitsPerInt);
-
-	std::array<uint64_t, nInts> data{};
-
 	uint8_t currInt = 0;
 	uint8_t currBit = 0;
 
 	friend class iter_t;
-	friend class hasher_t;
 
 };
 #pragma warning(pop)
@@ -162,15 +154,17 @@ class StdActionSeq
 {
 public:
 	typedef StdActionSeqIterator iter_t;
-	typedef StdActionSeqHash hasher_t;
 
 	static const unsigned nBitsPerAction = 4;
 	static const unsigned maxSizeActionSeq = 32;
+	static const unsigned nBitsPerInt = 64;
+	static const unsigned nInts = 2;
 
 	void clear()
 	{
-		m1 = 0;
-		m2 = 0;
+		data[0] = 0;
+		data[1] = 0;
+		data[2] = 0;
 		onFirstInt = true;
 		currBit = 0;
 	}
@@ -178,12 +172,13 @@ public:
 	// Add one entry to the end.
 	void push_back(const uint64_t& x)
 	{
-		(onFirstInt ? m1 : m2) |= x << currBit;
+		(onFirstInt ? data[0] : data[1]) |= x << currBit;
 		currBit += nBitsPerAction;
 		if (currBit == nBitsPerInt) {
 			onFirstInt = false;
 			currBit = 0;
 		}
+		++data[2];
 	}
 
 	// Pop the last entry.
@@ -195,32 +190,27 @@ public:
 		}
 		else
 			currBit -= nBitsPerAction;
-		(onFirstInt ? m1 : m2) &= (1ull << currBit) - 1;
+		(onFirstInt ? data[0] : data[1]) &= (1ull << currBit) - 1;
+		--data[2];
 	}
 
 	// Return the last entry.
 	uint8_t back() const
 	{
 		if (currBit == 0)
-			return m1 >> (nBitsPerInt - nBitsPerAction);
+			return data[0] >> (nBitsPerInt - nBitsPerAction);
 		else
-			return (onFirstInt ? m1 : m2) >> (currBit - nBitsPerAction);
-	}
-
-	size_t sizeInBits() const
-	{
-		return onFirstInt ? currBit : (nBitsPerInt + currBit);
+			return (onFirstInt ? data[0] : data[1]) >> (currBit - nBitsPerAction);
 	}
 
 	size_t size() const
 	{
-		return sizeInBits() / nBitsPerAction;
+		return data[2];
 	}
 
 	bool operator==(const StdActionSeq& rhs) const
 	{
-		return onFirstInt == rhs.onFirstInt && currBit == rhs.currBit
-			&& m1 == rhs.m1 && m2 == rhs.m2;
+		return data[2] == rhs.data[2] && data[0] == rhs.data[0] && data[1] == rhs.data[1];
 	}
 
 	bool operator<(const StdActionSeq& rhs) const
@@ -231,7 +221,7 @@ public:
 		if (currBit < rhs.currBit) return true;
 		else if (currBit != rhs.currBit) return false;
 
-		return (m2 < rhs.m2) || (m2 == rhs.m2 && m1 < rhs.m1);
+		return (data[1] < rhs.data[1]) || (data[1] == rhs.data[1] && data[0] < rhs.data[0]);
 	}
 
 	// Return a sub-sequence of the current sequence from 0 to endIdx excluded.
@@ -243,12 +233,12 @@ public:
 		res.onFirstInt = endBit < nBitsPerInt;
 		if (res.onFirstInt) {
 			res.currBit = endBit;
-			res.m1 = m1 & ((1ull << res.currBit) - 1);
+			res.data[0] = data[0] & ((1ull << res.currBit) - 1);
 		}
 		else {
 			res.currBit = endBit - nBitsPerInt;
-			res.m1 = m1;
-			res.m2 = m2 & ((1ull << res.currBit) - 1);
+			res.data[0] = data[0];
+			res.data[1] = data[1] & ((1ull << res.currBit) - 1);
 		}
 
 		return res;
@@ -261,29 +251,27 @@ public:
 			return false;
 
 		if (onFirstInt) {
-			uint8_t subInt = seq.m1 & ((1ull << currBit) - 1);
-			return m1 == subInt;
+			uint8_t subInt = seq.data[0] & ((1ull << currBit) - 1);
+			return data[0] == subInt;
 		}
 
 		else {
-			if (m1 != seq.m1) return false;
-			uint8_t subInt = seq.m2 & ((1ull << currBit) - 1);
-			return m2 == subInt;
+			if (data[0] != seq.data[0]) return false;
+			uint8_t subInt = seq.data[1] & ((1ull << currBit) - 1);
+			return data[1] == subInt;
 		}
 	}
 
+	// The first two elements are the integers containing the sequence
+	// and the third element is the size of the sequence.
+	// Can be used to hash the sequence.
+	uint64_t data[nInts + 1] = { 0 };
+
 private:
-	static const unsigned nBitsPerInt = 64;
-	static const unsigned nInts = 2;
-
-	uint64_t m1 = 0;
-	uint64_t m2 = 0;
-
 	bool onFirstInt = true;
 	uint8_t currBit = 0;
 
 	friend class iter_t;
-	friend class hasher_t;
 
 };
 #pragma warning(pop)
@@ -291,11 +279,11 @@ private:
 #pragma warning(push)
 #pragma warning(disable: 4244)
 // A class to iterate over elements contained in ActionSeq.
-template<unsigned nBitsPerAction, unsigned maxSizeActionSeq>
+template<class Seq>
 class ActionSeqIterator
 {
 public:
-	ActionSeqIterator(const ActionSeq<nBitsPerAction, maxSizeActionSeq>& seq) :
+	ActionSeqIterator(const Seq& seq) :
 		seq(&seq)
 	{
 	}
@@ -310,8 +298,8 @@ public:
 	// Return the entry in seq after the one returned by the previous call to this function.
 	uint8_t next()
 	{
-		uint8_t res = (seq->data[currInt] >> currBit) & ((1ull << nBitsPerAction) - 1);
-		currBit += nBitsPerAction;
+		uint8_t res = (seq->data[currInt] >> currBit) & ((1ull << seq->nBitsPerAction) - 1);
+		currBit += seq->nBitsPerAction;
 		if (currBit == seq->nBitsPerInt) {
 			++currInt;
 			currBit = 0;
@@ -326,7 +314,7 @@ public:
 	}
 
 private:
-	const ActionSeq<nBitsPerAction, maxSizeActionSeq>* seq;
+	const Seq* seq;
 
 	uint8_t currInt = 0;
 	uint8_t currBit = 0;
@@ -355,7 +343,7 @@ public:
 	// Return the entry in seq after the one returned by the previous call to this function.
 	uint8_t next()
 	{
-		uint8_t res = ((onFirstInt ? seq->m1 : seq->m2) >> currBit) & ((1ull << seq->nBitsPerAction) - 1);
+		uint8_t res = ((onFirstInt ? seq->data[0] : seq->data[1]) >> currBit) & ((1ull << seq->nBitsPerAction) - 1);
 		currBit += seq->nBitsPerAction;
 		if (currBit == seq->nBitsPerInt) {
 			onFirstInt = false;
@@ -409,22 +397,10 @@ std::vector<uint8_t> seqToVect(const Seq& seq)
 class ActionSeqHash
 {
 public:
-	template<unsigned nBitsPerAction, unsigned maxSizeActionSeq>
-	uint64_t operator()(const ActionSeq<nBitsPerAction, maxSizeActionSeq>& h, uint64_t seed = 0) const
+	template<class Seq>
+	uint64_t operator()(const Seq& seq, uint64_t seed = 0) const
 	{
-		std::array<uint64_t, h.nInts + 1> buffer = { h.sizeInBits() };
-		std::copy(h.data.begin(), h.data.end(), buffer.begin() + 1);
-		return XXH3_64bits_withSeed(buffer.data(), sizeof(buffer), seed);
-	}
-};
-
-class StdActionSeqHash
-{
-public:
-	uint64_t operator()(const StdActionSeq& h, uint64_t seed = 0) const
-	{
-		uint64_t buffer[3] = { h.sizeInBits(), h.m1, h.m2 };
-		return XXH3_64bits_withSeed(buffer, sizeof(buffer), seed);
+		return XXH3_64bits_withSeed(seq.data, sizeof(seq.data), seed);
 	}
 };
 

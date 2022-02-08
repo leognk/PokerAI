@@ -3,7 +3,7 @@
 namespace abc {
 
 ActionAbstraction::ActionAbstraction(
-	const std::vector<std::vector<std::vector<float>>>& betSizes) :
+	const betSizes_t& betSizes) :
 	betSizes(&betSizes)
 {
 }

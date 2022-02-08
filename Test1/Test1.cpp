@@ -23,7 +23,7 @@ int main()
 	const egn::chips BIG_BLIND = 2;
 	const egn::chips INITIAL_STAKE = 6;
 
-	const std::vector<std::vector<std::vector<float>>> BET_SIZES = {
+	const abc::betSizes_t BET_SIZES = {
 		{
 			{ 1, 2 },
 			{ 1 }

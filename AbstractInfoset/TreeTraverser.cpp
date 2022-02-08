@@ -10,7 +10,7 @@ TreeTraverser::TreeTraverser(
 	egn::chips ante,
 	egn::chips bigBlind,
 	egn::chips initialStake,
-	const std::vector<std::vector<std::vector<float>>>& betSizes,
+	const betSizes_t& betSizes,
 	bool verbose) :
 
 	abcInfo(maxPlayers, ante, bigBlind, initialStake, betSizes),

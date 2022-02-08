@@ -14,15 +14,15 @@ public:
 	typedef StdActionSeq seq_t;
 	typedef ActionSeq<4, 50> longSeq_t;
 
-	typedef std::unordered_set<seq_t, seq_t::hasher_t> seqs_t;
-	typedef std::unordered_set<longSeq_t, longSeq_t::hasher_t> longSeqs_t;
+	typedef std::unordered_set<seq_t, ActionSeqHash> seqs_t;
+	typedef std::unordered_set<longSeq_t, ActionSeqHash> longSeqs_t;
 
 	TreeTraverser(
 		uint8_t maxPlayers,
 		egn::chips ante,
 		egn::chips bigBlind,
 		egn::chips initialStake,
-		const std::vector<std::vector<std::vector<float>>>& betSizes,
+		const betSizes_t& betSizes,
 		bool verbose = false);
 
 	// Return the sets of all action sequences of each round.

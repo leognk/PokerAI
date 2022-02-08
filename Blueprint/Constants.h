@@ -2,6 +2,7 @@
 #define BP_CONSTANTS_H
 
 #include "../GameEngine/GameState.h"
+#include "../AbstractInfoset/ActionAbstraction.h"
 #include <vector>
 
 namespace bp {
@@ -17,46 +18,46 @@ static const egn::chips INITIAL_STAKE = 20000;
 
 static const std::string ACTION_SEQ_INDEXER_NAME = "BLUEPRINT";
 
-static const std::vector<std::vector<std::vector<float>>> BET_SIZES = {
-	{
-		{ 1, 1.25, 1.5, 1.75, 2, 3, 4, 6, 8, 15, 25, 35, 50 },
-		{ 0.5, 1, 2, 4, 8, 15, 25, 50 },
-		{ 0.5, 1, 2 },
-		{ 1 }
-	},
-	{
-		{ 0.25, 0.5, 1, 2, 4 },
-		{ 0.5, 1, 2 },
-		{ 1 }
-	},
-	{
-		{ 0.5, 1 },
-		{ 1 }
-	},
-	{
-		{ 0.5, 1 },
-		{ 1 }
-	}
-};
-
-//static const std::vector<std::vector<std::vector<float>>> BET_SIZES = {
+//static const abc::betSizes_t BET_SIZES = {
 //	{
-//		{ 1, 2 },
+//		{ 1, 1.25, 1.5, 1.75, 2, 3, 4, 6, 8, 15, 25, 35, 50 },
+//		{ 0.5, 1, 2, 4, 8, 15, 25, 50 },
+//		{ 0.5, 1, 2 },
 //		{ 1 }
 //	},
 //	{
-//		{ 1, 2 },
+//		{ 0.25, 0.5, 1, 2, 4 },
+//		{ 0.5, 1, 2 },
 //		{ 1 }
 //	},
 //	{
-//		{ 1, 2 },
+//		{ 0.5, 1 },
 //		{ 1 }
 //	},
 //	{
-//		{ 1, 2 },
+//		{ 0.5, 1 },
 //		{ 1 }
 //	}
 //};
+
+static const abc::betSizes_t BET_SIZES = {
+	{
+		{ 1, 2 },
+		{ 1 }
+	},
+	{
+		{ 1, 2 },
+		{ 1 }
+	},
+	{
+		{ 1, 2 },
+		{ 1 }
+	},
+	{
+		{ 1, 2 },
+		{ 1 }
+	}
+};
 
 }
 

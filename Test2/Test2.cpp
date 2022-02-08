@@ -12,9 +12,6 @@
 
 int main()
 {
-	int x = 3;
-	int y = 3;
-	bool b = true;
-	(b ? x : y) = 5;
-	std::cout << x << " " << y << "\n";
+	uint64_t x[3] = {0};
+	std::cout << sizeof(x) << "\n";
 }

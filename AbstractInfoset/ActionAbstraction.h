@@ -6,13 +6,15 @@
 
 namespace abc {
 
+typedef std::vector<std::vector<std::vector<float>>> betSizes_t;
+
 class ActionAbstraction
 {
 public:
 	// betSizes is the available bet sizes with action abstraction
 	// expressed in terms of fraction of the pot.
 	// shape: n_rounds x n_raises_in_round x n_possible_bet_sizes
-	ActionAbstraction(const std::vector<std::vector<std::vector<float>>>& betSizes);
+	ActionAbstraction(const betSizes_t& betSizes);
 
 	// The copy assignment does not copy betSizes which is constant.
 	ActionAbstraction& operator=(const ActionAbstraction& other);
@@ -30,7 +32,7 @@ public:
 	std::vector<uint8_t> legalActions;
 
 private:
-	const std::vector<std::vector<std::vector<float>>>* betSizes;
+	const betSizes_t* betSizes;
 
 }; // ActionAbstraction
 
