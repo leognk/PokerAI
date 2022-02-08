@@ -32,8 +32,8 @@ public:
 		std::fill(initialStakes.begin(), initialStakes.begin() + maxPlayers, initialStake);
 		// Load information abstraction lookup tables.
 		handIndexer.loadLUT();
-		// Load action sequences perfect hash functions.
-		actionSeqIndexer.loadPHF();
+		// Load action sequences minimal perfect hash functions.
+		actionSeqIndexer.loadMPHF();
 	}
 
 	void startNewHand()
@@ -76,7 +76,7 @@ public:
 	// one of its legal action is identified by:
 	// - the current round.
 	// - the acting player's hand's bucket.
-	// - the index (given by a perfect hash function) of the action
+	// - the index (given by a minimal perfect hash function) of the action
 	//   sequence leading to the legal action, with the number of players
 	//   included for rounds other than preflop.
 	uint8_t roundIdx() const { return state.round; }

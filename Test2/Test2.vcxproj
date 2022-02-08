@@ -145,11 +145,6 @@
   <ItemGroup>
     <ClCompile Include="Test2.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\HandData\HandData.vcxproj">
-      <Project>{84e3a460-8d80-44f6-91cf-6d7105b3d933}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>

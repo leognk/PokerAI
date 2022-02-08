@@ -846,6 +846,7 @@ private:
 			if (compile_time_condition<BLOCK_SIZE <= EXPLICIT_BLOCK_EMPTY_COUNTER_THRESHOLD>::value) {
 				// Reset flags
 				for (size_t i = 0; i != BLOCK_SIZE; ++i) {
+#pragma warning(suppress: 6201)
 					emptyFlags[i].store(false, std::memory_order_relaxed);
 				}
 			}

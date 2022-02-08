@@ -1,6 +1,7 @@
 #ifndef BP_BLUEPRINTCALCULATOR_H
 #define BP_BLUEPRINTCALCULATOR_H
 
+#include "Constants.h"
 #include "../AbstractInfoset/AbstractInfoset.h"
 
 namespace bp {
@@ -8,15 +9,12 @@ namespace bp {
 class BlueprintCalculator
 {
 public:
-	BlueprintCalculator(
-		egn::chips ante = 0,
-		egn::chips bigBlind = 100,
-		egn::chips initialStake = 20000);
+	BlueprintCalculator();
 
 	void computeStrategy();
 
 private:
-	//abc::AbstractInfoset abcInfo;
+	abc::AbstractInfoset<bckSize_t, N_BCK> abcInfo;
 
 }; // BlueprintCalculator
 

@@ -2,10 +2,14 @@
 
 namespace bp {
 
-BlueprintCalculator::BlueprintCalculator(
-	egn::chips ante,
-	egn::chips bigBlind,
-	egn::chips initialStake)
+BlueprintCalculator::BlueprintCalculator() :
+	abcInfo(
+		bp::MAX_PLAYERS,
+		bp::ANTE,
+		bp::BIG_BLIND,
+		bp::INITIAL_STAKE,
+		bp::BET_SIZES,
+		bp::ACTION_SEQ_INDEXER_NAME)
 {
 }
 

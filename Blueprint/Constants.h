@@ -3,19 +3,18 @@
 
 #include "../GameEngine/GameState.h"
 #include "../AbstractInfoset/ActionAbstraction.h"
-#include <vector>
 
 namespace bp {
 
-typedef uint8_t bckSize_t;
-static const bckSize_t N_BCK = 200;
-
-static const uint8_t MAX_PLAYERS = 6;
-
-static const egn::chips ANTE = 0;
-static const egn::chips BIG_BLIND = 100;
-static const egn::chips INITIAL_STAKE = 20000;
-
+//typedef uint8_t bckSize_t;
+//static const bckSize_t N_BCK = 200;
+//
+//static const uint8_t MAX_PLAYERS = 6;
+//
+//static const egn::chips ANTE = 0;
+//static const egn::chips BIG_BLIND = 100;
+//static const egn::chips INITIAL_STAKE = 20000;
+//
 //static const std::string ACTION_SEQ_INDEXER_NAME = "BLUEPRINT";
 //
 //static const abc::betSizes_t BET_SIZES = {
@@ -39,6 +38,23 @@ static const egn::chips INITIAL_STAKE = 20000;
 //		{ 1 }
 //	}
 //};
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////// SIMPLE VERSION ////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+typedef uint8_t bckSize_t;
+static const bckSize_t N_BCK = 5;
+
+static const uint8_t MAX_PLAYERS = 6;
+
+static const egn::chips ANTE = 0;
+static const egn::chips BIG_BLIND = 100;
+static const egn::chips INITIAL_STAKE = 20000;
 
 static const std::string ACTION_SEQ_INDEXER_NAME = "SIMPLE_BLUEPRINT";
 
