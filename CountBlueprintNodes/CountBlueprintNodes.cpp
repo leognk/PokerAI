@@ -24,7 +24,7 @@ int main()
 
 	std::cout
 		<< "TOTAL with card abc\n"
-		<< "nodes: " << nNodes << " (" << std::round(nNodes * 1e-7) * 1e-2 << "G)"
-		<< " | memory: " << memory << " (" << std::round(memory * 1e-7) * 1e-2 << "Go)"
+		<< "nodes: " << nNodes << " (" << std::round(nNodes * 1e-8) * 1e-1 << "G)"
+		<< " | memory: " << memory << " (" << std::round(memory * 1e-8) * 1e-1 << "Go)"
 		<< " | " << std::round(duration) << "s\n";
 }

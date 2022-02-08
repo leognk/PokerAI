@@ -5,7 +5,7 @@
 
 namespace opt {
 
-std::string toUpper(const std::string& s)
+inline std::string toUpper(const std::string& s)
 {
 	std::string res = s;
 	for (auto& c : res) c = toupper(c);

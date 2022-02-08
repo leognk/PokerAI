@@ -185,8 +185,11 @@ void TreeTraverser::addSubActionSeqs(seqs_t& actionSeqs)
 {
 	const seqs_t completeSeqs = actionSeqs;
 	for (const auto& seq : completeSeqs) {
-		for (uint8_t length = 1; length < seq.size(); ++length) {
+		uint8_t nPlayers = seq.back();
+		// We stop length before seq.size() - 1 because the last entry is nPlayers.
+		for (uint8_t length = 1; length < seq.size() - 1; ++length) {
 			seq_t subSeq = seq.extractSubSeq(length);
+			subSeq.push_back(nPlayers);
 			actionSeqs.insert(subSeq);
 		}
 	}
