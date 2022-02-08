@@ -11,53 +11,34 @@
 //#include <fstream>
 //#include <bitset>
 
-#include "../AbstractInfoset/TreeTraverser.h"
-#include "../Blueprint/Constants.h"
-#include "../Utils/StringManip.h"
+#include "../AbstractInfoset/ActionSeq.h"
+#include "../BBHash/BooPHF.h"
+#include "../Utils/Hash.h"
 
 int main()
 {
-	const uint8_t MAX_PLAYERS = 3;
+	typedef abc::StdActionSeq T;
 
-	const egn::chips ANTE = 0;
-	const egn::chips BIG_BLIND = 2;
-	const egn::chips INITIAL_STAKE = 6;
+	std::vector<T::data_t> keys(3);
+	T seq;
 
-	const abc::betSizes_t BET_SIZES = {
-		{
-			{ 1, 2 },
-			{ 1 }
-		},
-		{
-			{ 1, 2 },
-			{ 1 }
-		},
-		{
-			{ 1, 2 },
-			{ 1 }
-		},
-		{
-			{ 1, 2 },
-			{ 1 }
-		}
-	};
+	seq.push_back(5);
+	seq.push_back(7);
+	seq.push_back(0);
+	keys[0] = seq.data;
 
-	abc::TreeTraverser traverser(MAX_PLAYERS, ANTE, BIG_BLIND, INITIAL_STAKE, BET_SIZES, false);
-	std::vector<std::vector<abc::StdActionSeq>> actionSeqs = traverser.traverseTree();
+	seq.clear();
+	seq.push_back(1);
+	keys[1] = seq.data;
 
-	for (uint8_t r = 0; r < egn::N_ROUNDS; ++r) {
+	seq.clear();
+	seq.push_back(15);
+	seq.push_back(3);
+	keys[2] = seq.data;
 
-		std::cout << opt::toUpper((std::ostringstream() << egn::Round(r)).str()) << "\n\n";
+	typedef boomphf::mphf<T::data_t, opt::ContainerHash> mphf_t;
+	mphf_t mphf(keys.size(), keys, 1, 2.0, 0);
 
-		for (size_t i = 0; i < actionSeqs[r].size(); ++i) {
-
-			std::cout << std::setw(2) << i + 1 << "/" << actionSeqs[r].size() << ": ";
-			abc::StdActionSeqIterator iter(actionSeqs[r][i]);
-			while (!iter.end())
-				std::cout << std::setw(2) << std::to_string(iter.next()) << " ";
-			std::cout << "\n\n";
-
-		}
-		std::cout << "\n";
-	}
+	for (const auto& k : keys)
+		std::cout << mphf.lookup(k) << "\n";
 }

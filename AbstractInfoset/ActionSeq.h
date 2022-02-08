@@ -135,7 +135,8 @@ public:
 
 	// The nInts first elements are the integers containing the sequence
 	// and the last element is the size of the sequence.
-	uint64_t data[nInts + 1] = { 0 };
+	typedef std::array<uint64_t, nInts + 1> data_t;
+	data_t data = { 0 };
 
 private:
 	uint8_t currInt = 0;
@@ -265,7 +266,8 @@ public:
 	// The first two elements are the integers containing the sequence
 	// and the third element is the size of the sequence.
 	// Can be used to hash the sequence.
-	uint64_t data[nInts + 1] = { 0 };
+	typedef std::array<uint64_t, nInts + 1> data_t;
+	data_t data = { 0 };
 
 private:
 	bool onFirstInt = true;
@@ -400,7 +402,7 @@ public:
 	template<class Seq>
 	uint64_t operator()(const Seq& seq, uint64_t seed = 0) const
 	{
-		return XXH3_64bits_withSeed(seq.data, sizeof(seq.data), seed);
+		return XXH3_64bits_withSeed(seq.data.data(), sizeof(seq.data), seed);
 	}
 };
 

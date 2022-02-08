@@ -5,6 +5,16 @@
 
 namespace opt {
 
+class ArrayHash
+{
+public:
+	template<typename A>
+	uint64_t operator()(const A& a, uint64_t seed = 0) const
+	{
+		return XXH3_64bits_withSeed(a.data(), sizeof(a), seed);
+	}
+};
+
 class ContainerHash
 {
 public:

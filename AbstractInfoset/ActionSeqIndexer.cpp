@@ -24,11 +24,27 @@ ActionSeqIndexer::ActionSeqIndexer(
 
 void ActionSeqIndexer::buildMPHF()
 {
+	// Collect all action sequences for all rounds.
 	std::vector<std::vector<seq_t>> actionSeqs = traverser.traverseTree();
-	preflopMPHF = mphf_t(actionSeqs[egn::PREFLOP].size(), actionSeqs[egn::PREFLOP], nThreads, gamma, 0);
-	flopMPHF = mphf_t(actionSeqs[egn::FLOP].size(), actionSeqs[egn::FLOP], nThreads, gamma, 0);
-	turnMPHF = mphf_t(actionSeqs[egn::TURN].size(), actionSeqs[egn::TURN], nThreads, gamma, 0);
-	riverMPHF = mphf_t(actionSeqs[egn::RIVER].size(), actionSeqs[egn::RIVER], nThreads, gamma, 0);
+
+	// Convert seq_t to seq_t::data_t.
+	typedef std::vector<seq_t::data_t> keys_t;
+	std::vector<keys_t> allKeys = {
+		keys_t(actionSeqs[egn::PREFLOP].size()),
+		keys_t(actionSeqs[egn::FLOP].size()),
+		keys_t(actionSeqs[egn::TURN].size()),
+		keys_t(actionSeqs[egn::RIVER].size())
+	};
+	for (uint8_t r = 0; r < egn::N_ROUNDS; ++r) {
+		for (size_t i = 0; i < allKeys[r].size(); ++i)
+			allKeys[r][i] = actionSeqs[r][i].data;
+	}
+
+	// Build MPHF.
+	preflopMPHF = mphf_t(allKeys[egn::PREFLOP].size(), allKeys[egn::PREFLOP], nThreads, gamma, 0);
+	flopMPHF = mphf_t(allKeys[egn::FLOP].size(), allKeys[egn::FLOP], nThreads, gamma, 0);
+	turnMPHF = mphf_t(allKeys[egn::TURN].size(), allKeys[egn::TURN], nThreads, gamma, 0);
+	riverMPHF = mphf_t(allKeys[egn::RIVER].size(), allKeys[egn::RIVER], nThreads, gamma, 0);
 }
 
 void ActionSeqIndexer::saveMPHF()
@@ -108,13 +124,13 @@ uint64_t ActionSeqIndexer::index(egn::Round round, const seq_t& actionSeq)
 	switch (round) {
 
 	case egn::PREFLOP:
-		return preflopMPHF.lookup(actionSeq);
+		return preflopMPHF.lookup(actionSeq.data);
 
 	case egn::FLOP:
-		return flopMPHF.lookup(actionSeq);
+		return flopMPHF.lookup(actionSeq.data);
 
 	case egn::TURN:
-		return turnMPHF.lookup(actionSeq);
+		return turnMPHF.lookup(actionSeq.data);
 
 	case egn::RIVER:
 		return riverMPHF.lookup(actionSeq.data);

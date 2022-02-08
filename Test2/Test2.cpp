@@ -12,6 +12,6 @@
 
 int main()
 {
-	uint64_t x[3] = {0};
+	std::array<uint64_t, 3> x = {0};
 	std::cout << sizeof(x) << "\n";
 }

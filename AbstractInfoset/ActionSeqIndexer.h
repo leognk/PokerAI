@@ -2,6 +2,7 @@
 #define ABC_ACTIONSEQINDEXER_H
 
 #include "../AbstractInfoset/TreeTraverser.h"
+#include "../Utils/Hash.h"
 #include "../BBHash/BooPHF.h"
 
 namespace abc {
@@ -12,7 +13,7 @@ class ActionSeqIndexer
 {
 public:
 	typedef StdActionSeq seq_t;
-	typedef boomphf::mphf<seq_t, ActionSeqHash> mphf_t;
+	typedef boomphf::mphf<seq_t::data_t, opt::ArrayHash> mphf_t;
 
 	// indexerName is used in the MPHF files names.
 	ActionSeqIndexer(

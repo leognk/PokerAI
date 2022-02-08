@@ -16,8 +16,8 @@ static const egn::chips ANTE = 0;
 static const egn::chips BIG_BLIND = 100;
 static const egn::chips INITIAL_STAKE = 20000;
 
-static const std::string ACTION_SEQ_INDEXER_NAME = "BLUEPRINT";
-
+//static const std::string ACTION_SEQ_INDEXER_NAME = "BLUEPRINT";
+//
 //static const abc::betSizes_t BET_SIZES = {
 //	{
 //		{ 1, 1.25, 1.5, 1.75, 2, 3, 4, 6, 8, 15, 25, 35, 50 },
@@ -39,6 +39,8 @@ static const std::string ACTION_SEQ_INDEXER_NAME = "BLUEPRINT";
 //		{ 1 }
 //	}
 //};
+
+static const std::string ACTION_SEQ_INDEXER_NAME = "SIMPLE_BLUEPRINT";
 
 static const abc::betSizes_t BET_SIZES = {
 	{
