@@ -9,12 +9,6 @@
 #include <iostream>
 #include "../tracy/Tracy.hpp"
 
-namespace abc {
-	template<typename bckSize_t, bckSize_t nBck>
-	class AbstractInfoset;
-	class SimpleAbstractInfoset;
-}
-
 namespace egn {
 
 typedef uint32_t chips;
@@ -116,6 +110,9 @@ public:
 	void startNewHand(uint8_t dealerIdx, bool dealRandomCards = true);
 	void nextState();
 
+	// To loop over alive players.
+	uint8_t& nextAlive(uint8_t& i) const;
+
 	// Next active player, ie. non-zero stake player
 	// (to set the dealer of the next hand).
 	// Do NOT use it when a hand is running (because of all-in players).
@@ -161,6 +158,10 @@ public:
 	// Rewards obtained by each player after the end of the hand.
 	std::array<dchips, MAX_PLAYERS> rewards{};
 
+	// To loop over alive players, ie. players who were dealt cards and did not fold.
+	uint8_t firstAlive;
+	uint8_t nAlive;
+
 protected:
 	typedef omp::XoroShiro128Plus Rng;
 	typedef omp::FastUniformIntDistribution<unsigned, 16> CardDist;
@@ -175,7 +176,6 @@ protected:
 
 	bool isAlive(uint8_t i) const;
 	bool isActing(uint8_t i) const;
-	uint8_t& nextAlive(uint8_t& i) const;
 	uint8_t& nextActing(uint8_t& i) const;
 	void addAlive(uint8_t i);
 	void addActing(uint8_t i);
@@ -210,11 +210,8 @@ protected:
 	static std::array<std::array<uint8_t, MAX_PLAYERS>,
 		NEXT_LOOKUP_SIZE> NEXT_LOOKUP;
 
-	// Alive players, ie. were dealt cards and did not fold.
-	// Mask of alive players.
+	// Mask of alive players, ie. players who were dealt cards and did not fold.
 	uint16_t mAlive;
-	uint8_t mFirstAlive;
-	uint8_t mNAlive;
 
 	// Alive and did not go all-in yet.
 	// Mask of acting players.
@@ -231,7 +228,7 @@ protected:
 	// Largest raise (by) of the current round
 	chips mLargestRaise;
 
-	// Players ranked from best to worst hand (they are mNAlive).
+	// Players ranked from best to worst hand (they are nAlive).
 	std::array<uint8_t, MAX_PLAYERS> mRankings{};
 	// Cumulated number of players with the same rank ordered
 	// from best to worst rank, such that players from
@@ -249,10 +246,6 @@ protected:
 	// Used in setRankings.
 	std::array<uint16_t, MAX_PLAYERS> mRanks{};
 	omp::HandEvaluator mEval;
-
-	template<typename bckSize_t, bckSize_t nBck>
-	friend class abc::AbstractInfoset;
-	friend class abc::SimpleAbstractInfoset;
 
 }; // GameState
 

@@ -7,7 +7,7 @@
 
 namespace abc {
 
-static const std::string phfDir = "../data/ActionSequences/MPHF/";
+static const std::string mphfDir = "../data/ActionSequences/MPHF/";
 
 class ActionSeqIndexer
 {
@@ -31,6 +31,8 @@ public:
 
 	uint64_t index(egn::Round round, const seq_t& actionSeq);
 
+	mphf_t preflopMPHF, flopMPHF, turnMPHF, riverMPHF;
+
 private:
 	void savePreflopMPHF();
 	void saveFlopMPHF();
@@ -43,7 +45,6 @@ private:
 	void loadRiverMPHF();
 
 	TreeTraverser traverser;
-	mphf_t preflopMPHF, flopMPHF, turnMPHF, riverMPHF;
 
 	const int nThreads;
 	const double gamma;

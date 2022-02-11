@@ -15,10 +15,10 @@ ActionSeqIndexer::ActionSeqIndexer(
 	traverser(maxPlayers, ante, bigBlind, initialStake, betSizes, false),
 	nThreads(nThreads),
 	gamma(gamma),
-	preflopMPHFPath(phfDir + indexerName + "_PREFLOP_MPHF.bin"),
-	flopMPHFPath(phfDir + indexerName + "_FLOP_MPHF.bin"),
-	turnMPHFPath(phfDir + indexerName + "_TURN_MPHF.bin"),
-	riverMPHFPath(phfDir + indexerName + "_RIVER_MPHF.bin")
+	preflopMPHFPath(mphfDir + indexerName + "_PREFLOP_MPHF.bin"),
+	flopMPHFPath(mphfDir + indexerName + "_FLOP_MPHF.bin"),
+	turnMPHFPath(mphfDir + indexerName + "_TURN_MPHF.bin"),
+	riverMPHFPath(mphfDir + indexerName + "_RIVER_MPHF.bin")
 {
 }
 

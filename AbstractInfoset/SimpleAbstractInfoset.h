@@ -50,7 +50,7 @@ public:
 		// New round.
 		if (state.round != oldRound) {
 			nRaises = 0;
-			nPlayers = state.mNAlive;
+			nPlayers = state.nAlive;
 			roundActions.clear();
 		}
 

@@ -60,7 +60,7 @@ void GameState::resetPlayers()
 
     mAlive = 0;
     mActing = 0;
-    mNAlive = 0;
+    nAlive = 0;
     mNActing = 0;
     for (uint8_t i = 0; i < MAX_PLAYERS; ++i) {
         // Ignore inactive players.
@@ -74,14 +74,14 @@ void GameState::resetPlayers()
 
     // The first acting player after the preflop is always
     // the player following the dealer.
-    mFirstAlive = mDealer;
-    mFirstActing = nextAlive(mFirstAlive);
+    firstAlive = mDealer;
+    mFirstActing = nextAlive(firstAlive);
 }
 
 void GameState::dealHoleCards(uint64_t& usedCardsMask)
 {
     //ZoneScoped;
-    uint8_t i = mFirstAlive;
+    uint8_t i = firstAlive;
     do {
         for (uint8_t j = 0; j < omp::HOLE_CARDS; ++j) {
             uint8_t card;
@@ -93,7 +93,7 @@ void GameState::dealHoleCards(uint64_t& usedCardsMask)
             usedCardsMask |= cardMask;
             hands[i][j] = card;
         }
-    } while (nextAlive(i) != mFirstAlive);
+    } while (nextAlive(i) != firstAlive);
 }
 
 void GameState::dealBoardCards(uint64_t& usedCardsMask)
@@ -126,7 +126,7 @@ void GameState::chargeAnte()
     //ZoneScoped;
     if (mAnte == 0) return;
 
-    uint8_t i = mFirstAlive;
+    uint8_t i = firstAlive;
     do {
         // The player must all-in on the ante.
         if (stakes[i] <= mAnte) {
@@ -147,7 +147,7 @@ void GameState::chargeAnte()
             mBets[i] += mAnte;
             stakes[i] -= mAnte;
         }
-    } while (nextAlive(i) != mFirstAlive);
+    } while (nextAlive(i) != firstAlive);
 
     // Only one player did not went all-in on the ante.
     if (mNActing == 1) endGame();
@@ -157,10 +157,10 @@ void GameState::chargeBlinds()
 {
     //ZoneScoped;
     // Find out the sb and bb players.
-    actingPlayer = mFirstAlive;
+    actingPlayer = firstAlive;
     uint8_t sbPlayer, bbPlayer;
     // Heads-up
-    if (mNAlive == 2) {
+    if (nAlive == 2) {
         bbPlayer = actingPlayer;
         sbPlayer = nextAlive(actingPlayer);
     }
@@ -272,7 +272,7 @@ uint8_t& GameState::nextActing(uint8_t& i) const
 void GameState::addAlive(uint8_t i)
 {
     opt::setBit(mAlive, i);
-    ++mNAlive;
+    ++nAlive;
 }
 
 void GameState::addActing(uint8_t i)
@@ -284,9 +284,9 @@ void GameState::addActing(uint8_t i)
 void GameState::eraseAlive(uint8_t i)
 {
     opt::toggleBit(mAlive, i);
-    --mNAlive;
-    if (i == mFirstAlive)
-        nextAlive(mFirstAlive);
+    --nAlive;
+    if (i == firstAlive)
+        nextAlive(firstAlive);
 }
 
 void GameState::eraseActing(uint8_t i)
@@ -341,8 +341,8 @@ void GameState::nextState()
     }
 
     // Everybody folded but one.
-    if (mNAlive == 1) {
-        stakes[mFirstAlive] += pot;
+    if (nAlive == 1) {
+        stakes[firstAlive] += pot;
         finished = true;
         setRewards();
         return;
@@ -557,12 +557,12 @@ void GameState::showdown()
 
 bool GameState::onePotUsed() const
 {
-    chips prevBet = mBets[mFirstAlive];
-    uint8_t i = mFirstAlive;
+    chips prevBet = mBets[firstAlive];
+    uint8_t i = firstAlive;
     nextAlive(i);
     do {
         if (mBets[i] != prevBet) return false;
-    } while (nextAlive(i) != mFirstAlive);
+    } while (nextAlive(i) != firstAlive);
     return true;
 }
 
@@ -574,7 +574,7 @@ void GameState::setRankings(bool onePot)
     if (onePot) {
         mNRanks = 1;
         uint16_t bestRank = 0;
-        uint8_t i = mFirstAlive;
+        uint8_t i = firstAlive;
         do {
             omp::Hand hand = getPlayerHand(i);
             uint16_t rank = mEval.evaluate(hand);
@@ -585,15 +585,15 @@ void GameState::setRankings(bool onePot)
             }
             else if (rank == bestRank)
                 mRankings[mCumNSameRanks[1]++] = i;
-        } while (nextAlive(i) != mFirstAlive);
+        } while (nextAlive(i) != firstAlive);
         return;
     }
 
     // General case of multiple pots
 
     // Compute players' ranks.
-    uint8_t player = mFirstAlive;
-    for (uint8_t i = 0; i < mNAlive; ++i) {
+    uint8_t player = firstAlive;
+    for (uint8_t i = 0; i < nAlive; ++i) {
         omp::Hand hand = getPlayerHand(player);
         mRanks[player] = mEval.evaluate(hand);
         mRankings[i] = player;
@@ -604,14 +604,14 @@ void GameState::setRankings(bool onePot)
     // with the same rank for the distribution of the extras
     // in clockwise order.
     std::stable_sort(
-        mRankings.begin(), mRankings.begin() + mNAlive,
+        mRankings.begin(), mRankings.begin() + nAlive,
         [&](uint8_t i, uint8_t j) { return mRanks[i] > mRanks[j]; }
     );
 
     // Build mCumNSameRanks.
     mNRanks = 1;
     mCumNSameRanks[1] = 1;
-    for (uint8_t i = 1; i < mNAlive; ++i) {
+    for (uint8_t i = 1; i < nAlive; ++i) {
         if (mRanks[mRankings[i]] != mRanks[mRankings[i - 1]]) {
 #pragma warning(suppress: 26451)
             mCumNSameRanks[mNRanks + 1] = mCumNSameRanks[mNRanks] + 1;

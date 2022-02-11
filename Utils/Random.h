@@ -31,7 +31,7 @@ public:
     }
 
     // Rescale each cumulated weight.
-    // After this, the total sum is guaranteed to be
+    // After applying this function, the total sum is guaranteed to be
     // exactly equal to RANGE.
     template<class C>
     void rescaleCumWeights(C& cumWeights)
@@ -49,8 +49,7 @@ public:
     {
         uint64_t x = rand(rng);
         unsigned i = 0;
-        while (cumWeights[i] <= x)
-            ++i;
+        while (cumWeights[i] <= x) ++i;
         return i;
     }
 

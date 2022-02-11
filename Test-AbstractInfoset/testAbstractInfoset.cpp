@@ -7,7 +7,7 @@ TEST(ActionSeqIndexerTest, HashIsMinimalPerfect)
 {
 	abc::ActionSeqIndexer indexer(
 		bp::MAX_PLAYERS, bp::ANTE, bp::BIG_BLIND,
-		bp::INITIAL_STAKE, bp::BET_SIZES, bp::ACTION_SEQ_INDEXER_NAME);
+		bp::INITIAL_STAKE, bp::BET_SIZES, bp::BLUEPRINT_NAME);
 	indexer.loadMPHF();
 
 	abc::TreeTraverser traverser(

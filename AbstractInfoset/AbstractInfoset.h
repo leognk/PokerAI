@@ -63,7 +63,7 @@ public:
 		// New round.
 		if (state.round != oldRound) {
 			nRaises = 0;
-			nPlayers = state.mNAlive;
+			nPlayers = state.nAlive;
 			roundActions.clear();
 			calculateHandsIds();
 		}
@@ -86,17 +86,22 @@ public:
 
 	uint8_t nActions() const { return actionAbc.legalActions.size(); }
 
+	size_t preflopNActionSeqs() const { return actionSeqIndexer.preflopMPHF.nbKeys(); }
+	size_t flopNActionSeqs() const { return actionSeqIndexer.flopMPHF.nbKeys(); }
+	size_t turnNActionSeqs() const { return actionSeqIndexer.turnMPHF.nbKeys(); }
+	size_t riverNActionSeqs() const { return actionSeqIndexer.riverMPHF.nbKeys(); }
+
 	egn::GameState state;
 
 private:
 
 	void calculateHandsIds()
 	{
-		uint8_t i = state.mFirstAlive;
+		uint8_t i = state.firstAlive;
 		do {
 			handsIds[i] = handIndexer.handIndex(
 				state.round, state.hands[i].data(), state.boardCards.data());
-		} while (state.nextAlive(i) != state.mFirstAlive);
+		} while (state.nextAlive(i) != state.firstAlive);
 	}
 
 	void calculateActionSeqIds()
