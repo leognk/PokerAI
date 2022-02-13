@@ -113,6 +113,8 @@ public:
 	// To loop over alive players.
 	uint8_t& nextAlive(uint8_t& i) const;
 
+	bool isAlive(uint8_t i) const;
+	bool isActing(uint8_t i) const;
 	// Next active player, ie. non-zero stake player
 	// (to set the dealer of the next hand).
 	// Do NOT use it when a hand is running (because of all-in players).
@@ -174,8 +176,6 @@ protected:
 
 	static void populateNextLookup();
 
-	bool isAlive(uint8_t i) const;
-	bool isActing(uint8_t i) const;
 	uint8_t& nextActing(uint8_t& i) const;
 	void addAlive(uint8_t i);
 	void addActing(uint8_t i);

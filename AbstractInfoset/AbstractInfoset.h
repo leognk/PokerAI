@@ -36,6 +36,20 @@ public:
 		actionSeqIndexer.loadMPHF();
 	}
 
+	AbstractInfoset& operator=(const AbstractInfoset& other)
+	{
+		if (this == &other) return *this;
+
+		state = other.state;
+		nRaises = other.nRaises;
+		nPlayers = other.nPlayers;
+		roundActions = other.roundActions;
+		handsIds = other.handsIds;
+		actionSeqIds = other.actionSeqIds;
+
+		return *this;
+	}
+
 	void startNewHand()
 	{
 		// Reset member variables.
@@ -81,8 +95,10 @@ public:
 	//   included for rounds other than preflop.
 	uint8_t roundIdx() const { return state.round; }
 	bckSize_t handIdx() const { return handsIds[state.actingPlayer]; }
-	// actionId must be between 0 and nActions() excluded.
-	uint64_t actionSeqIdx(uint8_t actionId) const { return actionSeqIds[actionId]; }
+	// Indices of the action sequences leading to each legal action
+	// with the number of players included for rounds other than preflop.
+	// Its size is nActions().
+	std::vector<uint64_t> actionSeqIds;
 
 	uint8_t nActions() const { return actionAbc.legalActions.size(); }
 
@@ -145,10 +161,7 @@ private:
 	std::array<bckSize_t, omp::MAX_PLAYERS> handsIds;
 
 	abc::ActionAbstraction actionAbc;
-	abc::ActionSeqIndexer actionSeqIndexer;
-	// Indices of the action sequences leading to each legal actions
-	// with the number of players included for rounds other than preflop.
-	std::vector<uint64_t> actionSeqIds;
+	abc::ActionSeqIndexer actionSeqIndexer
 
 }; // AbstractInfoset
 

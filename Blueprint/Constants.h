@@ -86,6 +86,8 @@ static const uint64_t discountPeriod = 2; // Pluribus: 40e6 (10 min)
 
 static const uint64_t pruneBeginIter = 25; // Pluribus: 800e6 (200 min)
 static const uint8_t pruneProbaPerc = 95; // Pluribus: 95
+static const int32_t pruneThreshold = -300e6; // Pluribus: -300e6
+static const int32_t minRegret = -310e6; // Pluribus: -310e6
 
 static const uint64_t preflopStratUpdatePeriod = 2; // Pluribus: 10e3
 

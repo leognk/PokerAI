@@ -43,6 +43,11 @@ public:
 		return mSize == 0;
 	}
 
+	void clear()
+	{
+		mSize = 0;
+	}
+
 	void push_back(const T& x)
 	{
 		if (mSize == v.size())
