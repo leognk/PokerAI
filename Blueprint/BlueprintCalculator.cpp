@@ -64,10 +64,12 @@ void BlueprintCalculator::buildStrategy()
 
 void BlueprintCalculator::saveStrategy()
 {
+
 }
 
 void BlueprintCalculator::loadStrategy()
 {
+
 }
 
 void BlueprintCalculator::updateActionRegrets()
@@ -89,8 +91,8 @@ void BlueprintCalculator::calculateCumRegrets()
 	}
 	// If no regret is positive, the random choice will be uniformly distributed.
 	if (cumRegrets.back() == 0) {
-		for (uint8_t i = 1; i < cumRegrets.size() + 1; ++i)
-			cumRegrets[i] = i;
+		for (uint8_t i = 0; i < cumRegrets.size(); ++i)
+			cumRegrets[i] = i + 1;
 	}
 }
 
@@ -177,27 +179,48 @@ void BlueprintCalculator::updatePreflopStrat(uint8_t traverser)
 
 void BlueprintCalculator::applyDiscounting()
 {
+	// currIter is divisible by discountPeriod.
+	float d = 1 - 1 / (float)(currIter / discountPeriod + 1);
 
+	// Discount regrets.
+	for (auto& roundRegrets : regrets) {
+		for (auto& handRegrets : roundRegrets) {
+			for (regret_t& regret : handRegrets)
+				regret = std::round(regret * d);
+		}
+	}
+
+	// Discount final strategy on preflop.
+	// (discount is done before taking the snapshots for the other rounds' strategies)
+	for (auto& handStrat : finalStrat[egn::PREFLOP]) {
+		for (strat_t& strat : handStrat)
+			strat = std::round(strat * d);
+	}
 }
 
 void BlueprintCalculator::takeSnapshot()
 {
+
 }
 
 void BlueprintCalculator::averageSnapshots()
 {
+
 }
 
 void BlueprintCalculator::updateCheckpoint()
 {
+
 }
 
 void BlueprintCalculator::traverseMCCFR()
 {
+
 }
 
 void BlueprintCalculator::traverseMCCFRP()
 {
+
 }
 
 } // bp

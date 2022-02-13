@@ -29,6 +29,8 @@ namespace bp {
 //static const uint64_t checkpointPeriod = 1e8; // 1e8 (25 min)
 //
 //static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotPeriod;
+//
+//static_assert(discountEndIter <= snapshotBeginIter);
 
 
 //////////////////////////////////////// GAME PARAMETERS ///////////////////////////////////////
@@ -94,6 +96,8 @@ static const uint64_t preflopStratUpdatePeriod = 2; // Pluribus: 10e3
 static const uint64_t checkpointPeriod = 5; // 1e8 (25 min)
 
 static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotPeriod;
+
+static_assert(discountEndIter <= snapshotBeginIter);
 
 
 //////////////////////////////////////// GAME PARAMETERS ///////////////////////////////////////

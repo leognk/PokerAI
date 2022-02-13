@@ -87,7 +87,7 @@ template<unsigned tBits = 16>
 class FastRandomChoiceRNGRescale
 {
 public:
-    FastRandomChoiceAutoRescale()
+    FastRandomChoiceRNGRescale()
     {
         mBuffer = 0;
         mBufferUsesLeft = 0;

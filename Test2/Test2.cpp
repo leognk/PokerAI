@@ -12,5 +12,8 @@
 
 int main()
 {
-
+	uint32_t x = 2;
+	float d = 0.4f;
+	x *= d;
+	std::cout << x << "\n";
 }
