@@ -637,4 +637,9 @@ void GameState::setRewards()
         rewards[i] = dchips(stakes[i]) - dchips(mInitialStakes[i]);
 }
 
+dchips GameState::reward(uint8_t i) const
+{
+    return dchips(stakes[i]) - dchips(mInitialStakes[i]);
+}
+
 } // egn

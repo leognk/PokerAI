@@ -120,6 +120,8 @@ public:
 	// Do NOT use it when a hand is running (because of all-in players).
 	uint8_t& nextActive(uint8_t& i) const;
 
+	dchips reward(uint8_t i) const;
+
 	std::array<chips, MAX_PLAYERS> stakes{};
 	std::array<std::array<uint8_t, omp::HOLE_CARDS>,
 		MAX_PLAYERS> hands;

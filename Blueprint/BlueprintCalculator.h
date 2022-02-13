@@ -30,36 +30,40 @@ private:
 
 	std::array<uint8_t, 2> buildPruneCumWeights();
 
-	void updateActionRegrets();
+	uint8_t nActions() const;
+	regret_t& getRegret(uint8_t actionId);
+	const regret_t getRegret(uint8_t actionId) const;
 	void calculateCumRegrets();
-	sumRegret_t calculateSumRegrets();
-	void updatePreflopStrat(uint8_t traverser);
+	sumRegret_t calculateSumRegrets() const;
+
 	void applyDiscounting();
+	void updatePreflopStrat(uint8_t traverser);
+	void traverseMCCFR(uint8_t traverser);
+	void traverseMCCFRP(uint8_t traverser);
+	egn::dchips calculateExpectedValue() const;
+
 	void takeSnapshot();
 	void averageSnapshots();
 	void updateCheckpoint();
-
-	void traverseMCCFR();
-	void traverseMCCFRP();
 
 	Rng rng;
 	opt::FastRandomChoice<8> pruneRandChoice;
 	opt::FastRandomChoiceRNGRescale<16> actionRandChoice;
 	const std::array<uint8_t, 2> pruneCumWeights;
 	std::vector<sumRegret_t> cumRegrets;
-	std::vector<regret_t> actionRegrets;
 
 	std::vector<std::vector<std::vector<regret_t>>> regrets;
 	std::vector<std::vector<std::vector<strat_t>>> finalStrat;
 
-	abcInfo_t abcInfo;
-
 	uint64_t currIter;
+
+	abcInfo_t abcInfo;
 
 	// Variables used for DFS.
 	std::vector<uint8_t> stack;
 	opt::FastVector<abcInfo_t> hist;
 	std::vector<bool> lastChild;
+	std::vector<egn::dchips> expVals;
 
 }; // BlueprintCalculator
 
