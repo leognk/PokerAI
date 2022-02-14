@@ -154,8 +154,8 @@ void BlueprintCalculator::updatePreflopStrat(uint8_t traverser)
 			// Go back to the latest node having children not visited yet.
 			bool wasLastChild;
 			do {
-				wasLastChild = lastChild.back();
 				hist.pop_back();
+				wasLastChild = lastChild.back();
 				lastChild.pop_back();
 			} while (wasLastChild);
 			abcInfo = hist.back();
@@ -170,36 +170,27 @@ void BlueprintCalculator::updatePreflopStrat(uint8_t traverser)
 
 		// Current node has children.
 		else {
-
 			if (abcInfo.state.actingPlayer == traverser) {
-
 				// Sample an action with the current strategy.
 				calculateCumRegrets();
 #pragma warning(suppress: 4244)
 				uint8_t actionId = actionRandChoice(cumRegrets, rng);
-
 				// Increment the final strategy.
 				++finalStrat[egn::PREFLOP][abcInfo.handIdx()][abcInfo.actionSeqIds[actionId]];
-
 				// Go to the next node.
 				abcInfo.nextState(actionId);
 				hist.push_back(abcInfo);
 				lastChild.push_back(true);
 			}
-
 			else {
-
 				// Add all actions.
-				if (nActions() > 1) {
-					for (uint8_t actionId = 0; actionId < nActions() - 1; ++actionId)
-						stack.push_back(actionId);
-				}
-
+				for (uint8_t actionId = 0; actionId < nActions() - 1; ++actionId)
+					stack.push_back(actionId);
 				// Go to the next node.
-				uint8_t actionId = nActions() - 1;
-				abcInfo.nextState(actionId);
+				abcInfo.nextState(nActions() - 1);
 				hist.push_back(abcInfo);
-				lastChild.push_back(actionId == 0);
+				// There will always be at least two legal actions, so this is never the last.
+				lastChild.push_back(false);
 			}
 		}
 	}
@@ -209,7 +200,7 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 {
 	abcInfo.startNewHand();
 	stack.clear();
-	// hist will only contain nodes where traverser plays.
+	// hist will only contain no-leaf nodes where traverser plays.
 	hist.clear();
 	// lastChild will only deal with children of nodes where traverser plays.
 	lastChild.clear();
@@ -265,7 +256,8 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 					stack.push_back(actionId);
 				// Go to the next node.
 				abcInfo.nextState(nActions() - 1);
-				lastChild.push_back(nActions() == 1);
+				// There will always be at least two legal actions, so this is never the last.
+				lastChild.push_back(false);
 			}
 			else {
 				// Sample an action with the current strategy.
@@ -274,7 +266,7 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 				uint8_t actionId = actionRandChoice(cumRegrets, rng);
 				// Go to the next node.
 				abcInfo.nextState(actionId);
-				if (abcInfo.state.actingPlayer == traverser)
+				if (abcInfo.state.actingPlayer == traverser && !abcInfo.state.finished)
 					hist.push_back(abcInfo);
 			}
 		}
