@@ -37,6 +37,7 @@ private:
 	std::array<chips, MAX_PLAYERS> mLastBets{};
 	Round mPrevActionRound;
 	uint8_t mPrevActing;
+	std::array<dchips, MAX_PLAYERS> mRewards{};
 
 }; // GameStatePrint
 

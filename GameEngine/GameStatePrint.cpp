@@ -87,6 +87,11 @@ void GameStatePrint::nextState()
     mRoundBets[actingPlayer] += mLastBets[actingPlayer];
 
     GameState::nextState();
+
+    if (finished) {
+        for (uint8_t i = 0; i < MAX_PLAYERS; ++i)
+            mRewards[i] = reward(i);
+    }
 }
 
 // Do not skip all-in players.
@@ -138,11 +143,11 @@ std::ostream& GameStatePrint::printState(std::ostream& os) const
 std::ostream& GameStatePrint::printRewards(std::ostream& os) const
 {
     os << "Rewards:" << "\n\n";
-    unsigned rewardMaxChars = maxChars(rewards);
+    unsigned rewardMaxChars = maxChars(mRewards);
     uint8_t i = mFirstActive;
     do {
         os << unsigned(i) << ": "
-            << std::setw(rewardMaxChars) << rewards[i]
+            << std::setw(rewardMaxChars) << mRewards[i]
             << " | " << handCategory(i) << std::endl;
     } while (nextActiveInGame(i) != mFirstActive);
     return os << mSeparatorLine;

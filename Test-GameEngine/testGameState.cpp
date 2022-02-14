@@ -132,11 +132,11 @@ TEST(GameStateTest, CoherentWithData)
         egn::dchips rake = 0;
         for (uint8_t i = 0; i < hist.maxPlayers; ++i) {
             if (hist.collectedPot[i]) {
-                EXPECT_GE(state.rewards[i], hist.rewards[i]);
-                rake += state.rewards[i] - hist.rewards[i];
+                EXPECT_GE(state.reward(i), hist.rewards[i]);
+                rake += state.reward(i) - hist.rewards[i];
             }
             else
-                EXPECT_EQ(hist.rewards[i], state.rewards[i]);
+                EXPECT_EQ(hist.rewards[i], state.reward(i));
         }
         EXPECT_EQ(hist.rake, rake);
     }
@@ -186,6 +186,6 @@ TEST(GameStateTest, VerifyWithCustomStates)
         }
 
         for (uint8_t i = 0; i < egn::MAX_PLAYERS; ++i)
-            EXPECT_EQ(state.rewards[i], hist.rewards[i]);
+            EXPECT_EQ(state.reward(i), hist.rewards[i]);
     }
 }

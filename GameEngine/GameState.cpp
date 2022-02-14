@@ -344,7 +344,6 @@ void GameState::nextState()
     if (nAlive == 1) {
         stakes[firstAlive] += pot;
         finished = true;
-        setRewards();
         return;
     }
 
@@ -427,7 +426,6 @@ void GameState::endGame()
 {
     showdown();
     finished = true;
-    setRewards();
 }
 
 #pragma warning(push)
@@ -629,12 +627,6 @@ omp::Hand GameState::getPlayerHand(uint8_t i) const
     for (uint8_t c = 0; c < omp::BOARD_CARDS; ++c)
         hand += omp::Hand(boardCards[c]);
     return hand;
-}
-
-void GameState::setRewards()
-{
-    for (uint8_t i = 0; i < MAX_PLAYERS; ++i)
-        rewards[i] = dchips(stakes[i]) - dchips(mInitialStakes[i]);
 }
 
 dchips GameState::reward(uint8_t i) const

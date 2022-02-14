@@ -159,8 +159,6 @@ public:
 	chips pot;
 	// Whether the hand is finished.
 	bool finished;
-	// Rewards obtained by each player after the end of the hand.
-	std::array<dchips, MAX_PLAYERS> rewards{};
 
 	// To loop over alive players, ie. players who were dealt cards and did not fold.
 	uint8_t firstAlive;
@@ -191,7 +189,6 @@ protected:
 	bool onePotUsed() const;
 	void setRankings(bool onePot);
 	omp::Hand getPlayerHand(uint8_t i) const;
-	void setRewards();
 
 	Rng mRng;
 	CardDist mCardDist;
