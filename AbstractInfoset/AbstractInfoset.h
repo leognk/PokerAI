@@ -108,6 +108,7 @@ public:
 	size_t riverNActionSeqs() const { return actionSeqIndexer.riverMPHF.nbKeys(); }
 
 	egn::GameState state;
+	abc::ActionAbstraction actionAbc;
 
 private:
 
@@ -160,7 +161,6 @@ private:
 	static abc::LossyIndexer<bckSize_t, nBck> handIndexer;
 	std::array<bckSize_t, omp::MAX_PLAYERS> handsIds;
 
-	abc::ActionAbstraction actionAbc;
 	abc::ActionSeqIndexer actionSeqIndexer
 
 }; // AbstractInfoset

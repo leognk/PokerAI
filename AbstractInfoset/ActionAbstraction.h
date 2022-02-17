@@ -8,6 +8,9 @@ namespace abc {
 
 typedef std::vector<std::vector<std::vector<float>>> betSizes_t;
 
+// Legal actions ordered according to their respective indices in legalActions.
+enum AbcAction { FOLD, CALL, ALLIN, RAISE };
+
 class ActionAbstraction
 {
 public:

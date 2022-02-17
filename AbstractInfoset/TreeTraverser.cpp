@@ -28,7 +28,7 @@ std::vector<std::vector<TreeTraverser::seq_t>> TreeTraverser::traverseTree()
 
 		if (verbose)
 			std::cout
-				<< opt::toUpper((std::ostringstream() << egn::Round(r)).str()) << "\n"
+				<< opt::toUpper(egn::roundToString(egn::Round(r))) << "\n"
 				<< "states: " << seqsToCurrentRound.size()
 				<< " (" << std::round(seqsToCurrentRound.size() / 1e3) << "k)\n";
 

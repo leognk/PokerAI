@@ -1,4 +1,5 @@
 #include "BlueprintCalculator.h"
+#include "../Utils/StringManip.h"
 
 namespace bp {
 
@@ -22,7 +23,10 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed) :
 		std::vector<std::vector<regret_t>>(bp::N_BCK, std::vector<regret_t>(abcInfo.riverNActionSeqs()))
 	}),
 
-	currIter(0)
+	preflopFinalStrat(abc::PREFLOP_SIZE, std::vector<sumRegret_t>(abcInfo.preflopNActionSeqs())),
+
+	currIter(0),
+	nextSnapshotId(1)
 {
 }
 
@@ -128,8 +132,8 @@ void BlueprintCalculator::applyDiscounting()
 
 	// Discount final strategy on preflop.
 	// (discount is done before taking the snapshots for the other rounds' strategies)
-	for (auto& handStrat : finalStrat[egn::PREFLOP]) {
-		for (strat_t& strat : handStrat)
+	for (auto& handStrat : preflopFinalStrat) {
+		for (sumRegret_t& strat : handStrat)
 			strat = std::round(strat * d);
 	}
 }
@@ -176,7 +180,7 @@ void BlueprintCalculator::updatePreflopStrat(uint8_t traverser)
 #pragma warning(suppress: 4244)
 				uint8_t a = actionRandChoice(cumRegrets, rng);
 				// Increment the final strategy.
-				++finalStrat[egn::PREFLOP][abcInfo.handIdx()][abcInfo.actionSeqIds[a]];
+				++preflopFinalStrat[abcInfo.handIdx()][abcInfo.actionSeqIds[a]];
 				// Go to the next node.
 				abcInfo.nextState(a);
 				hist.push_back(abcInfo);
@@ -227,7 +231,8 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 				egn::dchips v = calculateExpectedValue();
 				// Update the regrets.
 				for (uint8_t a = 0; a < nActions(); ++a) {
-					getRegret(a) += expVals.back() - v;
+					if (getRegret(a) += expVals.back() - v < minRegret)
+						getRegret(a) = minRegret;
 					expVals.pop_back();
 				}
 				// All leafs visited and traverser's regrets updated: end of MCCFR traversal.
@@ -282,6 +287,8 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 	// lastChild will only deal with children of nodes where traverser plays.
 	lastChild.clear();
 	expVals.clear();
+	// visited will only deal with children of nodes where traverser plays.
+	visited.clear();
 
 	// Do a DFS.
 	while (true) {
@@ -304,13 +311,14 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 				egn::dchips v = calculateExpectedValue();
 				// Update the regrets.
 				for (uint8_t a = 0; a < nActions(); ++a) {
-					if (getRegret(a) > pruneThreshold) {
+					if (visited.rbegin()[nActions() - 1 + a]) {
 						getRegret(a) += expVals.back() - v;
 						expVals.pop_back();
 					}
 				}
 				// All leafs visited and traverser's regrets updated: end of MCCFR traversal.
 				if (stack.empty()) return;
+				visited.resize(visited.size() - nActions());
 				expVals.push_back(v);
 
 				// Go back to the previous parent.
@@ -332,7 +340,14 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 			if (abcInfo.state.actingPlayer == traverser) {
 				// Add all actions.
 				for (uint8_t a = 0; a < nActions(); ++a) {
-					if (getRegret(a) > pruneThreshold)
+					const auto action = abcInfo.actionAbc.legalActions[a];
+					// Prune only if the action is not on the last betting
+					// round or does not lead to a terminal node.
+					visited.push_back(action == abc::FOLD || action == abc::ALLIN
+						|| abcInfo.state.round == egn::RIVER
+						|| getRegret(a) > pruneThreshold
+						|| (action == abc::CALL && abcInfo.state.call == abcInfo.state.stakes[traverser]));
+					if (visited.back())
 						stack.push_back(a);
 				}
 				// Go to the next node.
@@ -379,9 +394,27 @@ egn::dchips BlueprintCalculator::calculateExpectedValue() const
 	return v;
 }
 
+// Save the current strategy of the rounds after the preflop on the disk.
 void BlueprintCalculator::takeSnapshot()
 {
+	for (uint8_t r = 1; r < egn::N_ROUNDS; ++r) {
 
+		// Open file.
+		const std::string path = snapshotPath
+			+ std::to_string(nextSnapshotId)
+			+ "_" + opt::toUpper(egn::roundToString(egn::Round(r))) + ".bin";
+		auto file = std::fstream(path, std::ios::out | std::ios::binary);
+
+		// Write in the file.
+		for (auto& handRegrets : regrets[r]) {
+			for (regret_t& regret : handRegrets) {
+				file.write((char*)&arr[0], sizeof(arr));
+			}
+		}
+
+		file.close();
+	}
+	++nextSnapshotId;
 }
 
 void BlueprintCalculator::averageSnapshots()

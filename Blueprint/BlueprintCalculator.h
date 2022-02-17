@@ -7,9 +7,16 @@
 
 namespace bp {
 
+static const std::string blueprintTmpDir = "../data/Blueprint/Temporary/";
+static const std::string snapshotPath = blueprintTmpDir + BLUEPRINT_NAME + "_SNAPSHOT_";
+static const std::string checkpointPath = blueprintTmpDir + BLUEPRINT_NAME + "_CHECKPOINT_";
+
+static const std::string blueprintStratDir = "../data/Blueprint/Strategy/";
+static const std::string stratPath = blueprintStratDir + BLUEPRINT_NAME + "_STRATEGY_";
+
 typedef int32_t regret_t;
 typedef uint32_t sumRegret_t;
-typedef uint32_t strat_t;
+typedef uint16_t strat_t;
 typedef abc::AbstractInfoset<bckSize_t, N_BCK> abcInfo_t;
 
 class BlueprintCalculator
@@ -53,9 +60,11 @@ private:
 	std::vector<sumRegret_t> cumRegrets;
 
 	std::vector<std::vector<std::vector<regret_t>>> regrets;
-	std::vector<std::vector<std::vector<strat_t>>> finalStrat;
+	// Non-normalized strategy on preflop.
+	std::vector<std::vector<sumRegret_t>> preflopFinalStrat;
 
 	uint64_t currIter;
+	uint32_t nextSnapshotId;
 
 	abcInfo_t abcInfo;
 
@@ -64,6 +73,7 @@ private:
 	opt::FastVector<abcInfo_t> hist;
 	std::vector<bool> lastChild;
 	std::vector<egn::dchips> expVals;
+	std::vector<bool> visited;
 
 }; // BlueprintCalculator
 

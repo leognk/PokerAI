@@ -55,19 +55,19 @@ inline Round& operator++(Round& r)
 	return r;
 }
 
-inline std::ostream& operator<<(std::ostream& os, const Round& r)
+inline std::string roundToString(const Round& r)
 {
 	switch (r) {
 	case PREFLOP:
-		return os << "preflop";
+		return "preflop";
 	case FLOP:
-		return os << "flop";
+		return "flop";
 	case TURN:
-		return os << "turn";
+		return "turn";
 	case RIVER:
-		return os << "river";
+		return "river";
 	default:
-		return os;
+		throw std::runtime_error("Unknown round.");
 	}
 }
 
@@ -83,6 +83,11 @@ inline Round roundFromString(const std::string& roundStr)
 		return RIVER;
 	else
 		throw std::runtime_error("String does not represent a Round.");
+}
+
+inline std::ostream& operator<<(std::ostream& os, const Round& r)
+{
+	return os << roundToString(r);
 }
 
 // Class defining a state of the poker game.
