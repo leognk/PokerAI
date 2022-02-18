@@ -409,7 +409,7 @@ void BlueprintCalculator::takeSnapshot()
 		// Write in the file.
 		for (auto& handRegrets : regrets[r]) {
 			for (regret_t& regret : handRegrets) {
-				file.write((char*)&arr[0], sizeof(arr));
+				//file.write((char*)&arr[0], sizeof(arr));
 			}
 		}
 

@@ -30,6 +30,7 @@ public:
 	static const unsigned maxSizeActionSeq = maxSizeActionSeq;
 	static const unsigned nBitsPerInt = 64;
 	static const unsigned nInts = ceilIntDiv(nBitsPerAction * maxSizeActionSeq, nBitsPerInt);
+	static const uint64_t actionMask = (1ull << nBitsPerAction) - 1;
 
 	void clear()
 	{
@@ -94,9 +95,17 @@ public:
 		if (currBit < rhs.currBit) return true;
 		else if (currBit != rhs.currBit) return false;
 
-		for (uint8_t i = nInts; i > 0; --i) {
-			if (data[i - 1] < rhs.data[i - 1]) return true;
-			else if (data[i - 1] != rhs.data[i - 1]) return false;
+		for (uint8_t pInt = 0; pInt < nInts; ++pInt) {
+			uint64_t n1 = data[pInt];
+			uint64_t n2 = rhs.data[pInt];
+			for (uint8_t i = 0; i < nBitsPerInt; ++i) {
+				uint8_t x1 = n1 & actionMask;
+				uint8_t x2 = n2 & actionMask;
+				if (x1 < x2) return true;
+				else if (x1 != x2) return false;
+				n1 >>= nBitsPerAction;
+				n2 >>= nBitsPerAction;
+			}
 		}
 
 		return false;
@@ -160,6 +169,7 @@ public:
 	static const unsigned maxSizeActionSeq = 32;
 	static const unsigned nBitsPerInt = 64;
 	static const unsigned nInts = 2;
+	static const uint64_t actionMask = (1ull << nBitsPerAction) - 1;
 
 	void clear()
 	{
@@ -222,7 +232,18 @@ public:
 		if (currBit < rhs.currBit) return true;
 		else if (currBit != rhs.currBit) return false;
 
-		return (data[1] < rhs.data[1]) || (data[1] == rhs.data[1] && data[0] < rhs.data[0]);
+		for (uint8_t pInt = 0; pInt < nInts; ++pInt) {
+			uint64_t n1 = data[pInt];
+			uint64_t n2 = rhs.data[pInt];
+			for (uint8_t i = 0; i < nBitsPerInt; ++i) {
+				uint8_t x1 = n1 & actionMask;
+				uint8_t x2 = n2 & actionMask;
+				if (x1 < x2) return true;
+				else if (x1 != x2) return false;
+				n1 >>= nBitsPerAction;
+				n2 >>= nBitsPerAction;
+			}
+		}
 	}
 
 	// Return a sub-sequence of the current sequence from 0 to endIdx excluded.
