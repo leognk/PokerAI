@@ -114,6 +114,8 @@ public:
 		ActionSeq<nBitsPerAction, maxSizeActionSeq> res;
 		unsigned endBit = (unsigned)endIdx * nBitsPerAction;
 
+		res.data[nInts] = endIdx;
+
 		res.currInt = endBit / nBitsPerInt;
 		res.currBit = endBit % nBitsPerInt;
 
@@ -126,9 +128,7 @@ public:
 
 	bool isSubSeq(const ActionSeq<nBitsPerAction, maxSizeActionSeq>& seq) const
 	{
-		if (currInt > seq.currInt
-			|| (currInt == seq.currInt && currBit > seq.currBit))
-			return false;
+		if (data[nInts] > seq.data[nInts]) return false;
 
 		for (uint8_t i = 0; i < currInt; ++i) {
 			if (data[i] != seq.data[i]) return false;
@@ -223,10 +223,10 @@ public:
 
 	bool operator<(const StdActionSeq& rhs) const
 	{
-		if (data[nInts] < rhs.data[nInts]) return true;
-		else if (data[nInts] != rhs.data[nInts]) return false;
+		if (data[2] < rhs.data[2]) return true;
+		else if (data[2] != rhs.data[2]) return false;
 
-		for (uint8_t pInt = 0; pInt < nInts; ++pInt) {
+		for (uint8_t pInt = 0; pInt < 2; ++pInt) {
 			uint64_t n1 = data[pInt];
 			uint64_t n2 = rhs.data[pInt];
 			for (uint8_t i = 0; i < nBitsPerInt; ++i) {
@@ -248,6 +248,7 @@ public:
 		StdActionSeq res;
 		unsigned endBit = (unsigned)endIdx * nBitsPerAction;
 
+		res.data[2] = endIdx;
 		res.onFirstInt = endBit < nBitsPerInt;
 		if (res.onFirstInt) {
 			res.currBit = endBit;
@@ -264,9 +265,7 @@ public:
 
 	bool isSubSeq(const StdActionSeq& seq) const
 	{
-		if ((!onFirstInt && seq.onFirstInt)
-			|| (onFirstInt == seq.onFirstInt && currBit > seq.currBit))
-			return false;
+		if (data[2] > seq.data[2]) return false;
 
 		if (onFirstInt) {
 			uint8_t subInt = seq.data[0] & ((1ull << currBit) - 1);
