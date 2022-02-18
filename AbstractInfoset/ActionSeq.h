@@ -89,11 +89,8 @@ public:
 
 	bool operator<(const ActionSeq<nBitsPerAction, maxSizeActionSeq>& rhs) const
 	{
-		if (currInt < rhs.currInt) return true;
-		else if (currInt != rhs.currInt) return false;
-
-		if (currBit < rhs.currBit) return true;
-		else if (currBit != rhs.currBit) return false;
+		if (data[nInts] < rhs.data[nInts]) return true;
+		else if (data[nInts] != rhs.data[nInts]) return false;
 
 		for (uint8_t pInt = 0; pInt < nInts; ++pInt) {
 			uint64_t n1 = data[pInt];
@@ -226,11 +223,8 @@ public:
 
 	bool operator<(const StdActionSeq& rhs) const
 	{
-		if (onFirstInt && !rhs.onFirstInt) return true;
-		else if (onFirstInt != rhs.onFirstInt) return false;
-
-		if (currBit < rhs.currBit) return true;
-		else if (currBit != rhs.currBit) return false;
+		if (data[nInts] < rhs.data[nInts]) return true;
+		else if (data[nInts] != rhs.data[nInts]) return false;
 
 		for (uint8_t pInt = 0; pInt < nInts; ++pInt) {
 			uint64_t n1 = data[pInt];
@@ -244,6 +238,8 @@ public:
 				n2 >>= nBitsPerAction;
 			}
 		}
+
+		return false;
 	}
 
 	// Return a sub-sequence of the current sequence from 0 to endIdx excluded.
