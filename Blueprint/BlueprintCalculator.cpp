@@ -318,6 +318,7 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 				}
 				// All leafs visited and traverser's regrets updated: end of MCCFR traversal.
 				if (stack.empty()) return;
+				// Remove the last nActions elements.
 				visited.resize(visited.size() - nActions());
 				expVals.push_back(v);
 
