@@ -1,7 +1,7 @@
 #ifndef ABC_ACTIONSEQINDEXER_H
 #define ABC_ACTIONSEQINDEXER_H
 
-#include "../AbstractInfoset/TreeTraverser.h"
+#include "TreeTraverser.h"
 #include "../Utils/Hash.h"
 #include "../BBHash/BooPHF.h"
 
@@ -32,6 +32,7 @@ public:
 	uint64_t index(egn::Round round, const seq_t& actionSeq);
 
 	mphf_t preflopMPHF, flopMPHF, turnMPHF, riverMPHF;
+	TreeTraverser traverser;
 
 private:
 	void savePreflopMPHF();
@@ -43,8 +44,6 @@ private:
 	void loadFlopMPHF();
 	void loadTurnMPHF();
 	void loadRiverMPHF();
-
-	TreeTraverser traverser;
 
 	const int nThreads;
 	const double gamma;

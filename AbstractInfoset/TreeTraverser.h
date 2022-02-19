@@ -5,7 +5,6 @@
 #include "ActionSeq.h"
 #include <chrono>
 #include <unordered_set>
-#include <set>
 
 namespace abc {
 
@@ -15,8 +14,7 @@ public:
 	typedef StdActionSeq seq_t;
 	typedef ActionSeq<4, 50> longSeq_t;
 
-	//typedef std::unordered_set<seq_t, ActionSeqHash> seqs_t;
-	typedef std::set<seq_t> seqs_t;
+	typedef std::unordered_set<seq_t, ActionSeqHash> seqs_t;
 	typedef std::unordered_set<longSeq_t, ActionSeqHash> longSeqs_t;
 
 	TreeTraverser(

@@ -108,6 +108,34 @@ public:
 		return false;
 	}
 
+	// Same as operator< but takes into account the number of players
+	// at the end of the sequences.
+	bool lessThanWithNPlayers(const ActionSeq<nBitsPerAction, maxSizeActionSeq>& rhs) const
+	{
+		if (data[nInts] < rhs.data[nInts]) return true;
+		else if (data[nInts] != rhs.data[nInts]) return false;
+
+		// Compare the number of players.
+		if (back() < rhs.back()) return true;
+		else if (back() != rhs.back()) return false;
+
+		// The rest is exactly the same as operator< (at this point, the backs are equal).
+		for (uint8_t pInt = 0; pInt < nInts; ++pInt) {
+			uint64_t n1 = data[pInt];
+			uint64_t n2 = rhs.data[pInt];
+			for (uint8_t i = 0; i < nBitsPerInt; ++i) {
+				uint8_t x1 = n1 & actionMask;
+				uint8_t x2 = n2 & actionMask;
+				if (x1 < x2) return true;
+				else if (x1 != x2) return false;
+				n1 >>= nBitsPerAction;
+				n2 >>= nBitsPerAction;
+			}
+		}
+
+		return false;
+	}
+
 	// Return a sub-sequence of the current sequence from 0 to endIdx excluded.
 	ActionSeq<nBitsPerAction, maxSizeActionSeq> extractSubSeq(uint8_t endIdx) const
 	{
@@ -227,6 +255,34 @@ public:
 		else if (data[2] != rhs.data[2]) return false;
 
 		for (uint8_t pInt = 0; pInt < 2; ++pInt) {
+			uint64_t n1 = data[pInt];
+			uint64_t n2 = rhs.data[pInt];
+			for (uint8_t i = 0; i < nBitsPerInt; ++i) {
+				uint8_t x1 = n1 & actionMask;
+				uint8_t x2 = n2 & actionMask;
+				if (x1 < x2) return true;
+				else if (x1 != x2) return false;
+				n1 >>= nBitsPerAction;
+				n2 >>= nBitsPerAction;
+			}
+		}
+
+		return false;
+	}
+
+	// Same as operator< but takes into account the number of players
+	// at the end of the sequences.
+	bool lessThanWithNPlayers(const StdActionSeq& rhs) const
+	{
+		if (data[2] < rhs.data[2]) return true;
+		else if (data[2] != rhs.data[2]) return false;
+
+		// Compare the number of players.
+		if (back() < rhs.back()) return true;
+		else if (back() != rhs.back()) return false;
+
+		// The rest is exactly the same as operator< (at this point, the backs are equal).
+		for (uint8_t pInt = 0; pInt < nInts; ++pInt) {
 			uint64_t n1 = data[pInt];
 			uint64_t n2 = rhs.data[pInt];
 			for (uint8_t i = 0; i < nBitsPerInt; ++i) {
@@ -410,6 +466,18 @@ std::vector<uint8_t> seqToVect(const Seq& seq)
 	while (!iter.end())
 		res.push_back(iter.next());
 	return res;
+}
+
+template<class Seq>
+bool compareSeqsWithNPlayers(const Seq& lhs, const Seq& rhs)
+{
+	return lhs.lessThanWithNPlayers(rhs);
+}
+
+template<class Seq>
+bool seqsHaveSameParent(const Seq& seq1, const Seq& seq2)
+{
+	return true;
 }
 
 class ActionSeqHash
