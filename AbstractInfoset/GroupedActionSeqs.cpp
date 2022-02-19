@@ -32,24 +32,35 @@ void GroupedActionSeqs::build()
 	// Generate all action sequences.
 	auto actionSeqs = indexer.traverser.traverseTree();
 
-	for (uint8_t r = 0; r < egn::N_ROUNDS; ++r) {
+	// Preflop
 
-		// Sort the sequences.
-		// Use a comparator taking into account the number of players
-		// at the end of a sequence for rounds other than preflop.
-		if (r == egn::PREFLOP)
-			std::sort(actionSeqs[r].begin(), actionSeqs[r].end());
+	// Sort the sequences.
+	std::sort(actionSeqs[egn::PREFLOP].begin(), actionSeqs[egn::PREFLOP].end());
+
+	// Put the sequences' indices in seqs and the lengths of each group
+	// of sequences in lens, which is the number of legal actions
+	// available from a sequence's parent node.
+	for (seqIdx_t i = 0; i < actionSeqs[egn::PREFLOP].size(); ++i) {
+#pragma warning(suppress: 4244)
+		seqs[egn::PREFLOP][i] = indexer.index(egn::PREFLOP, actionSeqs[egn::PREFLOP][i]);
+		if (i != 0 && actionSeqs[egn::PREFLOP][i].haveSameParents(actionSeqs[egn::PREFLOP][i - 1]))
+			++lens[egn::PREFLOP].back();
 		else
-			std::sort(actionSeqs[r].begin(), actionSeqs[r].end(),
-				abc::compareSeqsWithNPlayers<ActionSeqIndexer::seq_t>);
+			lens[egn::PREFLOP].push_back(1);
+	}
 
-		// Put the sequences' indices in seqs and the lengths of each group
-		// of sequences in lens, which is the number of legal actions
-		// available from a sequence's parent node.
+	// Rounds after preflop
+	// Take into account the number of players at the end of a sequence.
+
+	for (uint8_t r = 1; r < egn::N_ROUNDS; ++r) {
+
+		std::sort(actionSeqs[r].begin(), actionSeqs[r].end(),
+			abc::compareSeqsWithNPlayers<ActionSeqIndexer::seq_t>);
+
 		for (seqIdx_t i = 0; i < actionSeqs[r].size(); ++i) {
 #pragma warning(suppress: 4244)
 			seqs[r][i] = indexer.index(egn::Round(r), actionSeqs[r][i]);
-			if (i != 0 && abc::seqsHaveSameParent(actionSeqs[r][i], actionSeqs[r][i - 1]))
+			if (i != 0 && actionSeqs[r][i].haveSameParentsWithNPlayers(actionSeqs[r][i - 1]))
 				++lens[r].back();
 			else
 				lens[r].push_back(1);
