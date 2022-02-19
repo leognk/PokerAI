@@ -416,30 +416,43 @@ void BlueprintCalculator::takeSnapshot()
 		auto file = std::fstream(path, std::ios::out | std::ios::binary);
 
 		// Write in the file.
+		// Loop over all the regrets of the round.
 		for (bckSize_t handIdx = 0;  handIdx < regrets[r].size(); ++handIdx) {
 
 			abc::GroupedActionSeqs::seqIdx_t currSeq = 0;
 
 			for (const uint8_t nLegalActions : gpSeqs.lens[r]) {
 
-				// Calculate the sum of the positive regrets of the legal actions.
-				sumRegret_t sum = 0;
-				auto tmpCurrSeq = currSeq;
-				for (uint8_t i = 0; i < nLegalActions; ++i) {
-					auto seqIdx = gpSeqs.seqs[r][tmpCurrSeq];
-					regret_t regret = regrets[r][handIdx][seqIdx];
-					if (regret > 0) sum += regret;
-					++tmpCurrSeq;
+				// Calculate the cumulated sums of the positive regrets
+				// of the legal actions.
+				cumRegrets.resize(nLegalActions);
+				auto seqIdx = gpSeqs.seqs[r][currSeq];
+				regret_t regret = regrets[r][handIdx][seqIdx];
+				cumRegrets[0] = (regret > 0) ? regret : 0;
+				++currSeq;
+				for (uint8_t a = 1; a < nLegalActions; a++) {
+					seqIdx = gpSeqs.seqs[r][currSeq];
+					regret = regrets[r][handIdx][seqIdx];
+					if (regret > 0)
+						cumRegrets[a] = cumRegrets[a - 1] + regret;
+					else
+						cumRegrets[a] = cumRegrets[a - 1];
+					++currSeq;
+				}
+				// If no regret is positive, the strategy is to choose
+				// with a uniform distribution.
+				if (cumRegrets.back() == 0) {
+					for (uint8_t i = 0; i < cumRegrets.size(); ++i)
+						cumRegrets[i] = i + 1;
 				}
 
-				// Normalize the regrets of the legal actions and write them in the file.
-				for (uint8_t i = 0; i < nLegalActions; ++i) {
-					auto seqIdx = gpSeqs.seqs[r][tmpCurrSeq];
-					regret_t strat = regrets[r][handIdx][seqIdx];
-					if (strat > 0) strat /= sum;
-					else strat = 0;
+				// Normalize the regrets and write them in the file.
+				cumRegretsRescaler.rescaleCumWeights(cumRegrets);
+				strat_t strat = cumRegrets[0];
+				file.write((char*)&strat, sizeof(strat));
+				for (uint8_t i = 1; i < nLegalActions; ++i) {
+					strat = cumRegrets[i] - cumRegrets[i - 1];
 					file.write((char*)&strat, sizeof(strat));
-					++currSeq;
 				}
 			}
 		}

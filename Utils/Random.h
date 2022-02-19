@@ -34,7 +34,7 @@ public:
     // After applying this function, the total sum is guaranteed to be
     // rigorously equal to RANGE.
     template<class C>
-    void rescaleCumWeights(C& cumWeights)
+    static void rescaleCumWeights(C& cumWeights)
     {
         double rescaleFactor = (double)RANGE / cumWeights.back();
         for (unsigned i = 0; i < cumWeights.size(); ++i) 

@@ -57,6 +57,7 @@ private:
 	Rng rng;
 	opt::FastRandomChoice<8> pruneRandChoice;
 	opt::FastRandomChoiceRNGRescale<16> actionRandChoice;
+	opt::FastRandomChoice<15> cumRegretsRescaler;
 	const std::array<uint8_t, 2> pruneCumWeights;
 	std::vector<sumRegret_t> cumRegrets;
 
