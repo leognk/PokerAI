@@ -3,6 +3,7 @@
 
 #include "Constants.h"
 #include "../AbstractInfoset/AbstractInfoset.h"
+#include "../AbstractInfoset/GroupedActionSeqs.h"
 #include "../Utils/FastVector.h"
 
 namespace bp {
@@ -67,6 +68,8 @@ private:
 	uint32_t nextSnapshotId;
 
 	abcInfo_t abcInfo;
+
+	abc::GroupedActionSeqs gpSeqs;
 
 	// Variables used for DFS.
 	std::vector<uint8_t> stack;

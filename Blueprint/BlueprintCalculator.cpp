@@ -16,6 +16,14 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed) :
 		bp::BET_SIZES,
 		bp::BLUEPRINT_NAME),
 
+	gpSeqs(
+		bp::MAX_PLAYERS,
+		bp::ANTE,
+		bp::BIG_BLIND,
+		bp::INITIAL_STAKE,
+		bp::BET_SIZES,
+		bp::BLUEPRINT_NAME),
+
 	regrets({
 		std::vector<std::vector<regret_t>>(abc::PREFLOP_SIZE, std::vector<regret_t>(abcInfo.preflopNActionSeqs())),
 		std::vector<std::vector<regret_t>>(bp::N_BCK, std::vector<regret_t>(abcInfo.flopNActionSeqs())),
@@ -28,6 +36,7 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed) :
 	currIter(0),
 	nextSnapshotId(1)
 {
+	gpSeqs.load();
 }
 
 void BlueprintCalculator::buildStrategy()
@@ -400,21 +409,44 @@ void BlueprintCalculator::takeSnapshot()
 {
 	for (uint8_t r = 1; r < egn::N_ROUNDS; ++r) {
 
-		// Open file.
+		// Open the file.
 		const std::string path = snapshotPath
 			+ std::to_string(nextSnapshotId)
 			+ "_" + opt::toUpper(egn::roundToString(egn::Round(r))) + ".bin";
 		auto file = std::fstream(path, std::ios::out | std::ios::binary);
 
 		// Write in the file.
-		for (auto& handRegrets : regrets[r]) {
-			for (regret_t& regret : handRegrets) {
-				//file.write((char*)&arr[0], sizeof(arr));
+		for (bckSize_t handIdx = 0;  handIdx < regrets[r].size(); ++handIdx) {
+
+			abc::GroupedActionSeqs::seqIdx_t currSeq = 0;
+
+			for (const uint8_t nLegalActions : gpSeqs.lens[r]) {
+
+				// Calculate the sum of the positive regrets of the legal actions.
+				sumRegret_t sum = 0;
+				auto tmpCurrSeq = currSeq;
+				for (uint8_t i = 0; i < nLegalActions; ++i) {
+					auto seqIdx = gpSeqs.seqs[r][tmpCurrSeq];
+					regret_t regret = regrets[r][handIdx][seqIdx];
+					if (regret > 0) sum += regret;
+					++tmpCurrSeq;
+				}
+
+				// Normalize the regrets of the legal actions and write them in the file.
+				for (uint8_t i = 0; i < nLegalActions; ++i) {
+					auto seqIdx = gpSeqs.seqs[r][tmpCurrSeq];
+					regret_t strat = regrets[r][handIdx][seqIdx];
+					if (strat > 0) strat /= sum;
+					else strat = 0;
+					file.write((char*)&strat, sizeof(strat));
+					++currSeq;
+				}
 			}
 		}
 
 		file.close();
 	}
+
 	++nextSnapshotId;
 }
 

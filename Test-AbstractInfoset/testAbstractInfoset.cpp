@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "../AbstractInfoset/ActionSeqIndexer.h"
+#include "../AbstractInfoset/GroupedActionSeqs.h"
 #include "../AbstractInfoset/TreeTraverser.h"
 #include "../Blueprint/Constants.h"
 
@@ -27,6 +28,50 @@ TEST(ActionSeqIndexerTest, HashIsMinimalPerfect)
 			EXPECT_LT(index, flags.size());
 			EXPECT_FALSE(flags[index]);
 			flags[index] = true;
+		}
+		// Not necessary in theory but just in case.
+		for (bool flag : flags) EXPECT_TRUE(flag);
+	}
+}
+
+class GroupedActionSeqsTest : public ::testing::Test
+{
+protected:
+	GroupedActionSeqsTest() :
+		gpSeqs(
+			bp::MAX_PLAYERS, bp::ANTE, bp::BIG_BLIND,
+			bp::INITIAL_STAKE, bp::BET_SIZES, bp::BLUEPRINT_NAME)
+	{
+	}
+
+	void SetUp() override
+	{
+		gpSeqs.load();
+	}
+	
+	abc::GroupedActionSeqs gpSeqs;
+};
+
+TEST_F(GroupedActionSeqsTest, LengthsSumEqualsNSeqs)
+{
+	for (uint8_t r = 0; r < egn::N_ROUNDS; ++r) {
+		uint64_t sum = 0;
+		for (const uint8_t& len : gpSeqs.lens[r])
+			sum += len;
+		EXPECT_EQ(sum, gpSeqs.seqs[r].size());
+	}
+}
+
+TEST_F(GroupedActionSeqsTest, SeqsContainAllIds)
+{
+	for (uint8_t r = 0; r < egn::N_ROUNDS; ++r) {
+		// Verify that all the integers between 0 and
+		// n_action_sequences - 1 are in seqs[r].
+		std::vector<bool> flags(gpSeqs.seqs[r].size(), false);
+		for (const auto& idx : gpSeqs.seqs[r]) {
+			EXPECT_LT(idx, flags.size());
+			EXPECT_FALSE(flags[idx]);
+			flags[idx] = true;
 		}
 		// Not necessary in theory but just in case.
 		for (bool flag : flags) EXPECT_TRUE(flag);
