@@ -30,6 +30,7 @@ public:
 	static const unsigned maxSizeActionSeq = maxSizeActionSeq;
 	static const unsigned nBitsPerInt = 64;
 	static const unsigned nInts = ceilIntDiv(nBitsPerAction * maxSizeActionSeq, nBitsPerInt);
+	static const unsigned nActionsPerInt = nBitsPerInt / nBitsPerAction;
 	static const uint64_t actionMask = (1ull << nBitsPerAction) - 1;
 
 	void clear()
@@ -80,11 +81,21 @@ public:
 
 	bool operator==(const ActionSeq<nBitsPerAction, maxSizeActionSeq>& rhs) const
 	{
-		if (currBit != rhs.currBit || currInt != rhs.currInt) return false;
-		for (uint8_t i = 0; i < nInts; ++i) {
-			if (data[i] != rhs.data[i]) return false;
+		if (data[nInts] != rhs.data[nInts]) return false;
+
+		if (currBit != 0) {
+			for (uint8_t i = 0; i <= currInt; ++i) {
+				if (data[i] != rhs.data[i]) return false;
+			}
+			return true;
 		}
-		return true;
+		
+		else {
+			for (uint8_t i = 0; i < currInt; ++i) {
+				if (data[i] != rhs.data[i]) return false;
+			}
+			return true;
+		}
 	}
 
 	bool operator<(const ActionSeq<nBitsPerAction, maxSizeActionSeq>& rhs) const
@@ -92,20 +103,21 @@ public:
 		if (data[nInts] < rhs.data[nInts]) return true;
 		else if (data[nInts] != rhs.data[nInts]) return false;
 
+		unsigned pAction = 0;
 		for (uint8_t pInt = 0; pInt < nInts; ++pInt) {
 			uint64_t n1 = data[pInt];
 			uint64_t n2 = rhs.data[pInt];
-			for (uint8_t i = 0; i < nBitsPerInt; ++i) {
+			for (uint8_t i = 0; i < nActionsPerInt; ++i) {
 				uint8_t x1 = n1 & actionMask;
 				uint8_t x2 = n2 & actionMask;
 				if (x1 < x2) return true;
 				else if (x1 != x2) return false;
+				// End of sequence.
+				if (++pAction == data[nInts]) return false;
 				n1 >>= nBitsPerAction;
 				n2 >>= nBitsPerAction;
 			}
 		}
-
-		return false;
 	}
 
 	// Same as operator< but takes into account the number of players
@@ -119,21 +131,78 @@ public:
 		if (back() < rhs.back()) return true;
 		else if (back() != rhs.back()) return false;
 
-		// The rest is exactly the same as operator< (at this point, the backs are equal).
+		unsigned pAction = 0;
 		for (uint8_t pInt = 0; pInt < nInts; ++pInt) {
 			uint64_t n1 = data[pInt];
 			uint64_t n2 = rhs.data[pInt];
-			for (uint8_t i = 0; i < nBitsPerInt; ++i) {
+			for (uint8_t i = 0; i < nActionsPerInt; ++i) {
 				uint8_t x1 = n1 & actionMask;
 				uint8_t x2 = n2 & actionMask;
 				if (x1 < x2) return true;
 				else if (x1 != x2) return false;
+				// End of sequence.
+				if (++pAction == data[nInts] - 1) return false;
 				n1 >>= nBitsPerAction;
 				n2 >>= nBitsPerAction;
 			}
 		}
+	}
 
-		return false;
+	bool haveSameParents(const ActionSeq<nBitsPerAction, maxSizeActionSeq>& seq) const
+	{
+		if (data[nInts] != seq.data[nInts]) return false;
+
+		if (currBit != 0) {
+			for (uint8_t i = 0; i < currInt; ++i) {
+				if (data[i] != seq.data[i]) return false;
+			}
+			uint64_t mask = (1ull << (currBit - nBitsPerAction)) - 1;
+			return (data[currInt] & mask) == (seq.data[currInt] & mask);
+		}
+
+		else {
+			for (uint8_t i = 0; i < currInt - 1; ++i) {
+				if (data[i] != seq.data[i]) return false;
+			}
+			uint64_t mask = (1ull << (nBitsPerInt - nBitsPerAction)) - 1;
+			return (data[currInt - 1] & mask) == (seq.data[currInt - 1] & mask);
+		}
+	}
+
+	// Same as haveSameParents but takes into account the number of players
+	// at the end of the sequences.
+	bool haveSameParentsWithNPlayers(const ActionSeq<nBitsPerAction, maxSizeActionSeq>& seq) const
+	{
+		if (data[nInts] != seq.data[nInts]) return false;
+
+		// Compare the number of players.
+		if (back() != seq.back()) return false;
+
+		uint8_t lastBit, lastInt;
+		if (currBit != 0) {
+			lastBit = currBit - nBitsPerAction;
+			lastInt = currInt;
+		}
+		else {
+			lastBit = nBitsPerInt - nBitsPerAction;
+			lastInt = currInt - 1;
+		}
+
+		if (lastBit != 0) {
+			for (uint8_t i = 0; i < lastInt; ++i) {
+				if (data[i] != seq.data[i]) return false;
+			}
+			uint64_t mask = (1ull << (lastBit - nBitsPerAction)) - 1;
+			return (data[lastInt] & mask) == (seq.data[lastInt] & mask);
+		}
+
+		else {
+			for (uint8_t i = 0; i < lastInt - 1; ++i) {
+				if (data[i] != seq.data[i]) return false;
+			}
+			uint64_t mask = (1ull << (nBitsPerInt - nBitsPerAction)) - 1;
+			return (data[lastInt - 1] & mask) == (seq.data[lastInt - 1] & mask);
+		}
 	}
 
 	// Return a sub-sequence of the current sequence from 0 to endIdx excluded.
@@ -194,6 +263,7 @@ public:
 	static const unsigned maxSizeActionSeq = 32;
 	static const unsigned nBitsPerInt = 64;
 	static const unsigned nInts = 2;
+	static const unsigned nActionsPerInt = nBitsPerInt / nBitsPerAction;
 	static const uint64_t actionMask = (1ull << nBitsPerAction) - 1;
 
 	void clear()
@@ -251,51 +321,115 @@ public:
 
 	bool operator<(const StdActionSeq& rhs) const
 	{
-		if (data[2] < rhs.data[2]) return true;
-		else if (data[2] != rhs.data[2]) return false;
+		if (data[nInts] < rhs.data[nInts]) return true;
+		else if (data[nInts] != rhs.data[nInts]) return false;
 
-		for (uint8_t pInt = 0; pInt < 2; ++pInt) {
+		unsigned pAction = 0;
+		for (uint8_t pInt = 0; pInt < nInts; ++pInt) {
 			uint64_t n1 = data[pInt];
 			uint64_t n2 = rhs.data[pInt];
-			for (uint8_t i = 0; i < nBitsPerInt; ++i) {
+			for (uint8_t i = 0; i < nActionsPerInt; ++i) {
 				uint8_t x1 = n1 & actionMask;
 				uint8_t x2 = n2 & actionMask;
 				if (x1 < x2) return true;
 				else if (x1 != x2) return false;
+				// End of sequence.
+				if (++pAction == data[nInts]) return false;
 				n1 >>= nBitsPerAction;
 				n2 >>= nBitsPerAction;
 			}
 		}
-
-		return false;
 	}
 
 	// Same as operator< but takes into account the number of players
 	// at the end of the sequences.
 	bool lessThanWithNPlayers(const StdActionSeq& rhs) const
 	{
-		if (data[2] < rhs.data[2]) return true;
-		else if (data[2] != rhs.data[2]) return false;
+		if (data[nInts] < rhs.data[nInts]) return true;
+		else if (data[nInts] != rhs.data[nInts]) return false;
 
 		// Compare the number of players.
 		if (back() < rhs.back()) return true;
 		else if (back() != rhs.back()) return false;
 
-		// The rest is exactly the same as operator< (at this point, the backs are equal).
+		unsigned pAction = 0;
 		for (uint8_t pInt = 0; pInt < nInts; ++pInt) {
 			uint64_t n1 = data[pInt];
 			uint64_t n2 = rhs.data[pInt];
-			for (uint8_t i = 0; i < nBitsPerInt; ++i) {
+			for (uint8_t i = 0; i < nActionsPerInt; ++i) {
 				uint8_t x1 = n1 & actionMask;
 				uint8_t x2 = n2 & actionMask;
 				if (x1 < x2) return true;
 				else if (x1 != x2) return false;
+				// End of sequence.
+				if (++pAction == data[nInts] - 1) return false;
 				n1 >>= nBitsPerAction;
 				n2 >>= nBitsPerAction;
 			}
 		}
+	}
 
-		return false;
+	bool haveSameParents(const StdActionSeq& seq) const
+	{
+		if (data[nInts] != seq.data[nInts]) return false;
+
+		if (onFirstInt) {
+			uint64_t mask = (1ull << (currBit - nBitsPerAction)) - 1;
+			return (data[0] & mask) == (seq.data[0] & mask);
+		}
+
+		else {
+			if (currBit != 0) {
+				uint64_t mask = (1ull << (currBit - nBitsPerAction)) - 1;
+				return data[0] == seq.data[0] && (data[1] & mask) == (seq.data[1] & mask);
+			}
+			else {
+				uint64_t mask = (1ull << (nBitsPerInt - nBitsPerAction)) - 1;
+				return (data[0] & mask) == (seq.data[0] & mask);
+			}
+		}
+	}
+
+	// Same as haveSameParents but takes into account the number of players
+	// at the end of the sequences.
+	bool haveSameParentsWithNPlayers(const StdActionSeq& seq) const
+	{
+		if (data[nInts] != seq.data[nInts]) return false;
+
+		// Compare the number of players.
+		if (back() != seq.back()) return false;
+
+		uint8_t prevOnFirstInt, prevBit;
+		if (onFirstInt) {
+			prevOnFirstInt = true;
+			prevBit = currBit - nBitsPerAction;
+		}
+		else {
+			if (currBit != 0) {
+				prevOnFirstInt = false;
+				prevBit = currBit - nBitsPerAction;
+			}
+			else {
+				prevOnFirstInt = true;
+				prevBit = nBitsPerInt - nBitsPerAction;
+			}
+		}
+
+		if (prevOnFirstInt) {
+			uint64_t mask = (1ull << (prevBit - nBitsPerAction)) - 1;
+			return (data[0] & mask) == (seq.data[0] & mask);
+		}
+
+		else {
+			if (prevBit != 0) {
+				uint64_t mask = (1ull << (prevBit - nBitsPerAction)) - 1;
+				return data[0] == seq.data[0] && (data[1] & mask) == (seq.data[1] & mask);
+			}
+			else {
+				uint64_t mask = (1ull << (nBitsPerInt - nBitsPerAction)) - 1;
+				return (data[0] & mask) == (seq.data[0] & mask);
+			}
+		}
 	}
 
 	// Return a sub-sequence of the current sequence from 0 to endIdx excluded.
@@ -472,12 +606,6 @@ template<class Seq>
 bool compareSeqsWithNPlayers(const Seq& lhs, const Seq& rhs)
 {
 	return lhs.lessThanWithNPlayers(rhs);
-}
-
-template<class Seq>
-bool seqsHaveSameParent(const Seq& seq1, const Seq& seq2)
-{
-	return true;
 }
 
 class ActionSeqHash
