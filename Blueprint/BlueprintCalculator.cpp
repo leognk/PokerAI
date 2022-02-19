@@ -410,10 +410,8 @@ void BlueprintCalculator::takeSnapshot()
 	for (uint8_t r = 1; r < egn::N_ROUNDS; ++r) {
 
 		// Open the file.
-		const std::string path = snapshotPath
-			+ std::to_string(nextSnapshotId)
-			+ "_" + opt::toUpper(egn::roundToString(egn::Round(r))) + ".bin";
-		auto file = std::fstream(path, std::ios::out | std::ios::binary);
+		auto file = std::fstream(
+			getSnapshotPath(nextSnapshotId, r), std::ios::out | std::ios::binary);
 
 		// Write in the file.
 		// Loop over all the regrets of the round.
@@ -465,7 +463,57 @@ void BlueprintCalculator::takeSnapshot()
 
 void BlueprintCalculator::averageSnapshots()
 {
+	for (uint8_t r = 1; r < egn::N_ROUNDS; ++r) {
 
+		// Allocate memory for the sum of the snapshots' strategies.
+		std::vector<std::vector<sumStrat_t>> sumStrats(
+			regrets[r].size(), std::vector<sumStrat_t>(regrets[r][0].size()));
+
+		// Calculate the sum of the snapshots' strategies.
+		for (unsigned snapshotId = 1; snapshotId <= nSnapshots; ++snapshotId) {
+
+			// Open the snapshot.
+			auto snapshotFile = std::fstream(
+				getSnapshotPath(nextSnapshotId, r), std::ios::out | std::ios::binary);
+
+			// Add the snapshot's strategy to the total sum.
+			for (bckSize_t handIdx = 0; handIdx < sumStrats.size(); ++handIdx) {
+				for (size_t seqIdx = 0; seqIdx < sumStrats[0].size(); ++seqIdx) {
+					strat_t strat;
+					snapshotFile.read((char*)&strat, sizeof(strat));
+					sumStrats[handIdx][seqIdx] += strat;
+				}
+			}
+
+			snapshotFile.close();
+		}
+
+		// Open the file.
+		auto file = std::fstream(getStratPath(r), std::ios::out | std::ios::binary);
+
+		// Write the average of the snapshots' strategies.
+		for (const auto& handSumStrats : sumStrats) {
+			for (const sumStrat_t& sumStrat : handSumStrats) {
+#pragma warning(suppress: 4244)
+				strat_t strat = std::round((double)sumStrat / nSnapshots);
+				file.write((char*)&strat, sizeof(strat));
+			}
+		}
+
+		file.close();
+	}
+}
+
+std::string BlueprintCalculator::getSnapshotPath(unsigned snapshotId, uint8_t roundId)
+{
+	return snapshotPath + "_" + std::to_string(snapshotId)
+		+ "_" + opt::toUpper(egn::roundToString(egn::Round(roundId))) + ".bin";
+}
+
+std::string BlueprintCalculator::getStratPath(uint8_t roundId)
+{
+	return stratPath
+		+ "_" + opt::toUpper(egn::roundToString(egn::Round(roundId))) + ".bin";
 }
 
 void BlueprintCalculator::updateCheckpoint()

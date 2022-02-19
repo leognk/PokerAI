@@ -9,15 +9,16 @@
 namespace bp {
 
 static const std::string blueprintTmpDir = "../data/Blueprint/Temporary/";
-static const std::string snapshotPath = blueprintTmpDir + BLUEPRINT_NAME + "_SNAPSHOT_";
-static const std::string checkpointPath = blueprintTmpDir + BLUEPRINT_NAME + "_CHECKPOINT_";
+static const std::string snapshotPath = blueprintTmpDir + BLUEPRINT_NAME + "_SNAPSHOT";
+static const std::string checkpointPath = blueprintTmpDir + BLUEPRINT_NAME + "_CHECKPOINT";
 
 static const std::string blueprintStratDir = "../data/Blueprint/Strategy/";
-static const std::string stratPath = blueprintStratDir + BLUEPRINT_NAME + "_STRATEGY_";
+static const std::string stratPath = blueprintStratDir + BLUEPRINT_NAME + "_STRATEGY";
 
 typedef int32_t regret_t;
 typedef uint32_t sumRegret_t;
 typedef uint16_t strat_t;
+typedef uint32_t sumStrat_t;
 typedef abc::AbstractInfoset<bckSize_t, N_BCK> abcInfo_t;
 
 class BlueprintCalculator
@@ -54,6 +55,9 @@ private:
 	void averageSnapshots();
 	void updateCheckpoint();
 
+	static std::string getSnapshotPath(unsigned snapshotId, uint8_t roundId);
+	static std::string getStratPath(uint8_t roundId);
+
 	Rng rng;
 	opt::FastRandomChoice<8> pruneRandChoice;
 	opt::FastRandomChoiceRNGRescale<16> actionRandChoice;
@@ -66,7 +70,7 @@ private:
 	std::vector<std::vector<sumRegret_t>> preflopFinalStrat;
 
 	uint64_t currIter;
-	uint32_t nextSnapshotId;
+	unsigned nextSnapshotId;
 
 	abcInfo_t abcInfo;
 
