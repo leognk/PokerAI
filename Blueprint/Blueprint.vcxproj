@@ -21,8 +21,10 @@
   <ItemGroup>
     <ClInclude Include="BlueprintCalculator.h" />
     <ClInclude Include="Constants.h" />
+    <ClInclude Include="Blueprint.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Blueprint.cpp" />
     <ClCompile Include="BlueprintCalculator.cpp" />
   </ItemGroup>
   <ItemGroup>

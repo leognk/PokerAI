@@ -31,7 +31,7 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed) :
 		std::vector<std::vector<regret_t>>(bp::N_BCK, std::vector<regret_t>(abcInfo.riverNActionSeqs()))
 	}),
 
-	preflopFinalStrat(abc::PREFLOP_SIZE, std::vector<sumRegret_t>(abcInfo.preflopNActionSeqs())),
+	preflopStrat(abc::PREFLOP_SIZE, std::vector<sumRegret_t>(abcInfo.preflopNActionSeqs())),
 
 	currIter(0),
 	nextSnapshotId(1)
@@ -65,12 +65,9 @@ void BlueprintCalculator::buildStrategy()
 
 	// Free memory allocated for regrets.
 	std::vector<std::vector<std::vector<regret_t>>>().swap(regrets);
+	// Perform final calculations for the final strategy and save it to the disk.
+	normalizePreflopStrat();
 	averageSnapshots();
-}
-
-void BlueprintCalculator::loadStrategy()
-{
-
 }
 
 std::array<uint8_t, 2> BlueprintCalculator::buildPruneCumWeights()
@@ -136,8 +133,9 @@ void BlueprintCalculator::applyDiscounting()
 
 	// Discount final strategy on preflop.
 	// (discount is done before taking the snapshots for the other rounds' strategies)
-	for (auto& handStrat : preflopFinalStrat) {
+	for (auto& handStrat : preflopStrat) {
 		for (sumRegret_t& strat : handStrat)
+#pragma warning(suppress: 4244)
 			strat = std::round(strat * d);
 	}
 }
@@ -184,7 +182,7 @@ void BlueprintCalculator::updatePreflopStrat(uint8_t traverser)
 #pragma warning(suppress: 4244)
 				uint8_t a = actionRandChoice(cumRegrets, rng);
 				// Increment the final strategy.
-				++preflopFinalStrat[abcInfo.handIdx()][abcInfo.actionSeqIds[a]];
+				++preflopStrat[abcInfo.handIdx()][abcInfo.actionSeqIds[a]];
 				// Go to the next node.
 				abcInfo.nextState(a);
 				hist.push_back(abcInfo);
@@ -423,7 +421,7 @@ void BlueprintCalculator::takeSnapshot()
 				regret_t regret = regrets[r][handIdx][seqIdx];
 				cumRegrets[0] = (regret > 0) ? regret : 0;
 				++currSeq;
-				for (uint8_t a = 1; a < nLegalActions; a++) {
+				for (uint8_t a = 1; a < nLegalActions; ++a) {
 					seqIdx = gpSeqs.seqs[r][currSeq];
 					regret = regrets[r][handIdx][seqIdx];
 					if (regret > 0)
@@ -440,7 +438,7 @@ void BlueprintCalculator::takeSnapshot()
 				}
 
 				// Normalize the regrets and write them in the file.
-				cumRegretsRescaler.rescaleCumWeights(cumRegrets);
+				cumWeightsRescaler.rescaleCumWeights(cumRegrets);
 				strat_t strat = cumRegrets[0];
 				file.write((char*)&strat, sizeof(strat));
 				for (uint8_t i = 1; i < nLegalActions; ++i) {
@@ -501,6 +499,57 @@ void BlueprintCalculator::averageSnapshots()
 	}
 }
 
+void BlueprintCalculator::normalizePreflopStrat()
+{
+	// Open the file.
+	auto file = std::fstream(getStratPath(egn::PREFLOP), std::ios::out | std::ios::binary);
+
+	// Normalize the final strategy and save it to the disk.
+	// Loop over the strategy.
+	for (bckSize_t handIdx = 0; handIdx < preflopStrat.size(); ++handIdx) {
+
+		abc::GroupedActionSeqs::seqIdx_t currSeq = 0;
+
+		for (const uint8_t nLegalActions : gpSeqs.lens[egn::PREFLOP]) {
+
+			// Calculate the cumulated sums of the non-normalized probas
+			// of the legal actions.
+			cumProbas.resize(nLegalActions);
+			auto seqIdx = gpSeqs.seqs[egn::PREFLOP][currSeq];
+			sumRegret_t proba = preflopStrat[handIdx][seqIdx];
+			++currSeq;
+			for (uint8_t a = 1; a < nLegalActions; ++a) {
+				seqIdx = gpSeqs.seqs[egn::PREFLOP][currSeq];
+				proba = preflopStrat[handIdx][seqIdx];
+				cumProbas[a] = cumProbas[a - 1] + proba;
+				++currSeq;
+			}
+			// If all probas are null, the strategy is to choose
+			// with a uniform distribution.
+			if (cumProbas.back() == 0) {
+				for (uint8_t i = 0; i < cumProbas.size(); ++i)
+					cumProbas[i] = i + 1;
+			}
+
+			// Normalize the probas and write them in the file.
+			cumWeightsRescaler.rescaleCumWeights(cumProbas);
+			strat_t strat = cumProbas[0];
+			file.write((char*)&strat, sizeof(strat));
+			for (uint8_t i = 1; i < nLegalActions; ++i) {
+				strat = cumProbas[i] - cumProbas[i - 1];
+				file.write((char*)&strat, sizeof(strat));
+			}
+		}
+	}
+
+	file.close();
+}
+
+void BlueprintCalculator::updateCheckpoint()
+{
+
+}
+
 std::string BlueprintCalculator::getSnapshotPath(unsigned snapshotId, uint8_t roundId)
 {
 	return snapshotPath + "_" + std::to_string(snapshotId)
@@ -511,11 +560,6 @@ std::string BlueprintCalculator::getStratPath(uint8_t roundId)
 {
 	return stratPath
 		+ "_" + opt::toUpper(egn::roundToString(egn::Round(roundId))) + ".bin";
-}
-
-void BlueprintCalculator::updateCheckpoint()
-{
-
 }
 
 } // bp

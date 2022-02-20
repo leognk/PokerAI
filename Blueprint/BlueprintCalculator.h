@@ -30,7 +30,6 @@ public:
 
 	// Conduct MCCFR and save the final strategy to the disk.
 	void buildStrategy();
-	void loadStrategy();
 
 private:
 
@@ -52,6 +51,7 @@ private:
 
 	void takeSnapshot();
 	void averageSnapshots();
+	void normalizePreflopStrat();
 	void updateCheckpoint();
 
 	static std::string getSnapshotPath(unsigned snapshotId, uint8_t roundId);
@@ -60,13 +60,14 @@ private:
 	Rng rng;
 	opt::FastRandomChoice<8> pruneRandChoice;
 	opt::FastRandomChoiceRNGRescale<16> actionRandChoice;
-	opt::FastRandomChoice<15> cumRegretsRescaler;
+	opt::FastRandomChoice<15> cumWeightsRescaler;
 	const std::array<uint8_t, 2> pruneCumWeights;
 	std::vector<sumRegret_t> cumRegrets;
+	std::vector<sumRegret_t> cumProbas;
 
 	std::vector<std::vector<std::vector<regret_t>>> regrets;
 	// Non-normalized strategy on preflop.
-	std::vector<std::vector<sumRegret_t>> preflopFinalStrat;
+	std::vector<std::vector<sumRegret_t>> preflopStrat;
 
 	uint64_t currIter;
 	unsigned nextSnapshotId;
