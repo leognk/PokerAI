@@ -18,14 +18,18 @@ class AbstractInfoset
 {
 public:
 
+	// Set rngSeed to 0 to set a random seed.
 	AbstractInfoset(
 		uint8_t maxPlayers,
 		egn::chips ante,
 		egn::chips bigBlind,
 		egn::chips initialStake,
 		const betSizes_t& betSizes,
-		const std::string& actionSeqIndexerName) :
-		state(ante, bigBlind, {}),
+		const std::string& actionSeqIndexerName,
+		unsigned rngSeed) :
+
+		dealer(maxPlayers - 1),
+		state(ante, bigBlind, {}, rngSeed),
 		actionAbc(betSizes),
 		actionSeqIndexer(maxPlayers, ante, bigBlind, initialStake, betSizes, actionSeqIndexerName)
 	{
@@ -100,6 +104,7 @@ public:
 	// Its size is nActions().
 	std::vector<uint64_t> actionSeqIds;
 
+#pragma warning(suppress: 4267)
 	uint8_t nActions() const { return actionAbc.legalActions.size(); }
 
 	size_t preflopNActionSeqs() const { return actionSeqIndexer.preflopMPHF.nbKeys(); }
@@ -147,7 +152,7 @@ private:
 		}
 	}
 
-	static const uint8_t dealer = egn::MAX_PLAYERS - 1;
+	const uint8_t dealer;
 	std::array<egn::chips, egn::MAX_PLAYERS> initialStakes{};
 
 	// Number of raises done in the current round.
@@ -161,7 +166,7 @@ private:
 	static abc::LossyIndexer<bckSize_t, nBck> handIndexer;
 	std::array<bckSize_t, omp::MAX_PLAYERS> handsIds;
 
-	abc::ActionSeqIndexer actionSeqIndexer
+	abc::ActionSeqIndexer actionSeqIndexer;
 
 }; // AbstractInfoset
 

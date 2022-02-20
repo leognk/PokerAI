@@ -20,7 +20,9 @@ public:
 		egn::chips bigBlind,
 		egn::chips initialStake,
 		const betSizes_t& betSizes) :
-		state(ante, bigBlind, {}),
+
+		dealer(maxPlayers - 1),
+		state(ante, bigBlind, {}, 0),
 		actionAbc(betSizes)
 	{
 		std::fill(initialStakes.begin(), initialStakes.begin() + maxPlayers, initialStake);
@@ -64,7 +66,7 @@ public:
 
 private:
 
-	static const uint8_t dealer = egn::MAX_PLAYERS - 1;
+	const uint8_t dealer;
 	std::array<egn::chips, egn::MAX_PLAYERS> initialStakes{};
 
 	// Number of raises done in the current round.

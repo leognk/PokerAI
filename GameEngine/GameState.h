@@ -99,7 +99,7 @@ public:
 	GameState(
 		chips ante, chips bigBlind,
 		const std::array<chips, MAX_PLAYERS>& stakes,
-		unsigned rngSeed = 0);
+		unsigned rngSeed);
 
 	void setAnte(chips ante);
 	// Small blind is set to half the big blind.

@@ -58,7 +58,7 @@ private:
 	static std::string getStratPath(uint8_t roundId);
 
 	Rng rng;
-	opt::FastRandomChoice<8> pruneRandChoice;
+	opt::FastRandomChoice<7> pruneRandChoice;
 	opt::FastRandomChoiceRNGRescale<16> actionRandChoice;
 	opt::FastRandomChoice<15> cumWeightsRescaler;
 	const std::array<uint8_t, 2> pruneCumWeights;

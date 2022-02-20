@@ -65,7 +65,7 @@ TEST(GameStateTest, CoherentWithData)
             stakes[i] = hist.initialStakes[i];
 
         // Initialize GameState.
-        egn::GameState state(hist.ante, hist.bb, stakes);
+        egn::GameState state(hist.ante, hist.bb, stakes, 0);
         // Set cards.
         if (hist.boardCards.countCards() == 5) {
             state.setBoardCards(hist.boardCards);
@@ -156,7 +156,7 @@ TEST(GameStateTest, VerifyWithCustomStates)
     for (const cus::History& hist : listHist) {
 
         // Initialize GameState.
-        egn::GameState state(hist.ante, hist.bb, hist.initialStakes);
+        egn::GameState state(hist.ante, hist.bb, hist.initialStakes, 0);
         state.setBoardCards(hist.boardCards);
         for (uint8_t i = 0; i < egn::MAX_PLAYERS; ++i)
             state.setHoleCards(i, hist.hands[i]);

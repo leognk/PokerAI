@@ -14,7 +14,8 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed) :
 		bp::BIG_BLIND,
 		bp::INITIAL_STAKE,
 		bp::BET_SIZES,
-		bp::BLUEPRINT_NAME),
+		bp::BLUEPRINT_NAME,
+		rngSeed),
 
 	gpSeqs(
 		bp::MAX_PLAYERS,
@@ -24,18 +25,21 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed) :
 		bp::BET_SIZES,
 		bp::BLUEPRINT_NAME),
 
-	regrets({
+	currIter(0),
+	nextSnapshotId(1)
+{
+	// Allocate memory for the regrets.
+	regrets = {
 		std::vector<std::vector<regret_t>>(abc::PREFLOP_SIZE, std::vector<regret_t>(abcInfo.preflopNActionSeqs())),
 		std::vector<std::vector<regret_t>>(bp::N_BCK, std::vector<regret_t>(abcInfo.flopNActionSeqs())),
 		std::vector<std::vector<regret_t>>(bp::N_BCK, std::vector<regret_t>(abcInfo.turnNActionSeqs())),
 		std::vector<std::vector<regret_t>>(bp::N_BCK, std::vector<regret_t>(abcInfo.riverNActionSeqs()))
-	}),
+	};
 
-	preflopStrat(abc::PREFLOP_SIZE, std::vector<sumRegret_t>(abcInfo.preflopNActionSeqs())),
+	// Allocate memory for the preflop strategy.
+	preflopStrat = std::vector<std::vector<sumRegret_t>>(
+		abc::PREFLOP_SIZE, std::vector<sumRegret_t>(abcInfo.preflopNActionSeqs()));
 
-	currIter(0),
-	nextSnapshotId(1)
-{
 	gpSeqs.load();
 }
 
@@ -43,12 +47,12 @@ void BlueprintCalculator::buildStrategy()
 {
 	while (currIter < endIter) {
 
-		bool mustPrune = currIter >= pruneBeginIter || pruneRandChoice(pruneCumWeights, rng) == 1;
-		bool mustUpdatePreflopStrat = currIter && currIter % preflopStratUpdatePeriod == 0;
+		bool mustPrune = currIter >= pruneBeginIter && pruneRandChoice(pruneCumWeights, rng) == 0;
+		bool mustUpdatePreflopStrat = currIter && (currIter % preflopStratUpdatePeriod == 0);
 
 		for (uint8_t traverser = 0; traverser < MAX_PLAYERS; ++traverser) {
-			if (mustPrune) traverseMCCFR(traverser);
-			else traverseMCCFRP(traverser);
+			if (mustPrune) traverseMCCFRP(traverser);
+			else traverseMCCFR(traverser);
 			if (mustUpdatePreflopStrat) updatePreflopStrat(traverser);
 		}
 
@@ -72,7 +76,7 @@ void BlueprintCalculator::buildStrategy()
 
 std::array<uint8_t, 2> BlueprintCalculator::buildPruneCumWeights()
 {
-	std::array<uint8_t, 2> res = { pruneProbaPerc, 100 - pruneProbaPerc };
+	std::array<uint8_t, 2> res = { pruneProbaPerc, 100 };
 	pruneRandChoice.rescaleCumWeights(res);
 	return res;
 }
@@ -127,6 +131,7 @@ void BlueprintCalculator::applyDiscounting()
 	for (auto& roundRegrets : regrets) {
 		for (auto& handRegrets : roundRegrets) {
 			for (regret_t& regret : handRegrets)
+#pragma warning(suppress: 4244)
 				regret = std::round(regret * d);
 		}
 	}
