@@ -1,9 +1,9 @@
-#include "BlueprintCalculator.h"
+#include "Blueprint.h"
 #include "../Utils/StringManip.h"
 
 namespace bp {
 
-BlueprintCalculator::BlueprintCalculator(unsigned rngSeed) :
+Blueprint::Blueprint(unsigned rngSeed) :
 
 	rng{ (!rngSeed) ? std::random_device{}() : rngSeed },
 	pruneCumWeights(buildPruneCumWeights()),
@@ -39,7 +39,7 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed) :
 	gpSeqs.load();
 }
 
-void BlueprintCalculator::buildStrategy()
+void Blueprint::buildStrategy()
 {
 	while (currIter < endIter) {
 
@@ -68,39 +68,39 @@ void BlueprintCalculator::buildStrategy()
 	averageSnapshots();
 }
 
-void BlueprintCalculator::saveStrategy()
+void Blueprint::saveStrategy()
 {
 
 }
 
-void BlueprintCalculator::loadStrategy()
+void Blueprint::loadStrategy()
 {
 
 }
 
-std::array<uint8_t, 2> BlueprintCalculator::buildPruneCumWeights()
+std::array<uint8_t, 2> Blueprint::buildPruneCumWeights()
 {
 	std::array<uint8_t, 2> res = { pruneProbaPerc, 100 - pruneProbaPerc };
 	pruneRandChoice.rescaleCumWeights(res);
 	return res;
 }
 
-uint8_t BlueprintCalculator::nActions() const
+uint8_t Blueprint::nActions() const
 {
 	return abcInfo.nActions();
 }
 
-regret_t& BlueprintCalculator::getRegret(uint8_t actionId)
+regret_t& Blueprint::getRegret(uint8_t actionId)
 {
 	return regrets[abcInfo.roundIdx()][abcInfo.handIdx()][abcInfo.actionSeqIds[actionId]];
 }
 
-const regret_t BlueprintCalculator::getRegret(uint8_t actionId) const
+const regret_t Blueprint::getRegret(uint8_t actionId) const
 {
 	return regrets[abcInfo.roundIdx()][abcInfo.handIdx()][abcInfo.actionSeqIds[actionId]];
 }
 
-void BlueprintCalculator::calculateCumRegrets()
+void Blueprint::calculateCumRegrets()
 {
 	cumRegrets.resize(nActions());
 	cumRegrets[0] = (getRegret(0) > 0) ? getRegret(0) : 0;
@@ -117,7 +117,7 @@ void BlueprintCalculator::calculateCumRegrets()
 	}
 }
 
-sumRegret_t BlueprintCalculator::calculateSumRegrets() const
+sumRegret_t Blueprint::calculateSumRegrets() const
 {
 	sumRegret_t sum = 0;
 	for (uint8_t a = 0; a < nActions(); ++a) {
@@ -126,7 +126,7 @@ sumRegret_t BlueprintCalculator::calculateSumRegrets() const
 	return sum;
 }
 
-void BlueprintCalculator::applyDiscounting()
+void Blueprint::applyDiscounting()
 {
 	// currIter is divisible by discountPeriod.
 	float d = 1 - 1 / (float)(currIter / discountPeriod + 1);
@@ -147,7 +147,7 @@ void BlueprintCalculator::applyDiscounting()
 	}
 }
 
-void BlueprintCalculator::updatePreflopStrat(uint8_t traverser)
+void Blueprint::updatePreflopStrat(uint8_t traverser)
 {
 	abcInfo.startNewHand();
 	stack.clear();
@@ -209,7 +209,7 @@ void BlueprintCalculator::updatePreflopStrat(uint8_t traverser)
 	}
 }
 
-void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
+void Blueprint::traverseMCCFR(uint8_t traverser)
 {
 	abcInfo.startNewHand();
 	stack.clear();
@@ -287,7 +287,7 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 	}
 }
 
-void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
+void Blueprint::traverseMCCFRP(uint8_t traverser)
 {
 	abcInfo.startNewHand();
 	stack.clear();
@@ -380,7 +380,7 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 	}
 }
 
-egn::dchips BlueprintCalculator::calculateExpectedValue() const
+egn::dchips Blueprint::calculateExpectedValue() const
 {
 	egn::dchips v = 0;
 	sumRegret_t s = calculateSumRegrets();
@@ -405,7 +405,7 @@ egn::dchips BlueprintCalculator::calculateExpectedValue() const
 }
 
 // Save the current strategy of the rounds after the preflop on the disk.
-void BlueprintCalculator::takeSnapshot()
+void Blueprint::takeSnapshot()
 {
 	for (uint8_t r = 1; r < egn::N_ROUNDS; ++r) {
 
@@ -461,7 +461,7 @@ void BlueprintCalculator::takeSnapshot()
 	++nextSnapshotId;
 }
 
-void BlueprintCalculator::averageSnapshots()
+void Blueprint::averageSnapshots()
 {
 	for (uint8_t r = 1; r < egn::N_ROUNDS; ++r) {
 
@@ -504,19 +504,19 @@ void BlueprintCalculator::averageSnapshots()
 	}
 }
 
-std::string BlueprintCalculator::getSnapshotPath(unsigned snapshotId, uint8_t roundId)
+std::string Blueprint::getSnapshotPath(unsigned snapshotId, uint8_t roundId)
 {
 	return snapshotPath + "_" + std::to_string(snapshotId)
 		+ "_" + opt::toUpper(egn::roundToString(egn::Round(roundId))) + ".bin";
 }
 
-std::string BlueprintCalculator::getStratPath(uint8_t roundId)
+std::string Blueprint::getStratPath(uint8_t roundId)
 {
 	return stratPath
 		+ "_" + opt::toUpper(egn::roundToString(egn::Round(roundId))) + ".bin";
 }
 
-void BlueprintCalculator::updateCheckpoint()
+void Blueprint::updateCheckpoint()
 {
 
 }

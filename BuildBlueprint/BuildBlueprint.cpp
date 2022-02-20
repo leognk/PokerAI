@@ -1,4 +1,4 @@
-#include "../Blueprint/BlueprintCalculator.h"
+#include "../Blueprint/Blueprint.h"
 
 int main()
 {

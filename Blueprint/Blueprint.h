@@ -1,5 +1,5 @@
-#ifndef BP_BLUEPRINTCALCULATOR_H
-#define BP_BLUEPRINTCALCULATOR_H
+#ifndef BP_BLUEPRINT_H
+#define BP_BLUEPRINT_H
 
 #include "Constants.h"
 #include "../AbstractInfoset/AbstractInfoset.h"
@@ -21,12 +21,12 @@ typedef uint16_t strat_t;
 typedef uint32_t sumStrat_t;
 typedef abc::AbstractInfoset<bckSize_t, N_BCK> abcInfo_t;
 
-class BlueprintCalculator
+class Blueprint
 {
 public:
 
 	// Set rngSeed to 0 to set a random seed.
-	BlueprintCalculator(unsigned rngSeed = 0);
+	Blueprint(unsigned rngSeed = 0);
 
 	// Conduct MCCFR.
 	void buildStrategy();
@@ -83,8 +83,8 @@ private:
 	std::vector<egn::dchips> expVals;
 	std::vector<bool> visited;
 
-}; // BlueprintCalculator
+}; // Blueprint
 
 } // bp
 
-#endif // BP_BLUEPRINTCALCULATOR_H
+#endif // BP_BLUEPRINT_H

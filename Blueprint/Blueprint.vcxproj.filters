@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BlueprintCalculator.h">
+    <ClInclude Include="Blueprint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Constants.h">
@@ -23,7 +23,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BlueprintCalculator.cpp">
+    <ClCompile Include="Blueprint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
