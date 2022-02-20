@@ -19,11 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Blueprint.h" />
+    <ClInclude Include="BlueprintCalculator.h" />
     <ClInclude Include="Constants.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Blueprint.cpp" />
+    <ClCompile Include="BlueprintCalculator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AbstractInfoset\AbstractInfoset.vcxproj">
