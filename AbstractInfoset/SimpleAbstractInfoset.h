@@ -28,6 +28,19 @@ public:
 		std::fill(initialStakes.begin(), initialStakes.begin() + maxPlayers, initialStake);
 	}
 
+	SimpleAbstractInfoset& operator=(const SimpleAbstractInfoset& other)
+	{
+		if (this == &other) return *this;
+
+		state = other.state;
+		nRaises = other.nRaises;
+		nPlayers = other.nPlayers;
+		roundActions = other.roundActions;
+		actionAbc = other.actionAbc;
+
+		return *this;
+	}
+
 	void startNewHand()
 	{
 		// Reset member variables.

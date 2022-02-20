@@ -48,6 +48,7 @@ public:
 		nRaises = other.nRaises;
 		nPlayers = other.nPlayers;
 		roundActions = other.roundActions;
+		actionAbc = other.actionAbc;
 		handsIds = other.handsIds;
 		actionSeqIds = other.actionSeqIds;
 
