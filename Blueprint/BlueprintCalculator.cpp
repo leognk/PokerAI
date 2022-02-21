@@ -210,30 +210,6 @@ void BlueprintCalculator::updatePreflopStrat(uint8_t traverser)
 	}
 }
 
-void printActions(const std::vector<uint8_t>& actions, unsigned& count, uint8_t traverser)
-{
-	abcInfo_t infoset(
-		bp::MAX_PLAYERS,
-		bp::ANTE,
-		bp::BIG_BLIND,
-		bp::INITIAL_STAKE,
-		bp::BET_SIZES,
-		bp::BLUEPRINT_NAME,
-		0);
-	infoset.startNewHand();
-	std::cout << count << " | ";
-	for (const uint8_t& a : actions) {
-		uint8_t player = infoset.state.actingPlayer;
-		std::cout << std::to_string(player) << ": " << std::to_string(infoset.actionAbc.legalActions[a]);
-		if (player == traverser)
-			std::cout << "/" << std::to_string(a);
-		infoset.nextState(a);
-		std::cout << " (" << -infoset.state.reward(player) << ") | ";
-	}
-	std::cout << "\n";
-	++count;
-}
-
 void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 {
 	abcInfo.startNewHand();
@@ -244,18 +220,9 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 	// lastChild will only deal with children of nodes where traverser plays.
 	lastChild.clear();
 	expVals.clear();
-	////////////////////////////////////////////////////////////////////////////////////
-	std::vector<std::vector<uint8_t>> histActions;
-	std::vector<uint8_t> actions;
-	unsigned count = 0;
-	////////////////////////////////////////////////////////////////////////////////////
 
-	if (abcInfo.state.actingPlayer == traverser) {
+	if (abcInfo.state.actingPlayer == traverser)
 		hist.push_back(abcInfo);
-		////////////////////////////////////////////////////////////////////////////////////
-		histActions.push_back(actions);
-		////////////////////////////////////////////////////////////////////////////////////
-	}
 
 	// Do a DFS.
 	while (true) {
@@ -271,10 +238,6 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 			bool wasLastChild = lastChild.back();
 			lastChild.pop_back();
 			abcInfo = hist.back();
-			////////////////////////////////////////////////////////////////////////////////////
-			actions = histActions.back();
-			printActions(actions, count, traverser);
-			////////////////////////////////////////////////////////////////////////////////////
 			while (wasLastChild) {
 
 				// The expected values of all children have been calculated and
@@ -292,25 +255,14 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 
 				// Go back to the previous parent.
 				hist.pop_back();
-				////////////////////////////////////////////////////////////////////////////////////
-				histActions.pop_back();
-				////////////////////////////////////////////////////////////////////////////////////
 				wasLastChild = lastChild.back();
 				lastChild.pop_back();
 				abcInfo = hist.back();
-				////////////////////////////////////////////////////////////////////////////////////
-				actions = histActions.back();
-				printActions(actions, count, traverser);
-				////////////////////////////////////////////////////////////////////////////////////
 			}
 
 			// Go to the next node.
 			uint8_t a = stack.back();
 			stack.pop_back();
-			////////////////////////////////////////////////////////////////////////////////////
-			actions.push_back(a);
-			printActions(actions, count, traverser);
-			////////////////////////////////////////////////////////////////////////////////////
 			abcInfo.nextState(a);
 			lastChild.push_back(a == 0);
 		}
@@ -321,10 +273,6 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 				// Add all actions.
 				for (uint8_t a = 0; a < nActions() - 1; ++a)
 					stack.push_back(a);
-				////////////////////////////////////////////////////////////////////////////////////
-				actions.push_back(nActions() - 1);
-				printActions(actions, count, traverser);
-				////////////////////////////////////////////////////////////////////////////////////
 				// Go to the next node.
 				abcInfo.nextState(nActions() - 1);
 				// There will always be at least two legal actions, so this is never the last.
@@ -335,22 +283,14 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 				calculateCumRegrets();
 #pragma warning(suppress: 4244)
 				uint8_t a = actionRandChoice(cumRegrets, rng);
-				////////////////////////////////////////////////////////////////////////////////////
-				actions.push_back(a);
-				printActions(actions, count, traverser);
-				////////////////////////////////////////////////////////////////////////////////////
 				// Go to the next node.
 				abcInfo.nextState(a);
 			}
 		}
 
 		// Add no-leaf nodes where traverser plays to hist.
-		if (abcInfo.state.actingPlayer == traverser && !abcInfo.state.finished) {
+		if (abcInfo.state.actingPlayer == traverser && !abcInfo.state.finished)
 			hist.push_back(abcInfo);
-			////////////////////////////////////////////////////////////////////////////////////
-			histActions.push_back(actions);
-			////////////////////////////////////////////////////////////////////////////////////
-		}
 	}
 }
 
