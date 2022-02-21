@@ -46,6 +46,7 @@ static const uint8_t pruneProbaPerc = 95; // Pluribus: 95
 static const uint64_t preflopStratUpdatePeriod = 10e3; // Pluribus: 10e3
 
 static const uint64_t checkpointPeriod = 1e8; // 1e8 (25 min)
+static const uint64_t printPeriod = 4e6; // 4e6 (1 min)
 
 static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotPeriod;
 
@@ -114,6 +115,7 @@ static const uint8_t pruneProbaPerc = 95; // Pluribus: 95
 static const uint64_t preflopStratUpdatePeriod = 10e3; // Pluribus: 10e3
 
 static const uint64_t checkpointPeriod = 1e8; // 1e8 (25 min)
+static const uint64_t printPeriod = 4e6; // 4e6 (1 min)
 
 static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotPeriod;
 
@@ -183,6 +185,7 @@ static const int32_t minRegret = -310e6; // Pluribus: -310e6
 static const uint64_t preflopStratUpdatePeriod = 2; // Pluribus: 10e3
 
 static const uint64_t checkpointPeriod = 5; // 1e8 (25 min)
+static const uint64_t printPeriod = 5; // 4e6 (1 min)
 
 static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotPeriod;
 

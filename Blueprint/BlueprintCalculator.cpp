@@ -1,5 +1,6 @@
 #include "BlueprintCalculator.h"
 #include "../Utils/StringManip.h"
+#include "../Utils/Time.h"
 
 namespace bp {
 
@@ -25,6 +26,7 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed) :
 		BET_SIZES,
 		BLUEPRINT_NAME),
 
+	startTime(std::chrono::high_resolution_clock::now()),
 	currIter(0),
 	nextSnapshotId(1)
 {
@@ -65,6 +67,8 @@ void BlueprintCalculator::buildStrategy()
 			takeSnapshot();
 		if (currIter % checkpointPeriod == 0)
 			updateCheckpoint();
+		if (currIter && (currIter % printPeriod == 0 || currIter == endIter))
+			printProgress();
 	}
 
 	// Free memory allocated for regrets.
@@ -72,6 +76,8 @@ void BlueprintCalculator::buildStrategy()
 	// Perform final calculations for the final strategy and save it to the disk.
 	normalizePreflopStrat();
 	averageSnapshots();
+
+	printFinalStats();
 }
 
 std::array<uint8_t, 2> BlueprintCalculator::buildPruneCumWeights()
@@ -581,11 +587,6 @@ void BlueprintCalculator::normalizePreflopStrat()
 	file.close();
 }
 
-void BlueprintCalculator::updateCheckpoint()
-{
-
-}
-
 std::string BlueprintCalculator::getSnapshotPath(unsigned snapshotId, uint8_t roundId)
 {
 	return snapshotPath + "_" + std::to_string(snapshotId)
@@ -596,6 +597,34 @@ std::string BlueprintCalculator::getStratPath(uint8_t roundId)
 {
 	return stratPath
 		+ "_" + opt::toUpper(egn::roundToString(egn::Round(roundId))) + ".bin";
+}
+
+void BlueprintCalculator::updateCheckpoint()
+{
+
+}
+
+void BlueprintCalculator::printProgress() const
+{
+	static const std::string endIterStr = opt::prettyBigNum(endIter, 1);
+	const std::string currIterStr = opt::prettyBigNum(currIter, 1);
+
+	auto t = std::chrono::high_resolution_clock::now();
+	const std::string duration = opt::prettyDuration((unsigned)std::round(
+		1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(t - startTime).count()));
+
+	std::cout
+		<< "iter: " << std::setw(6) << currIterStr << " / " << endIterStr
+		<< " | " << duration << "\n";
+}
+
+void BlueprintCalculator::printFinalStats() const
+{
+	auto t = std::chrono::high_resolution_clock::now();
+	const std::string duration = opt::prettyDuration((unsigned)std::round(
+		1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(t - startTime).count()));
+
+	std::cout << "\nDuration: " << duration << "\n";
 }
 
 } // bp

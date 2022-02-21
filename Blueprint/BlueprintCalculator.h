@@ -55,10 +55,13 @@ private:
 	void takeSnapshot();
 	void averageSnapshots();
 	void normalizePreflopStrat();
-	void updateCheckpoint();
 
 	static std::string getSnapshotPath(unsigned snapshotId, uint8_t roundId);
 	static std::string getStratPath(uint8_t roundId);
+
+	void updateCheckpoint();
+	void printProgress() const;
+	void printFinalStats() const;
 
 	Rng rng;
 	opt::FastRandomChoice<7> pruneRandChoice;
@@ -72,6 +75,7 @@ private:
 	// Non-normalized strategy on preflop.
 	std::vector<std::vector<sumRegret_t>> preflopStrat;
 
+	std::chrono::high_resolution_clock::time_point startTime;
 	uint64_t currIter;
 	unsigned nextSnapshotId;
 

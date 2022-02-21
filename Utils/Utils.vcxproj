@@ -25,6 +25,7 @@
     <ClInclude Include="ioContainer.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="StringManip.h" />
+    <ClInclude Include="Time.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
