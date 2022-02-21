@@ -505,7 +505,7 @@ void BlueprintCalculator::averageSnapshots()
 
 			// Open the snapshot.
 			auto snapshotFile = std::fstream(
-				getSnapshotPath(nextSnapshotId, r), std::ios::out | std::ios::binary);
+				getSnapshotPath(snapshotId, r), std::ios::in | std::ios::binary);
 
 			// Add the snapshot's strategy to the total sum.
 			for (bckSize_t handIdx = 0; handIdx < sumStrats.size(); ++handIdx) {
