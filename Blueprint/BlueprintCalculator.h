@@ -37,6 +37,9 @@ private:
 
 	std::array<uint8_t, 2> buildPruneCumWeights();
 
+	size_t nHandIds(egn::Round round) const;
+	size_t nActionSeqIds(egn::Round round) const;
+
 	uint8_t nActions() const;
 	regret_t& getRegret(uint8_t actionId);
 	const regret_t getRegret(uint8_t actionId) const;

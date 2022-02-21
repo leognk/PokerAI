@@ -30,10 +30,10 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed) :
 {
 	// Allocate memory for the regrets.
 	regrets = {
-		std::vector<std::vector<regret_t>>(abc::PREFLOP_SIZE, std::vector<regret_t>(abcInfo.preflopNActionSeqs())),
-		std::vector<std::vector<regret_t>>(bp::N_BCK, std::vector<regret_t>(abcInfo.flopNActionSeqs())),
-		std::vector<std::vector<regret_t>>(bp::N_BCK, std::vector<regret_t>(abcInfo.turnNActionSeqs())),
-		std::vector<std::vector<regret_t>>(bp::N_BCK, std::vector<regret_t>(abcInfo.riverNActionSeqs()))
+		std::vector<std::vector<regret_t>>(nHandIds(egn::PREFLOP), std::vector<regret_t>(nActionSeqIds(egn::PREFLOP))),
+		std::vector<std::vector<regret_t>>(nHandIds(egn::FLOP), std::vector<regret_t>(nActionSeqIds(egn::FLOP))),
+		std::vector<std::vector<regret_t>>(nHandIds(egn::TURN), std::vector<regret_t>(nActionSeqIds(egn::TURN))),
+		std::vector<std::vector<regret_t>>(nHandIds(egn::RIVER), std::vector<regret_t>(nActionSeqIds(egn::RIVER)))
 	};
 
 	// Allocate memory for the preflop strategy.
@@ -79,6 +79,25 @@ std::array<uint8_t, 2> BlueprintCalculator::buildPruneCumWeights()
 	std::array<uint8_t, 2> res = { pruneProbaPerc, 100 };
 	pruneRandChoice.rescaleCumWeights(res);
 	return res;
+}
+
+size_t BlueprintCalculator::nHandIds(egn::Round round) const
+{
+	switch (round) {
+	case egn::PREFLOP: return abc::PREFLOP_SIZE;
+	default: return bp::N_BCK;
+	}
+}
+
+size_t BlueprintCalculator::nActionSeqIds(egn::Round round) const
+{
+	switch (round) {
+	case egn::PREFLOP: return abcInfo.preflopNActionSeqs();
+	case egn::FLOP: return abcInfo.flopNActionSeqs();
+	case egn::TURN: return abcInfo.turnNActionSeqs();
+	case egn::RIVER: return abcInfo.riverNActionSeqs();
+	default: throw std::runtime_error("Unknown round.");
+	}
 }
 
 uint8_t BlueprintCalculator::nActions() const
@@ -239,6 +258,92 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 	// lastChild will only deal with children of nodes where traverser plays.
 	lastChild.clear();
 	expVals.clear();
+
+	abcInfo.startNewHand();
+
+	// Do a DFS.
+	while (true) {
+
+		// Add no-leaf nodes where traverser plays to hist.
+		if (abcInfo.state.actingPlayer == traverser && !abcInfo.state.finished)
+			hist.push_back(abcInfo);
+
+		// Reached leaf node.
+		if (abcInfo.state.finished || !abcInfo.state.isAlive(traverser)) {
+
+			// This can happen if everybody folds except the bb who is also the traverser.
+			if (lastChild.empty()) return;
+
+			// Add leaf's expected value on stack.
+			expVals.push_back(abcInfo.state.reward(traverser));
+
+			// Go back to the latest node having children not visited yet while
+			// backpropagating the expected value and updating the regrets.
+			abcInfo = hist.back();
+			bool wasLastChild = lastChild.back();
+			lastChild.pop_back();
+			while (wasLastChild) {
+
+				// The expected values of all children have been calculated and
+				// we can average them into the parent node's expected value.
+				egn::dchips v = calculateExpectedValue();
+				// Update the regrets.
+				for (uint8_t a = 0; a < nActions(); ++a) {
+					if ((getRegret(a) += expVals.back() - v) < minRegret)
+						getRegret(a) = minRegret;
+					expVals.pop_back();
+				}
+				// All leafs visited and traverser's regrets updated: end of MCCFR traversal.
+				if (lastChild.empty()) return;
+				expVals.push_back(v);
+
+				// Go back to the previous parent.
+				hist.pop_back();
+				abcInfo = hist.back();
+				wasLastChild = lastChild.back();
+				lastChild.pop_back();
+			}
+
+			// Go to the next node.
+			uint8_t a = stack.back();
+			stack.pop_back();
+			abcInfo.nextState(a);
+			lastChild.push_back(a == 0);
+		}
+
+		// Current node has children.
+		else {
+			if (abcInfo.state.actingPlayer == traverser) {
+				// Add all actions.
+				for (uint8_t a = 0; a < nActions() - 1; ++a)
+					stack.push_back(a);
+				// Go to the next node.
+				abcInfo.nextState(nActions() - 1);
+				// There will always be at least two legal actions, so this is never the last.
+				lastChild.push_back(false);
+			}
+			else {
+				// Sample an action with the current strategy.
+				calculateCumRegrets();
+#pragma warning(suppress: 4244)
+				uint8_t a = actionRandChoice(cumRegrets, rng);
+				// Go to the next node.
+				abcInfo.nextState(a);
+			}
+		}
+	}
+}
+
+void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
+{
+	stack.clear();
+	// hist will only contain no-leaf nodes where traverser plays.
+	hist.clear();
+	// lastChild will only deal with children of nodes where traverser plays.
+	lastChild.clear();
+	expVals.clear();
+	// visited will only deal with children of nodes where traverser plays.
+	visited.clear();
 	////////////////////////////////////////////////////////////////////////////////////
 	std::vector<std::vector<uint8_t>> histActions;
 	std::vector<uint8_t> actions;
@@ -261,115 +366,6 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 		// Reached leaf node.
 		if (abcInfo.state.finished || !abcInfo.state.isAlive(traverser)) {
 
-			// This can happen if everybody folds except the bb who is also the traverser.
-			if (lastChild.empty()) return;
-
-			// Add leaf's expected value on stack.
-			expVals.push_back(abcInfo.state.reward(traverser));
-
-			// Go back to the latest node having children not visited yet while
-			// backpropagating the expected value and updating the regrets.
-			abcInfo = hist.back();
-			bool wasLastChild = lastChild.back();
-			lastChild.pop_back();
-			////////////////////////////////////////////////////////////////////////////////////
-			actions = histActions.back();
-			printActions(actions, count, traverser);
-			////////////////////////////////////////////////////////////////////////////////////
-			while (wasLastChild) {
-
-				// The expected values of all children have been calculated and
-				// we can average them into the parent node's expected value.
-				egn::dchips v = calculateExpectedValue();
-				// Update the regrets.
-				for (uint8_t a = 0; a < nActions(); ++a) {
-					if ((getRegret(a) += expVals.back() - v) < minRegret)
-						getRegret(a) = minRegret;
-					expVals.pop_back();
-				}
-				// All leafs visited and traverser's regrets updated: end of MCCFR traversal.
-				if (lastChild.empty()) return;
-				expVals.push_back(v);
-
-				// Go back to the previous parent.
-				hist.pop_back();
-				////////////////////////////////////////////////////////////////////////////////////
-				histActions.pop_back();
-				////////////////////////////////////////////////////////////////////////////////////
-				abcInfo = hist.back();
-				wasLastChild = lastChild.back();
-				lastChild.pop_back();
-				////////////////////////////////////////////////////////////////////////////////////
-				actions = histActions.back();
-				printActions(actions, count, traverser);
-				////////////////////////////////////////////////////////////////////////////////////
-			}
-
-			// Go to the next node.
-			uint8_t a = stack.back();
-			stack.pop_back();
-			////////////////////////////////////////////////////////////////////////////////////
-			actions.push_back(a);
-			printActions(actions, count, traverser);
-			////////////////////////////////////////////////////////////////////////////////////
-			abcInfo.nextState(a);
-			lastChild.push_back(a == 0);
-		}
-
-		// Current node has children.
-		else {
-			if (abcInfo.state.actingPlayer == traverser) {
-				// Add all actions.
-				for (uint8_t a = 0; a < nActions() - 1; ++a)
-					stack.push_back(a);
-				////////////////////////////////////////////////////////////////////////////////////
-				actions.push_back(nActions() - 1);
-				printActions(actions, count, traverser);
-				////////////////////////////////////////////////////////////////////////////////////
-				// Go to the next node.
-				abcInfo.nextState(nActions() - 1);
-				// There will always be at least two legal actions, so this is never the last.
-				lastChild.push_back(false);
-			}
-			else {
-				// Sample an action with the current strategy.
-				calculateCumRegrets();
-#pragma warning(suppress: 4244)
-				uint8_t a = actionRandChoice(cumRegrets, rng);
-				////////////////////////////////////////////////////////////////////////////////////
-				actions.push_back(a);
-				printActions(actions, count, traverser);
-				////////////////////////////////////////////////////////////////////////////////////
-				// Go to the next node.
-				abcInfo.nextState(a);
-			}
-		}
-	}
-}
-
-void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
-{
-	stack.clear();
-	// hist will only contain no-leaf nodes where traverser plays.
-	hist.clear();
-	// lastChild will only deal with children of nodes where traverser plays.
-	lastChild.clear();
-	expVals.clear();
-	// visited will only deal with children of nodes where traverser plays.
-	visited.clear();
-
-	abcInfo.startNewHand();
-
-	// Do a DFS.
-	while (true) {
-
-		// Add no-leaf nodes where traverser plays to hist.
-		if (abcInfo.state.actingPlayer == traverser && !abcInfo.state.finished)
-			hist.push_back(abcInfo);
-
-		// Reached leaf node.
-		if (abcInfo.state.finished || !abcInfo.state.isAlive(traverser)) {
-
 			// This can happen if everybody folds but the bb who is also the traverser.
 			if (lastChild.empty()) return;
 
@@ -379,6 +375,10 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 			// Go back to the latest node having children not visited yet while
 			// backpropagating the expected value and updating the regrets.
 			abcInfo = hist.back();
+			////////////////////////////////////////////////////////////////////////////////////
+			actions = histActions.back();
+			printActions(actions, count, traverser);
+			////////////////////////////////////////////////////////////////////////////////////
 			bool wasLastChild = lastChild.back();
 			lastChild.pop_back();
 			while (wasLastChild) {
@@ -388,7 +388,7 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 				egn::dchips v = calculateExpectedValue();
 				// Update the regrets.
 				for (uint8_t a = 0; a < nActions(); ++a) {
-					if (visited.rbegin()[nActions() - 1 + a]) {
+					if (visited.rbegin()[nActions() - 1 - a]) {
 						getRegret(a) += expVals.back() - v;
 						expVals.pop_back();
 					}
@@ -401,7 +401,14 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 
 				// Go back to the previous parent.
 				hist.pop_back();
+				////////////////////////////////////////////////////////////////////////////////////
+				histActions.pop_back();
+				////////////////////////////////////////////////////////////////////////////////////
 				abcInfo = hist.back();
+				////////////////////////////////////////////////////////////////////////////////////
+				actions = histActions.back();
+				printActions(actions, count, traverser);
+				////////////////////////////////////////////////////////////////////////////////////
 				wasLastChild = lastChild.back();
 				lastChild.pop_back();
 			}
@@ -409,6 +416,10 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 			// Go to the next node.
 			uint8_t a = stack.back();
 			stack.pop_back();
+			////////////////////////////////////////////////////////////////////////////////////
+			actions.push_back(a);
+			printActions(actions, count, traverser);
+			////////////////////////////////////////////////////////////////////////////////////
 			abcInfo.nextState(a);
 			lastChild.push_back(a == 0);
 		}
@@ -431,6 +442,10 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 				// Go to the next node.
 				uint8_t a = stack.back();
 				stack.pop_back();
+				////////////////////////////////////////////////////////////////////////////////////
+				actions.push_back(a);
+				printActions(actions, count, traverser);
+				////////////////////////////////////////////////////////////////////////////////////
 				abcInfo.nextState(a);
 				lastChild.push_back(a == 0);
 			}
@@ -439,6 +454,10 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 				calculateCumRegrets();
 #pragma warning(suppress: 4244)
 				uint8_t a = actionRandChoice(cumRegrets, rng);
+				////////////////////////////////////////////////////////////////////////////////////
+				actions.push_back(a);
+				printActions(actions, count, traverser);
+				////////////////////////////////////////////////////////////////////////////////////
 				// Go to the next node.
 				abcInfo.nextState(a);
 			}
@@ -535,7 +554,7 @@ void BlueprintCalculator::averageSnapshots()
 
 		// Allocate memory for the sum of the snapshots' strategies.
 		std::vector<std::vector<sumStrat_t>> sumStrats(
-			regrets[r].size(), std::vector<sumStrat_t>(regrets[r][0].size()));
+			nHandIds(egn::Round(r)), std::vector<sumStrat_t>(nActionSeqIds(egn::Round(r))));
 
 		// Calculate the sum of the snapshots' strategies.
 		for (unsigned snapshotId = 1; snapshotId <= nSnapshots; ++snapshotId) {
