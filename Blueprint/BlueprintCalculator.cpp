@@ -9,21 +9,21 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed) :
 	pruneCumWeights(buildPruneCumWeights()),
 
 	abcInfo(
-		bp::MAX_PLAYERS,
-		bp::ANTE,
-		bp::BIG_BLIND,
-		bp::INITIAL_STAKE,
-		bp::BET_SIZES,
-		bp::BLUEPRINT_NAME,
+		MAX_PLAYERS,
+		ANTE,
+		BIG_BLIND,
+		INITIAL_STAKE,
+		BET_SIZES,
+		BLUEPRINT_NAME,
 		rngSeed),
 
 	gpSeqs(
-		bp::MAX_PLAYERS,
-		bp::ANTE,
-		bp::BIG_BLIND,
-		bp::INITIAL_STAKE,
-		bp::BET_SIZES,
-		bp::BLUEPRINT_NAME),
+		MAX_PLAYERS,
+		ANTE,
+		BIG_BLIND,
+		INITIAL_STAKE,
+		BET_SIZES,
+		BLUEPRINT_NAME),
 
 	currIter(0),
 	nextSnapshotId(1)
@@ -85,7 +85,7 @@ size_t BlueprintCalculator::nHandIds(egn::Round round) const
 {
 	switch (round) {
 	case egn::PREFLOP: return abc::PREFLOP_SIZE;
-	default: return bp::N_BCK;
+	default: return N_BCK;
 	}
 }
 
