@@ -147,16 +147,16 @@ void BlueprintCalculator::applyDiscounting()
 
 void BlueprintCalculator::updatePreflopStrat(uint8_t traverser)
 {
-	abcInfo.startNewHand();
-
 	stack.clear();
 	hist.clear();
 	lastChild.clear();
 
-	hist.push_back(abcInfo);
+	abcInfo.startNewHand();
 
 	// Do a DFS.
 	while (true) {
+
+		hist.push_back(abcInfo);
 
 		// Reached leaf node.
 		if (abcInfo.state.finished || abcInfo.state.round != egn::PREFLOP
@@ -178,7 +178,6 @@ void BlueprintCalculator::updatePreflopStrat(uint8_t traverser)
 			uint8_t a = stack.back();
 			stack.pop_back();
 			abcInfo.nextState(a);
-			hist.push_back(abcInfo);
 			lastChild.push_back(a == 0);
 		}
 
@@ -193,7 +192,6 @@ void BlueprintCalculator::updatePreflopStrat(uint8_t traverser)
 				++preflopStrat[abcInfo.handIdx()][abcInfo.actionSeqIds[a]];
 				// Go to the next node.
 				abcInfo.nextState(a);
-				hist.push_back(abcInfo);
 				lastChild.push_back(true);
 			}
 			else {
@@ -202,7 +200,6 @@ void BlueprintCalculator::updatePreflopStrat(uint8_t traverser)
 					stack.push_back(a);
 				// Go to the next node.
 				abcInfo.nextState(nActions() - 1);
-				hist.push_back(abcInfo);
 				// There will always be at least two legal actions, so this is never the last.
 				lastChild.push_back(false);
 			}
@@ -212,8 +209,6 @@ void BlueprintCalculator::updatePreflopStrat(uint8_t traverser)
 
 void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 {
-	abcInfo.startNewHand();
-
 	stack.clear();
 	// hist will only contain no-leaf nodes where traverser plays.
 	hist.clear();
@@ -221,11 +216,14 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 	lastChild.clear();
 	expVals.clear();
 
-	if (abcInfo.state.actingPlayer == traverser)
-		hist.push_back(abcInfo);
+	abcInfo.startNewHand();
 
 	// Do a DFS.
 	while (true) {
+
+		// Add no-leaf nodes where traverser plays to hist.
+		if (abcInfo.state.actingPlayer == traverser && !abcInfo.state.finished)
+			hist.push_back(abcInfo);
 
 		// Reached leaf node.
 		if (abcInfo.state.finished || !abcInfo.state.isAlive(traverser)) {
@@ -287,17 +285,11 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 				abcInfo.nextState(a);
 			}
 		}
-
-		// Add no-leaf nodes where traverser plays to hist.
-		if (abcInfo.state.actingPlayer == traverser && !abcInfo.state.finished)
-			hist.push_back(abcInfo);
 	}
 }
 
 void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 {
-	abcInfo.startNewHand();
-
 	stack.clear();
 	// hist will only contain no-leaf nodes where traverser plays.
 	hist.clear();
@@ -307,11 +299,14 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 	// visited will only deal with children of nodes where traverser plays.
 	visited.clear();
 
-	if (abcInfo.state.actingPlayer == traverser)
-		hist.push_back(abcInfo);
+	abcInfo.startNewHand();
 
 	// Do a DFS.
 	while (true) {
+
+		// Add no-leaf nodes where traverser plays to hist.
+		if (abcInfo.state.actingPlayer == traverser && !abcInfo.state.finished)
+			hist.push_back(abcInfo);
 
 		// Reached leaf node.
 		if (abcInfo.state.finished || !abcInfo.state.isAlive(traverser)) {
@@ -386,10 +381,6 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 				abcInfo.nextState(a);
 			}
 		}
-
-		// Add no-leaf nodes where traverser plays to hist.
-		if (abcInfo.state.actingPlayer == traverser && !abcInfo.state.finished)
-			hist.push_back(abcInfo);
 	}
 }
 
