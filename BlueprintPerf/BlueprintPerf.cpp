@@ -23,6 +23,6 @@ int main()
 	std::cout
 		<< opt::prettyDuration(duration) << "\n"
 		<< opt::prettyNumber(calculator.currIter, 2, true) << " iter\n"
-		<< (unsigned)std::round(calculator.currIter / duration) << " iter/sec\n"
+		<< opt::roundStr(calculator.currIter / duration) << " iter/sec\n"
 		<< opt::prettyNumber(duration / calculator.currIter, 2, true) << "sec/iter\n";
 }

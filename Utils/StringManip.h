@@ -12,77 +12,58 @@ inline std::string toUpper(const std::string& s)
 	return res;
 }
 
-inline double round(double value, unsigned precision)
+inline double round(const double value, const unsigned precision = 0)
 {
 	const double multiplier = std::pow(10.0, precision);
 	return std::round(value * multiplier) / multiplier;
 }
 
-// Output the double d in a string with a maximum of 4 characters if precision = 0
-// or 5 + precision characters using G (giga), M (mega), K (kilo), milli, micro, nano.
-inline std::string prettyNumber(double d, unsigned precision = 0, bool withSpace = false)
+inline std::string roundStr(const double value, const unsigned precision = 0)
 {
 	std::ostringstream os;
 	os.precision(precision);
-	os << std::fixed;
+	os << std::fixed << round(value, precision);
+	return os.str();
+}
 
+// Output the double d in a string with a maximum of 4 characters if precision = 0
+// or 5 + precision characters using G (giga), M (mega), K (kilo), milli, micro, nano.
+inline std::string prettyNumber(
+	const double d, const unsigned precision = 0, const bool withSpace = false)
+{
 	// giga
-	if (d >= 1e9) {
-		os << round(d * 1e-9, precision);
-		if (withSpace) os << " ";
-		os << "G";
-		return os.str();
-	}
+	if (d >= 1e9)
+		return roundStr(d * 1e-9, precision) + (withSpace ? " " : "") + "G";
 
 	// mega
-	else if (d >= 1e6) {
-		os << round(d * 1e-6, precision);
-		if (withSpace) os << " ";
-		os << "M";
-		return os.str();
-	}
+	else if (d >= 1e6)
+		return roundStr(d * 1e-6, precision) + (withSpace ? " " : "") + "M";
 
 	// kilo
-	else if (d >= 1e3) {
-		os << round(d * 1e-3, precision);
-		if (withSpace) os << " ";
-		os << "K";
-		return os.str();
-	}
+	else if (d >= 1e3)
+		return roundStr(d * 1e-3, precision) + (withSpace ? " " : "") + "K";
 
 	// unity
 	else if (d >= 1.0 || d == 0) {
-		if (std::round(d) == d) os << (uint64_t)d;
-		else os << round(d, precision);
-		return os.str();
+		if (std::round(d) == d) return std::to_string((uint64_t)d);
+		else return roundStr(d, precision);
 	}
 
 	// milli
-	else if (d >= 1e-3) {
-		os << round(d * 1e3, precision);
-		if (withSpace) os << " ";
-		os << "milli";
-		return os.str();
-	}
+	else if (d >= 1e-3)
+		return roundStr(d * 1e3, precision) + (withSpace ? " " : "") + "milli";
 
 	// micro
-	else if (d >= 1e-6) {
-		os << round(d * 1e6, precision);
-		if (withSpace) os << " ";
-		os << "micro";
-		return os.str();
-	}
+	else if (d >= 1e-6)
+		return roundStr(d * 1e6, precision) + (withSpace ? " " : "") + "micro";
 
 	// nano
-	else {
-		os << round(d * 1e9, precision);
-		if (withSpace) os << " ";
-		os << "nano";
-		return os.str();
-	}
+	else
+		return roundStr(d * 1e9, precision) + (withSpace ? " " : "") + "nano";
 }
 
-inline std::string prettyNumber(uint64_t n, unsigned precision = 0, bool withSpace = false)
+inline std::string prettyNumber(
+	const uint64_t n, const unsigned precision = 0, const bool withSpace = false)
 {
 	return prettyNumber((double)n, precision, withSpace);
 }
