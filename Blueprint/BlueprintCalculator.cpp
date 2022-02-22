@@ -30,15 +30,15 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 {
 	// Allocate memory for the regrets.
 	regrets = {
-		std::vector<std::vector<regret_t>>(nHandIds(egn::PREFLOP), std::vector<regret_t>(nActionSeqIds(egn::PREFLOP))),
-		std::vector<std::vector<regret_t>>(nHandIds(egn::FLOP), std::vector<regret_t>(nActionSeqIds(egn::FLOP))),
-		std::vector<std::vector<regret_t>>(nHandIds(egn::TURN), std::vector<regret_t>(nActionSeqIds(egn::TURN))),
-		std::vector<std::vector<regret_t>>(nHandIds(egn::RIVER), std::vector<regret_t>(nActionSeqIds(egn::RIVER)))
+		std::vector<std::vector<regret_t>>(N_BCK_PREFLOP, std::vector<regret_t>(nActionSeqIds(egn::PREFLOP))),
+		std::vector<std::vector<regret_t>>(N_BCK_FLOP, std::vector<regret_t>(nActionSeqIds(egn::FLOP))),
+		std::vector<std::vector<regret_t>>(N_BCK_TURN, std::vector<regret_t>(nActionSeqIds(egn::TURN))),
+		std::vector<std::vector<regret_t>>(N_BCK_RIVER, std::vector<regret_t>(nActionSeqIds(egn::RIVER)))
 	};
 
 	// Allocate memory for the preflop strategy.
 	preflopStrat = std::vector<std::vector<sumRegret_t>>(
-		nHandIds(egn::PREFLOP), std::vector<sumRegret_t>(nActionSeqIds(egn::PREFLOP)));
+		N_BCK_PREFLOP, std::vector<sumRegret_t>(nActionSeqIds(egn::PREFLOP)));
 
 	gpSeqs.load();
 }
@@ -92,8 +92,11 @@ std::array<uint8_t, 2> BlueprintCalculator::buildPruneCumWeights()
 size_t BlueprintCalculator::nHandIds(egn::Round round) const
 {
 	switch (round) {
-	case egn::PREFLOP: return abc::PREFLOP_SIZE;
-	default: return N_BCK;
+	case egn::PREFLOP: return N_BCK_PREFLOP;
+	case egn::FLOP: return N_BCK_FLOP;
+	case egn::TURN: return N_BCK_TURN;
+	case egn::RIVER: return N_BCK_RIVER;
+	default: throw std::runtime_error("Unknown round.");
 	}
 }
 
