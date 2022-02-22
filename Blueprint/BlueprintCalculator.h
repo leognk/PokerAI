@@ -7,6 +7,7 @@
 #include "../Utils/FastVector.h"
 #include "../Utils/StringManip.h"
 #include "../Utils/Time.h"
+#include "../Utils/Memory.h"
 
 namespace bp {
 

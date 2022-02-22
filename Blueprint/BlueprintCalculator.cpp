@@ -611,10 +611,14 @@ void BlueprintCalculator::printProgress() const
 	static const std::string endIterStr = opt::prettyBigNum(endIter, 1);
 	const std::string currIterStr = opt::prettyBigNum(currIter, 1);
 	const std::string duration = opt::prettyDuration(startTime);
+	const std::string vm = opt::prettyBigNum(opt::virtualMemUsedByMe(), 1, true) + "o";
+	const std::string ram = opt::prettyBigNum(opt::physMemUsedByMe(), 1, true) + "o";
 
 	std::cout
 		<< "iter: " << std::setw(6) << currIterStr << " / " << endIterStr
-		<< " | " << duration << "\n";
+		<< " | " << duration
+		<< " | VM: " << vm
+		<< " | RAM: " << ram << "\n";
 }
 
 void BlueprintCalculator::printFinalStats() const

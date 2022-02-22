@@ -17,7 +17,8 @@ int main()
 	uint64_t nNodes = 0;
 	for (uint8_t r = 0; r < egn::N_ROUNDS; ++r)
 		nNodes += infoAbcSizes[r] * actionSeqs[r].size();
-	uint64_t memory = sizeof(uint32_t) * nNodes;
+	uint64_t memory = nNodes * sizeof(int32_t)
+		+ infoAbcSizes[egn::PREFLOP] * actionSeqs[egn::PREFLOP].size() * sizeof(uint32_t);
 
 	auto t = std::chrono::high_resolution_clock::now();
 	double duration = 1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(t - startTime).count();

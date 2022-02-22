@@ -6,7 +6,7 @@
 
 namespace opt {
 
-DWORDLONG totalVirtualMem()
+inline DWORDLONG totalVirtualMem()
 {
 	MEMORYSTATUSEX memInfo;
 	memInfo.dwLength = sizeof(MEMORYSTATUSEX);
@@ -14,7 +14,7 @@ DWORDLONG totalVirtualMem()
 	return memInfo.ullTotalPageFile;
 }
 
-DWORDLONG virtualMemUsed()
+inline DWORDLONG virtualMemUsed()
 {
 	MEMORYSTATUSEX memInfo;
 	memInfo.dwLength = sizeof(MEMORYSTATUSEX);
@@ -22,14 +22,14 @@ DWORDLONG virtualMemUsed()
 	return memInfo.ullTotalPageFile - memInfo.ullAvailPageFile;
 }
 
-SIZE_T virtualMemUsedByMe()
+inline SIZE_T virtualMemUsedByMe()
 {
 	PROCESS_MEMORY_COUNTERS_EX pmc;
 	GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
 	return pmc.PrivateUsage;
 }
 
-DWORDLONG totalPhysMem()
+inline DWORDLONG totalPhysMem()
 {
 	MEMORYSTATUSEX memInfo;
 	memInfo.dwLength = sizeof(MEMORYSTATUSEX);
@@ -37,7 +37,7 @@ DWORDLONG totalPhysMem()
 	return memInfo.ullTotalPhys;
 }
 
-DWORDLONG physMemUsed()
+inline DWORDLONG physMemUsed()
 {
 	MEMORYSTATUSEX memInfo;
 	memInfo.dwLength = sizeof(MEMORYSTATUSEX);
@@ -45,7 +45,7 @@ DWORDLONG physMemUsed()
 	return memInfo.ullTotalPhys - memInfo.ullAvailPhys;
 }
 
-SIZE_T physMemUsedByMe()
+inline SIZE_T physMemUsedByMe()
 {
 	PROCESS_MEMORY_COUNTERS_EX pmc;
 	GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
