@@ -1,7 +1,6 @@
 #include "TreeTraverser.h"
 #include "../Utils/FastVector.h"
 #include "../Utils/Hash.h"
-#include "../Utils/StringManip.h"
 
 namespace abc {
 
@@ -29,8 +28,7 @@ std::vector<std::vector<TreeTraverser::seq_t>> TreeTraverser::traverseTree()
 		if (verbose)
 			std::cout
 				<< opt::toUpper(egn::roundToString(egn::Round(r))) << "\n"
-				<< "states: " << seqsToCurrentRound.size()
-				<< " (" << std::round(seqsToCurrentRound.size() / 1e3) << "k)\n";
+				<< "states: " << opt::prettyBigNum(seqsToCurrentRound.size(), 1) << "\n";
 
 		longSeqs_t seqsToNextRound;
 		traverseRoundTree(egn::Round(r), seqsToCurrentRound, seqsToNextRound, actionSeqs[r]);
@@ -206,21 +204,11 @@ void TreeTraverser::printProgress(
 	const std::string duration = opt::prettyDuration(startTime);
 
 	std::cout
-
-		<< "nodes: " << std::setw(8) << nNodes
-		<< std::setw(6) << (" (" + std::to_string((uint32_t)std::round(nNodes / 1e6)) + "M)")
-
-		<< " | seq: " << std::setw(8) << nActionSeq
-		<< std::setw(6) << (" (" + std::to_string((uint32_t)std::round(nActionSeq / 1e6)) + "M)")
-
-		<< " | finishedSeq: " << std::setw(8) << nFinishedSeq
-		<< std::setw(6) << (" (" + std::to_string((uint32_t)std::round(nFinishedSeq / 1e6)) + "M)")
-
-		<< " | continuingSeq: " << std::setw(7) << nContinuingSeq
-		<< std::setw(5) << (" (" + std::to_string((uint32_t)std::round(nContinuingSeq / 1e6)) + "M)")
-
+		<< "nodes: " << std::setw(6) << opt::prettyBigNum(nNodes, 1)
+		<< " | seq: " << std::setw(6) << opt::prettyBigNum(nActionSeq, 1)
+		<< " | finishedSeq: " << std::setw(6) << opt::prettyBigNum(nFinishedSeq, 1)
+		<< " | continuingSeq: " << std::setw(6) << opt::prettyBigNum(nContinuingSeq, 1)
 		<< " | height: " << std::setw(2) << height
-
 		<< " | " << duration << "\n";
 }
 

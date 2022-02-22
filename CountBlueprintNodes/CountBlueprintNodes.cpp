@@ -1,10 +1,9 @@
 #include "../AbstractInfoset/TreeTraverser.h"
 #include "../Blueprint/Constants.h"
-#include "../LosslessAbstraction/hand_index.h"
 
 int main()
 {
-	auto startTime = std::chrono::high_resolution_clock::now();
+	opt::time_t startTime = opt::getTime();
 
 	abc::TreeTraverser traverser(
 		bp::MAX_PLAYERS, bp::ANTE, bp::BIG_BLIND,
@@ -13,19 +12,21 @@ int main()
 	std::vector<std::vector<abc::TreeTraverser::seq_t>> actionSeqs = traverser.traverseTree();
 
 	// Count total number of nodes including card abstraction.
-	const bp::bckSize_t infoAbcSizes[] = {
-		bp::N_BCK_PREFLOP, bp::N_BCK_FLOP, bp::N_BCK_TURN, bp::N_BCK_RIVER };
-	uint64_t nNodes = 0;
-	for (uint8_t r = 0; r < egn::N_ROUNDS; ++r)
-		nNodes += infoAbcSizes[r] * actionSeqs[r].size();
+	uint64_t nNodes =
+		bp::N_BCK_PREFLOP * actionSeqs[egn::PREFLOP].size()
+		+ bp::N_BCK_FLOP * actionSeqs[egn::FLOP].size()
+		+ bp::N_BCK_TURN * actionSeqs[egn::TURN].size()
+		+ bp::N_BCK_RIVER * actionSeqs[egn::RIVER].size();
+
+	// Memory for the regrets and the preflop final strategy.
 	uint64_t memory = nNodes * sizeof(int32_t)
-		+ infoAbcSizes[egn::PREFLOP] * actionSeqs[egn::PREFLOP].size() * sizeof(uint32_t);
+		+ bp::N_BCK_PREFLOP * actionSeqs[egn::PREFLOP].size() * sizeof(uint32_t);
 
 	const std::string duration = opt::prettyDuration(startTime);
 
 	std::cout
 		<< "TOTAL with card abc\n"
-		<< "nodes: " << nNodes << " (" << std::round(nNodes * 1e-8) * 1e-1 << "G)"
-		<< " | memory: " << memory << " (" << std::round(memory * 1e-8) * 1e-1 << "Go)"
+		<< "nodes: " << opt::prettyBigNum(nNodes, 2, true)
+		<< " | memory: " << opt::prettyBigNum(memory, 2, true) << "o"
 		<< " | " << duration << "\n";
 }

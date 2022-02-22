@@ -17,7 +17,7 @@ int main()
 	const abc::KMeansInitMode kmeansInitMode = abc::KMeansInitMode::PlusPlusMax; // PlusPlus
 	const abc::KMeansIterMode kmeansIterMode = abc::KMeansIterMode::Elkan; // Elkan
 
-	abc::DKEM<bckSize_t, nBck> dkem(
+	abc::DKEM<bckSize_t, nBck, nBck, nBck> dkem(
 		kMeansNRestarts, kMeansMaxIter, kMeansInvTolerance,
 		kMeansRngSeed, kmeansInitMode, kmeansIterMode);
 	switch (round) {

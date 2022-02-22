@@ -3,7 +3,7 @@
 int main()
 {
 	typedef uint8_t bckSize_t;
-	const bckSize_t nBck = 200;
+	const bckSize_t nBckRiver = 200;
 
 	const unsigned kMeansNRestarts = 1; // 25
 	const unsigned kMeansMaxIter = 300; // 300
@@ -12,7 +12,7 @@ int main()
 	const abc::KMeansInitMode kmeansInitMode = abc::KMeansInitMode::PlusPlus; // PlusPlus
 	const abc::KMeansIterMode kmeansIterMode = abc::KMeansIterMode::Elkan; // Elkan
 
-	abc::KOC<bckSize_t, nBck> koc(
+	abc::KOC<bckSize_t, nBckRiver> koc(
 		kMeansNRestarts, kMeansMaxIter, kMeansInvTolerance,
 		kMeansRngSeed, kmeansInitMode, kmeansIterMode);
 	koc.populateRivBckLUT();

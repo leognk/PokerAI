@@ -4,6 +4,7 @@
 #include "SimpleAbstractInfoset.h"
 #include "ActionSeq.h"
 #include "../Utils/Time.h"
+#include "../Utils/StringManip.h"
 #include <unordered_set>
 
 namespace abc {
