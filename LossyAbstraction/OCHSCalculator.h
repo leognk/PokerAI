@@ -27,7 +27,7 @@ public:
 private:
 	static void calculateRivOCHS(const uint8_t hand[], std::vector<uint16_t>& ochs);
 
-	static DKEM<uint8_t, OCHS_SIZE> dkem;
+	static DKEM<uint8_t, OCHS_SIZE, OCHS_SIZE, OCHS_SIZE> dkem;
 	static omp::HandEvaluator eval;
 
 }; // OCHSCalculator

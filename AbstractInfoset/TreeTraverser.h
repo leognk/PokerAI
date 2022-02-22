@@ -3,7 +3,7 @@
 
 #include "SimpleAbstractInfoset.h"
 #include "ActionSeq.h"
-#include <chrono>
+#include "../Utils/Time.h"
 #include <unordered_set>
 
 namespace abc {
@@ -44,7 +44,7 @@ private:
 		uint64_t nFinishedSeq,
 		uint64_t nContinuingSeq,
 		uint64_t height,
-		std::chrono::high_resolution_clock::time_point startTime);
+		opt::time_t startTime);
 
 	SimpleAbstractInfoset abcInfo;
 

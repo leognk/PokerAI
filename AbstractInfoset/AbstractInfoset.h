@@ -13,7 +13,7 @@ namespace abc {
 // It is like a regular infoset, but using abstracted
 // hands (with information abstraction) and abstracted actions
 // (with action abstraction).
-template<typename bckSize_t, bckSize_t nBck>
+template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
 class AbstractInfoset
 {
 public:
@@ -164,15 +164,15 @@ private:
 	// History of actions made in the current round stored in a compressed format.
 	StdActionSeq roundActions;
 
-	static abc::LossyIndexer<bckSize_t, nBck> handIndexer;
+	static abc::LossyIndexer<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver> handIndexer;
 	std::array<bckSize_t, omp::MAX_PLAYERS> handsIds;
 
 	abc::ActionSeqIndexer actionSeqIndexer;
 
 }; // AbstractInfoset
 
-template<typename bckSize_t, bckSize_t nBck>
-abc::LossyIndexer<bckSize_t, nBck> AbstractInfoset<bckSize_t, nBck>::handIndexer;
+template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
+abc::LossyIndexer<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver> AbstractInfoset<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>::handIndexer;
 
 } // abc
 

@@ -48,7 +48,7 @@ void TreeTraverser::traverseRoundTree(
 	longSeqs_t& seqsToNextRound,
 	std::vector<seq_t>& actionSeqs)
 {
-	auto startTime = std::chrono::high_resolution_clock::now();
+	opt::time_t startTime = opt::getTime();
 	uint64_t nFinishedSeq = 0, nContinuingSeq = 0, height = 0;
 
 	// Set of pairs (nPlayers, pot).
@@ -200,11 +200,10 @@ void TreeTraverser::printProgress(
 	uint64_t nFinishedSeq,
 	uint64_t nContinuingSeq,
 	uint64_t height,
-	std::chrono::high_resolution_clock::time_point startTime)
+	opt::time_t startTime)
 {
 	uint64_t nActionSeq = nFinishedSeq + nContinuingSeq;
-	auto t = std::chrono::high_resolution_clock::now();
-	double duration = 1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(t - startTime).count();
+	const std::string duration = opt::prettyDuration(startTime);
 
 	std::cout
 
@@ -222,7 +221,7 @@ void TreeTraverser::printProgress(
 
 		<< " | height: " << std::setw(2) << height
 
-		<< " | " << std::setw(2) << std::round(duration) << "s" << "\n";
+		<< " | " << duration << "\n";
 }
 
 } // abc

@@ -8,7 +8,7 @@ namespace abc {
 // Class generating lossy information abstraction
 // with k-means on Opponent Cluster Hand Strength.
 // bck for bucket
-template<typename bckSize_t, bckSize_t nBck>
+template<typename bckSize_t, bckSize_t nBckRiver>
 class KOC
 {
 public:
@@ -33,14 +33,14 @@ public:
 	static void saveRivBckLUT()
 	{
 		opt::saveArray(RIV_BCK_LUT,
-			bckLutDir + std::format("RIV_{}_BCK_LUT.bin", nBck));
+			bckLutDir + std::format("RIV_{}_BCK_LUT.bin", nBckRiver));
 		// Write clusters' centers.
 		opt::saveArray(RIV_CENTERS,
-			bckLutDir + std::format("RIV_{}_CENTERS.bin", nBck));
+			bckLutDir + std::format("RIV_{}_CENTERS.bin", nBckRiver));
 		// Write inertia and min weight.
 		auto file = std::fstream(
 			bckLutDir + std::format("RIV_{}_BCK - inertia={}, min_weight={}",
-				nBck, rivInertia, rivMinWeight),
+				nBckRiver, rivInertia, rivMinWeight),
 			std::ios::out);
 		file.close();
 	}
@@ -48,39 +48,39 @@ public:
 	static void loadRivBckLUT()
 	{
 		opt::loadArray(RIV_BCK_LUT,
-			bckLutDir + std::format("RIV_BCK_{}_LUT.bin", nBck));
+			bckLutDir + std::format("RIV_BCK_{}_LUT.bin", nBckRiver));
 	}
 
 	static std::array<bckSize_t, CMB_RIVER_SIZE> RIV_BCK_LUT;
 
 private:
 
-	static std::array<std::array<uint16_t, OCHS_SIZE>, nBck> RIV_CENTERS;
+	static std::array<std::array<uint16_t, OCHS_SIZE>, nBckRiver> RIV_CENTERS;
 
 	static uint64_t rivInertia;
 	static uint32_t rivMinWeight;
 
 	static OCHSCalculator ochs;
-	KMeans<bckSize_t, nBck> kmeans;
+	KMeans<bckSize_t, nBckRiver> kmeans;
 
 }; // KOC
 
 // Initialize static members.
 
-template<typename bckSize_t, bckSize_t nBck>
-std::array<bckSize_t, CMB_RIVER_SIZE> KOC<bckSize_t, nBck>::RIV_BCK_LUT;
+template<typename bckSize_t, bckSize_t nBckRiver>
+std::array<bckSize_t, CMB_RIVER_SIZE> KOC<bckSize_t, nBckRiver>::RIV_BCK_LUT;
 
-template<typename bckSize_t, bckSize_t nBck>
-std::array<std::array<uint16_t, OCHS_SIZE>, nBck> KOC<bckSize_t, nBck>::RIV_CENTERS;
+template<typename bckSize_t, bckSize_t nBckRiver>
+std::array<std::array<uint16_t, OCHS_SIZE>, nBckRiver> KOC<bckSize_t, nBckRiver>::RIV_CENTERS;
 
-template<typename bckSize_t, bckSize_t nBck>
-uint64_t KOC<bckSize_t, nBck>::rivInertia;
+template<typename bckSize_t, bckSize_t nBckRiver>
+uint64_t KOC<bckSize_t, nBckRiver>::rivInertia;
 
-template<typename bckSize_t, bckSize_t nBck>
-uint32_t KOC<bckSize_t, nBck>::rivMinWeight;
+template<typename bckSize_t, bckSize_t nBckRiver>
+uint32_t KOC<bckSize_t, nBckRiver>::rivMinWeight;
 
-template<typename bckSize_t, bckSize_t nBck>
-OCHSCalculator KOC<bckSize_t, nBck>::ochs;
+template<typename bckSize_t, bckSize_t nBckRiver>
+OCHSCalculator KOC<bckSize_t, nBckRiver>::ochs;
 
 } // abc
 

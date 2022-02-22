@@ -7,12 +7,14 @@
 
 namespace abc {
 
-template<typename bckSize_t, bckSize_t nBck>
+template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
 class LossyIndexer
 {
 public:
 	static void loadLUT()
 	{
+		if constexpr (nBckPreflop < abc::PREFLOP_SIZE)
+			dkem.loadPreflopBckLUT();
 		dkem.loadFlopBckLUT();
 		dkem.loadTurnBckLUT();
 		koc.loadRivBckLUT();
@@ -23,8 +25,13 @@ public:
 	{
 		switch (round) {
 
-		case egn::PREFLOP:
-			return abc::EquityCalculator::preflopIndexer.hand_index_last(hand);
+		case egn::PREFLOP: {
+			if constexpr (nBckPreflop < abc::PREFLOP_SIZE)
+				return dkem.PREFLOP_BCK_LUT[
+					abc::EquityCalculator::preflopIndexer.hand_index_last(hand)];
+			else
+				return abc::EquityCalculator::preflopIndexer.hand_index_last(hand);
+		}
 
 		case egn::FLOP: {
 			uint8_t cards[omp::FLOP_HAND] = {
@@ -53,15 +60,15 @@ public:
 	}
 
 private:
-	static abc::DKEM<bckSize_t, nBck> dkem;
-	static abc::KOC<bckSize_t, nBck> koc;
+	static abc::DKEM<bckSize_t, nBckPreflop, nBckFlop, nBckTurn> dkem;
+	static abc::KOC<bckSize_t, nBckRiver> koc;
 
 }; // LossyIndexer
 
-template<typename bckSize_t, bckSize_t nBck>
-abc::DKEM<bckSize_t, nBck> LossyIndexer<bckSize_t, nBck>::dkem;
-template<typename bckSize_t, bckSize_t nBck>
-abc::KOC<bckSize_t, nBck> LossyIndexer<bckSize_t, nBck>::koc;
+template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
+abc::DKEM<bckSize_t, nBckPreflop, nBckFlop, nBckTurn> LossyIndexer<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>::dkem;
+template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
+abc::KOC<bckSize_t, nBckRiver> LossyIndexer<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>::koc;
 
 } // abc
 

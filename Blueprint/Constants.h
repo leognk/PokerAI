@@ -17,8 +17,8 @@ namespace bp {
 
 //#define MACRO_BLUEPRINT_NAME ORIGINAL_BLUEPRINT
 //#define MACRO_BLUEPRINT_NAME MEDIUM_BLUEPRINT_2
-//#define MACRO_BLUEPRINT_NAME MEDIUM_BLUEPRINT_1
-#define MACRO_BLUEPRINT_NAME SIMPLE_BLUEPRINT
+#define MACRO_BLUEPRINT_NAME MEDIUM_BLUEPRINT_1
+//#define MACRO_BLUEPRINT_NAME SIMPLE_BLUEPRINT
 
 
 #if MACRO_BLUEPRINT_NAME == ORIGINAL_BLUEPRINT
@@ -61,7 +61,10 @@ static_assert(discountEndIter <= snapshotBeginIter);
 
 
 typedef uint8_t bckSize_t;
-static const bckSize_t N_BCK = 200; // Pluribus: 200
+static const bckSize_t N_BCK_PREFLOP = abc::PREFLOP_SIZE; // Pluribus: 169
+static const bckSize_t N_BCK_FLOP = 200; // Pluribus: 200
+static const bckSize_t N_BCK_TURN = 200; // Pluribus: 200
+static const bckSize_t N_BCK_RIVER = 200; // Pluribus: 200
 
 static const uint8_t MAX_PLAYERS = 6; // Pluribus: 6
 
@@ -132,7 +135,10 @@ static_assert(discountEndIter <= snapshotBeginIter);
 
 
 typedef uint8_t bckSize_t;
-static const bckSize_t N_BCK = 50; // Pluribus: 200
+static const bckSize_t N_BCK_PREFLOP = 50; // Pluribus: 169
+static const bckSize_t N_BCK_FLOP = 50; // Pluribus: 200
+static const bckSize_t N_BCK_TURN = 50; // Pluribus: 200
+static const bckSize_t N_BCK_RIVER = 50; // Pluribus: 200
 
 static const uint8_t MAX_PLAYERS = 6; // Pluribus: 6
 
@@ -202,7 +208,10 @@ static_assert(discountEndIter <= snapshotBeginIter);
 
 
 typedef uint8_t bckSize_t;
-static const bckSize_t N_BCK = 50; // Pluribus: 200
+static const bckSize_t N_BCK_PREFLOP = 50; // Pluribus: 169
+static const bckSize_t N_BCK_FLOP = 50; // Pluribus: 200
+static const bckSize_t N_BCK_TURN = 50; // Pluribus: 200
+static const bckSize_t N_BCK_RIVER = 50; // Pluribus: 200
 
 static const uint8_t MAX_PLAYERS = 6; // Pluribus: 6
 
@@ -272,7 +281,10 @@ static_assert(discountEndIter <= snapshotBeginIter);
 
 
 typedef uint8_t bckSize_t;
-static const bckSize_t N_BCK = 5; // Pluribus: 200
+static const bckSize_t N_BCK_PREFLOP = 5; // Pluribus: 169
+static const bckSize_t N_BCK_FLOP = 5; // Pluribus: 200
+static const bckSize_t N_BCK_TURN = 5; // Pluribus: 200
+static const bckSize_t N_BCK_RIVER = 5; // Pluribus: 200
 
 static const uint8_t MAX_PLAYERS = 3; // Pluribus: 6
 

@@ -4,7 +4,7 @@
 namespace abc {
 
 std::vector<std::vector<uint16_t>> OCHSCalculator::RIV_OCHS_LUT;
-DKEM<uint8_t, OCHS_SIZE> OCHSCalculator::dkem;
+DKEM<uint8_t, OCHS_SIZE, OCHS_SIZE, OCHS_SIZE> OCHSCalculator::dkem;
 omp::HandEvaluator OCHSCalculator::eval;
 
 void OCHSCalculator::populateRivOCHSLUT()
