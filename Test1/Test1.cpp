@@ -15,5 +15,5 @@
 
 int main()
 {
-	std::cout << opt::prettyBigNum(uint64_t(50), 2) << "\n";
+	std::cout << opt::prettySmallNum(5786.255e-3, 2, true) << "\n";
 }

@@ -5,6 +5,24 @@
 
 namespace opt {
 
+typedef std::chrono::high_resolution_clock::time_point time_t;
+
+inline time_t getTime()
+{
+	return std::chrono::high_resolution_clock::now();
+}
+
+inline double getDuration(const time_t& startTime, const time_t& endTime)
+{
+	return 1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>
+		(endTime - startTime).count();
+}
+
+inline double getDuration(const time_t& startTime)
+{
+	return getDuration(startTime, getTime());
+}
+
 // Take a duration in seconds as the input and output
 // the same duration in the format: "d day(s), h:m:s".
 inline std::string prettyDuration(unsigned dt)
@@ -35,6 +53,21 @@ inline std::string prettyDuration(unsigned dt)
 	res += std::to_string(s);
 
 	return res;
+}
+
+inline std::string prettyDuration(const double& dt)
+{
+	return prettyDuration((unsigned)std::round(dt));
+}
+
+inline std::string prettyDuration(const time_t& startTime, const time_t& endTime)
+{
+	return prettyDuration(getDuration(startTime, endTime));
+}
+
+inline std::string prettyDuration(const time_t& startTime)
+{
+	return prettyDuration(startTime, getTime());
 }
 
 } // opt

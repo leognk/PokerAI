@@ -5,6 +5,8 @@
 #include "../AbstractInfoset/AbstractInfoset.h"
 #include "../AbstractInfoset/GroupedActionSeqs.h"
 #include "../Utils/FastVector.h"
+#include "../Utils/StringManip.h"
+#include "../Utils/Time.h"
 
 namespace bp {
 
@@ -26,10 +28,13 @@ class BlueprintCalculator
 public:
 
 	// Set rngSeed to 0 to set a random seed.
-	BlueprintCalculator(unsigned rngSeed = 0);
+	BlueprintCalculator(unsigned rngSeed = 0, bool verbose = true);
 
 	// Conduct MCCFR and save the final strategy to the disk.
 	void buildStrategy();
+	void oneIter();
+
+	uint64_t currIter;
 
 private:
 
@@ -63,6 +68,8 @@ private:
 	void printProgress() const;
 	void printFinalStats() const;
 
+	bool verbose;
+
 	Rng rng;
 	opt::FastRandomChoice<7> pruneRandChoice;
 	opt::FastRandomChoiceRNGRescale<16> actionRandChoice;
@@ -75,8 +82,7 @@ private:
 	// Non-normalized strategy on preflop.
 	std::vector<std::vector<sumRegret_t>> preflopStrat;
 
-	std::chrono::high_resolution_clock::time_point startTime;
-	uint64_t currIter;
+	opt::time_t startTime;
 	unsigned nextSnapshotId;
 
 	abcInfo_t abcInfo;

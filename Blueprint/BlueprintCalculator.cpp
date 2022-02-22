@@ -1,12 +1,11 @@
 #include "BlueprintCalculator.h"
-#include "../Utils/StringManip.h"
-#include "../Utils/Time.h"
 
 namespace bp {
 
-BlueprintCalculator::BlueprintCalculator(unsigned rngSeed) :
+BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 
 	rng{ (!rngSeed) ? std::random_device{}() : rngSeed },
+	verbose(verbose),
 	pruneCumWeights(buildPruneCumWeights()),
 
 	abcInfo(
@@ -26,7 +25,6 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed) :
 		BET_SIZES,
 		BLUEPRINT_NAME),
 
-	startTime(std::chrono::high_resolution_clock::now()),
 	currIter(0),
 	nextSnapshotId(1)
 {
@@ -47,29 +45,9 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed) :
 
 void BlueprintCalculator::buildStrategy()
 {
-	while (currIter < endIter) {
+	startTime = opt::getTime();
 
-		bool mustPrune = currIter >= pruneBeginIter && pruneRandChoice(pruneCumWeights, rng) == 0;
-		bool mustUpdatePreflopStrat = currIter && (currIter % preflopStratUpdatePeriod == 0);
-
-		for (uint8_t traverser = 0; traverser < MAX_PLAYERS; ++traverser) {
-			if (mustPrune) traverseMCCFRP(traverser);
-			else traverseMCCFR(traverser);
-			if (mustUpdatePreflopStrat) updatePreflopStrat(traverser);
-		}
-
-		if (currIter && currIter < discountEndIter && currIter % discountPeriod == 0)
-			applyDiscounting();
-
-		++currIter;
-
-		if (currIter >= snapshotBeginIter && (currIter - snapshotBeginIter) % snapshotPeriod == 0)
-			takeSnapshot();
-		if (currIter % checkpointPeriod == 0)
-			updateCheckpoint();
-		if (currIter && (currIter % printPeriod == 0 || currIter == endIter))
-			printProgress();
-	}
+	while (currIter < endIter) oneIter();
 
 	// Free memory allocated for regrets.
 	std::vector<std::vector<std::vector<regret_t>>>().swap(regrets);
@@ -78,6 +56,30 @@ void BlueprintCalculator::buildStrategy()
 	averageSnapshots();
 
 	printFinalStats();
+}
+
+void BlueprintCalculator::oneIter()
+{
+	bool mustPrune = currIter >= pruneBeginIter && pruneRandChoice(pruneCumWeights, rng) == 0;
+	bool mustUpdatePreflopStrat = currIter && (currIter % preflopStratUpdatePeriod == 0);
+
+	for (uint8_t traverser = 0; traverser < MAX_PLAYERS; ++traverser) {
+		if (mustPrune) traverseMCCFRP(traverser);
+		else traverseMCCFR(traverser);
+		if (mustUpdatePreflopStrat) updatePreflopStrat(traverser);
+	}
+
+	if (currIter && currIter < discountEndIter && currIter % discountPeriod == 0)
+		applyDiscounting();
+
+	++currIter;
+
+	if (currIter >= snapshotBeginIter && (currIter - snapshotBeginIter) % snapshotPeriod == 0)
+		takeSnapshot();
+	if (currIter % checkpointPeriod == 0)
+		updateCheckpoint();
+	if (verbose && currIter && (currIter % printPeriod == 0 || currIter == endIter))
+		printProgress();
 }
 
 std::array<uint8_t, 2> BlueprintCalculator::buildPruneCumWeights()
@@ -608,10 +610,7 @@ void BlueprintCalculator::printProgress() const
 {
 	static const std::string endIterStr = opt::prettyBigNum(endIter, 1);
 	const std::string currIterStr = opt::prettyBigNum(currIter, 1);
-
-	auto t = std::chrono::high_resolution_clock::now();
-	const std::string duration = opt::prettyDuration((unsigned)std::round(
-		1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(t - startTime).count()));
+	const std::string duration = opt::prettyDuration(startTime);
 
 	std::cout
 		<< "iter: " << std::setw(6) << currIterStr << " / " << endIterStr
@@ -620,10 +619,7 @@ void BlueprintCalculator::printProgress() const
 
 void BlueprintCalculator::printFinalStats() const
 {
-	auto t = std::chrono::high_resolution_clock::now();
-	const std::string duration = opt::prettyDuration((unsigned)std::round(
-		1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(t - startTime).count()));
-
+	const std::string duration = opt::prettyDuration(startTime);
 	std::cout << "\nDuration: " << duration << "\n";
 }
 
