@@ -28,7 +28,7 @@ std::vector<std::vector<TreeTraverser::seq_t>> TreeTraverser::traverseTree()
 		if (verbose)
 			std::cout
 				<< opt::toUpper(egn::roundToString(egn::Round(r))) << "\n"
-				<< "states: " << opt::prettyBigNum(seqsToCurrentRound.size(), 1) << "\n";
+				<< "states: " << opt::prettyNumber(seqsToCurrentRound.size(), 1) << "\n";
 
 		longSeqs_t seqsToNextRound;
 		traverseRoundTree(egn::Round(r), seqsToCurrentRound, seqsToNextRound, actionSeqs[r]);
@@ -204,10 +204,10 @@ void TreeTraverser::printProgress(
 	const std::string duration = opt::prettyDuration(startTime);
 
 	std::cout
-		<< "nodes: " << std::setw(6) << opt::prettyBigNum(nNodes, 1)
-		<< " | seq: " << std::setw(6) << opt::prettyBigNum(nActionSeq, 1)
-		<< " | finishedSeq: " << std::setw(6) << opt::prettyBigNum(nFinishedSeq, 1)
-		<< " | continuingSeq: " << std::setw(6) << opt::prettyBigNum(nContinuingSeq, 1)
+		<< "nodes: " << std::setw(6) << opt::prettyNumber(nNodes, 1)
+		<< " | seq: " << std::setw(6) << opt::prettyNumber(nActionSeq, 1)
+		<< " | finishedSeq: " << std::setw(6) << opt::prettyNumber(nFinishedSeq, 1)
+		<< " | continuingSeq: " << std::setw(6) << opt::prettyNumber(nContinuingSeq, 1)
 		<< " | height: " << std::setw(2) << height
 		<< " | " << duration << "\n";
 }

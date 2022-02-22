@@ -7,16 +7,17 @@
 #include "../Utils/FastVector.h"
 #include "../Utils/StringManip.h"
 #include "../Utils/Time.h"
-#include "../Utils/Memory.h"
+#include "../Utils/HardwareUsage.h"
+#include <filesystem>
 
 namespace bp {
 
-static const std::string blueprintTmpDir = "../data/Blueprint/Temporary/";
-static const std::string snapshotPath = blueprintTmpDir + BLUEPRINT_NAME + "_SNAPSHOT";
-static const std::string checkpointPath = blueprintTmpDir + BLUEPRINT_NAME + "_CHECKPOINT";
+static const std::string blueprintDir = "../data/Blueprint/" + BLUEPRINT_NAME + "/";
+static const std::string blueprintTmpDir = blueprintDir + "tmp/";
 
-static const std::string blueprintStratDir = "../data/Blueprint/Strategy/";
-static const std::string stratPath = blueprintStratDir + BLUEPRINT_NAME + "_STRATEGY";
+static const std::string snapshotPath = blueprintTmpDir + "SNAPSHOT";
+static const std::string checkpointPath = blueprintTmpDir + "CHECKPOINT";
+static const std::string stratPath = blueprintDir + "STRATEGY";
 
 typedef int32_t regret_t;
 typedef uint32_t sumRegret_t;

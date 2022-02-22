@@ -4,7 +4,7 @@ int main()
 {
 	const double maxDuration = 3; // in seconds
 	const unsigned rngSeed = 1;
-	const uint64_t updatePeriod = 1;
+	const uint64_t updatePeriod = (uint64_t)1e3;
 
 	bp::BlueprintCalculator calculator(rngSeed, false);
 	double duration;
@@ -22,7 +22,7 @@ int main()
 	// Print results.
 	std::cout
 		<< opt::prettyDuration(duration) << "\n"
-		<< opt::prettyBigNum(calculator.currIter, 2, true) << " iter\n"
+		<< opt::prettyNumber(calculator.currIter, 2, true) << " iter\n"
 		<< (unsigned)std::round(calculator.currIter / duration) << " iter/sec\n"
-		<< opt::prettySmallNum(duration / calculator.currIter, 2, true) << "sec/iter\n";
+		<< opt::prettyNumber(duration / calculator.currIter, 2, true) << "sec/iter\n";
 }

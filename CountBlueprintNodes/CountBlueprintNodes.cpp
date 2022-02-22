@@ -26,7 +26,7 @@ int main()
 
 	std::cout
 		<< "TOTAL with card abc\n"
-		<< "nodes: " << opt::prettyBigNum(nNodes, 2, true)
-		<< " | memory: " << opt::prettyBigNum(memory, 2, true) << "o"
+		<< "nodes: " << opt::prettyNumber(nNodes, 2, true)
+		<< " | memory: " << opt::prettyNumber(memory, 2, true) << "o"
 		<< " | " << duration << "\n";
 }

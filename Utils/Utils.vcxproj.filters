@@ -36,7 +36,10 @@
     <ClInclude Include="Time.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Memory.h">
+    <ClInclude Include="HardwareUsage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Progression.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

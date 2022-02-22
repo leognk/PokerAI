@@ -3,6 +3,7 @@
 
 #include "../GameEngine/GameState.h"
 #include "../AbstractInfoset/ActionAbstraction.h"
+#include "../LosslessAbstraction/hand_index.h"
 
 #pragma warning(push)
 #pragma warning(disable: 4244)
@@ -122,7 +123,7 @@ static const int32_t minRegret = -310e6; // Pluribus: -310e6
 static const uint64_t preflopStratUpdatePeriod = 10e3; // Pluribus: 10e3
 
 static const uint64_t checkpointPeriod = 1e8; // 1e8 (25 min)
-static const uint64_t printPeriod = 4e6; // 4e6 (1 min)
+static const uint64_t printPeriod = 4e4; // 4e6 (1 min)
 
 static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotPeriod;
 
@@ -179,7 +180,7 @@ static const abc::betSizes_t BET_SIZES = {
 
 static const std::string BLUEPRINT_NAME = "SIMPLE_BLUEPRINT";
 
-static const uint64_t nSnapshots = 100; // Pluribus: 54
+static const uint64_t nSnapshots = 3; // Pluribus: 54
 
 static const uint64_t snapshotBeginIter = 100; // Pluribus: 3.2e9 (800 min)
 static const uint64_t snapshotPeriod = 25; // Pluribus: 800e6 (200 min)
