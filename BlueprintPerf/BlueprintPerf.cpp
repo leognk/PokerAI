@@ -4,7 +4,7 @@ int main()
 {
 	const double maxDuration = 3; // in seconds
 	const unsigned rngSeed = 1;
-	const uint64_t updatePeriod = uint64_t(1e3);
+	const uint64_t updatePeriod = 1;
 
 	bp::BlueprintCalculator calculator(rngSeed, false);
 	double duration;

@@ -38,7 +38,7 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 
 	// Allocate memory for the preflop strategy.
 	preflopStrat = std::vector<std::vector<sumRegret_t>>(
-		abc::PREFLOP_SIZE, std::vector<sumRegret_t>(abcInfo.preflopNActionSeqs()));
+		nHandIds(egn::PREFLOP), std::vector<sumRegret_t>(nActionSeqIds(egn::PREFLOP)));
 
 	gpSeqs.load();
 }

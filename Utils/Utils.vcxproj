@@ -23,6 +23,7 @@
     <ClInclude Include="FastVector.h" />
     <ClInclude Include="Hash.h" />
     <ClInclude Include="ioContainer.h" />
+    <ClInclude Include="Memory.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="StringManip.h" />
     <ClInclude Include="Time.h" />
