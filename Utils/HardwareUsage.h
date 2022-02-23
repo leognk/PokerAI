@@ -3,6 +3,7 @@
 
 #include "windows.h"
 #include "psapi.h"
+#include "StringManip.h"
 
 namespace opt {
 
@@ -50,6 +51,16 @@ inline SIZE_T physMemUsedByMe()
 	PROCESS_MEMORY_COUNTERS_EX pmc;
 	GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
 	return pmc.WorkingSetSize;
+}
+
+inline std::string vmUsedByMeStr(const unsigned precision = 1)
+{
+	return opt::prettyNum(opt::virtualMemUsedByMe(), precision, true) + "o";
+}
+
+inline std::string ramUsedByMeStr(const unsigned precision = 1)
+{
+	return opt::prettyNum(opt::physMemUsedByMe(), precision, true) + "o";
 }
 
 } // opt

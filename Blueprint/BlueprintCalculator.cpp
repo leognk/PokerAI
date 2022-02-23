@@ -615,13 +615,10 @@ void BlueprintCalculator::updateCheckpoint()
 
 void BlueprintCalculator::printProgress() const
 {
-	const std::string vm = opt::prettyNum(opt::virtualMemUsedByMe(), 1, true) + "o";
-	const std::string ram = opt::prettyNum(opt::physMemUsedByMe(), 1, true) + "o";
-
 	std::cout
 		<< opt::progressStr(currIter, endIter, startTime, true, true)
-		<< " | VM: " << vm
-		<< " | RAM: " << ram << "\n";
+		<< " | VM: " << opt::vmUsedByMeStr(1)
+		<< " | RAM: " << opt::ramUsedByMeStr(1) << "\n";
 }
 
 void BlueprintCalculator::printFinalStats() const
