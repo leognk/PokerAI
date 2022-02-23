@@ -615,24 +615,11 @@ void BlueprintCalculator::updateCheckpoint()
 
 void BlueprintCalculator::printProgress() const
 {
-	const std::string perc = opt::progressPerc(currIter, endIter);
-
-	const std::string currIterStr = opt::prettyNumber(currIter, 1);
-	static const std::string endIterStr = opt::prettyNumber(endIter, 1);
-
-	const double timeSpent = opt::getDuration(startTime);
-	const double totalTime = opt::totalTime(currIter, endIter, timeSpent);
-	const std::string remTimeStr = opt::prettyDuration(opt::remainingTime(timeSpent, totalTime));
-	const std::string timeSpentStr = opt::prettyDuration(timeSpent);
-	const std::string totalTimeStr = opt::prettyDuration(totalTime);
-
-	const std::string vm = opt::prettyNumber(opt::virtualMemUsedByMe(), 1, true) + "o";
-	const std::string ram = opt::prettyNumber(opt::physMemUsedByMe(), 1, true) + "o";
+	const std::string vm = opt::prettyNum(opt::virtualMemUsedByMe(), 1, true) + "o";
+	const std::string ram = opt::prettyNum(opt::physMemUsedByMe(), 1, true) + "o";
 
 	std::cout
-		<< std::setw(4) << perc
-		<< " | " << std::setw(6) << currIterStr << " / " << endIterStr
-		<< " | " << remTimeStr << " -> " << timeSpentStr << " / " << totalTimeStr
+		<< opt::progressStr(currIter, endIter, startTime, true, true)
 		<< " | VM: " << vm
 		<< " | RAM: " << ram << "\n";
 }

@@ -33,6 +33,7 @@ public:
 				return abc::EquityCalculator::preflopIndexer.hand_index_last(hand);
 		}
 
+#pragma warning(suppress: 26819)
 		case egn::FLOP: {
 			uint8_t cards[omp::FLOP_HAND] = {
 				hand[0], hand[1], board[0], board[1], board[2] };

@@ -22,7 +22,7 @@ int main()
 	// Print results.
 	std::cout
 		<< opt::prettyDuration(duration) << "\n"
-		<< opt::prettyNumber(calculator.currIter, 2, true) << " iter\n"
-		<< opt::roundStr(calculator.currIter / duration) << " iter/sec\n"
-		<< opt::prettyNumber(duration / calculator.currIter, 2, true) << "sec/iter\n";
+		<< opt::prettyNumDg(calculator.currIter, 3, true) << "it\n"
+		<< opt::prettyNumDg(calculator.currIter / duration, 3, true) << "it/s\n"
+		<< opt::prettyNumDg(duration / calculator.currIter, 3, true) << "sec/it\n";
 }
