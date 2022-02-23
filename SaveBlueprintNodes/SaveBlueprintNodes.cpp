@@ -11,7 +11,7 @@ int main()
 		bp::BIG_BLIND,
 		bp::INITIAL_STAKE,
 		bp::BET_SIZES,
-		bp::BLUEPRINT_NAME);
+		bp::BLUEPRINT_GAME_NAME);
 
 	gpSeqs.build();
 	gpSeqs.save();

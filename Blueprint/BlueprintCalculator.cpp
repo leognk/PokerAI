@@ -14,7 +14,7 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 		BIG_BLIND,
 		INITIAL_STAKE,
 		BET_SIZES,
-		BLUEPRINT_NAME,
+		BLUEPRINT_GAME_NAME,
 		rngSeed),
 
 	gpSeqs(
@@ -23,7 +23,7 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 		BIG_BLIND,
 		INITIAL_STAKE,
 		BET_SIZES,
-		BLUEPRINT_NAME),
+		BLUEPRINT_GAME_NAME),
 
 	currIter(0),
 	nextSnapshotId(1)

@@ -8,7 +8,7 @@ TEST(ActionSeqIndexerTest, HashIsMinimalPerfect)
 {
 	abc::ActionSeqIndexer indexer(
 		bp::MAX_PLAYERS, bp::ANTE, bp::BIG_BLIND,
-		bp::INITIAL_STAKE, bp::BET_SIZES, bp::BLUEPRINT_NAME);
+		bp::INITIAL_STAKE, bp::BET_SIZES, bp::BLUEPRINT_GAME_NAME);
 	indexer.loadMPHF();
 
 	abc::TreeTraverser traverser(
@@ -40,7 +40,7 @@ protected:
 	GroupedActionSeqsTest() :
 		gpSeqs(
 			bp::MAX_PLAYERS, bp::ANTE, bp::BIG_BLIND,
-			bp::INITIAL_STAKE, bp::BET_SIZES, bp::BLUEPRINT_NAME)
+			bp::INITIAL_STAKE, bp::BET_SIZES, bp::BLUEPRINT_GAME_NAME)
 	{
 	}
 
