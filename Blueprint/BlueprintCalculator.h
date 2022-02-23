@@ -85,6 +85,7 @@ private:
 
 	opt::time_t startTime;
 	unsigned nextSnapshotId;
+	unsigned nCheckpointsDone;
 
 	abcInfo_t abcInfo;
 
@@ -96,6 +97,8 @@ private:
 	std::vector<bool> lastChild;
 	std::vector<egn::dchips> expVals;
 	std::vector<bool> visited;
+
+	static const std::string printSep;
 
 }; // BlueprintCalculator
 

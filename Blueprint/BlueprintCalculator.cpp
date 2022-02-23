@@ -2,6 +2,8 @@
 
 namespace bp {
 
+const std::string BlueprintCalculator::printSep(20, '_');
+
 BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 
 	rng{ (!rngSeed) ? std::random_device{}() : rngSeed },
@@ -26,7 +28,8 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 		BLUEPRINT_GAME_NAME),
 
 	currIter(0),
-	nextSnapshotId(1)
+	nextSnapshotId(1),
+	nCheckpointsDone(0)
 {
 	// Create save folders.
 	std::filesystem::create_directory(blueprintDir);
@@ -82,7 +85,7 @@ void BlueprintCalculator::oneIter()
 		takeSnapshot();
 	if (currIter % checkpointPeriod == 0)
 		updateCheckpoint();
-	if (verbose && currIter && (currIter % printPeriod == 0 || currIter == endIter))
+	if (verbose && (currIter % printPeriod == 0 || currIter == endIter))
 		printProgress();
 }
 
@@ -610,20 +613,40 @@ std::string BlueprintCalculator::getStratPath(uint8_t roundId)
 
 void BlueprintCalculator::updateCheckpoint()
 {
-
+	++nCheckpointsDone;
 }
 
 void BlueprintCalculator::printProgress() const
 {
 	std::cout
-		<< opt::progressStr(currIter, endIter, startTime, true, true)
-		<< " | VM: " << opt::vmUsedByMeStr(1)
-		<< " | RAM: " << opt::ramUsedByMeStr(1) << "\n";
+		<< printSep << "\n\n"
+		<< BLUEPRINT_NAME << "\n\n"
+
+		<< opt::progressStr(currIter, endIter, startTime, false) << "\n\n"
+
+		<< "next checkpoint: " << opt::prettyDuration(
+			opt::remainingTime(currIter, (nCheckpointsDone + 1) * checkpointPeriod, startTime))
+
+		<< " | next snapshot: " << opt::prettyDuration(
+			opt::remainingTime(currIter, snapshotBeginIter + (nextSnapshotId - 1) * snapshotPeriod, startTime))
+		<< " (" << nextSnapshotId - 1 << "/" << nSnapshots << ")\n";
+
+	if (currIter < pruneBeginIter)
+		std::cout << "prune start: " << opt::prettyDuration(
+			opt::remainingTime(currIter, pruneBeginIter, startTime));
+	else std::cout << "pruning";
+
+	if (currIter < discountEndIter)
+		std::cout << " | discount end: " << opt::prettyDuration(
+			opt::remainingTime(currIter, discountEndIter, startTime)) << "\n\n";
+	else std::cout << " | no discount\n\n";
+
+	std::cout << "VM: " << opt::vmUsedByMeStr(1) << " | RAM: " << opt::ramUsedByMeStr(1) << "\n";
 }
 
 void BlueprintCalculator::printFinalStats() const
 {
-	std::cout << "\nDuration: " << opt::prettyDuration(startTime) << "\n";
+	std::cout << printSep << "\n\nDuration: " << opt::prettyDuration(startTime) << "\n";
 }
 
 } // bp

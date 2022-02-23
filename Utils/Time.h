@@ -25,8 +25,8 @@ inline double getDuration(const time_t& startTime)
 }
 
 // Take a duration in seconds as the input and output
-// the same duration in the format: "d day(s), h:m:s".
-inline std::string prettyDuration(unsigned dt, bool compact = false)
+// the same duration in the format: "<day>d, <hour>:<minute>:<second>".
+inline std::string prettyDuration(unsigned dt)
 {
 	unsigned d = dt / 86400; // 3600 * 24 = 86400
 	dt %= 86400;
@@ -38,11 +38,7 @@ inline std::string prettyDuration(unsigned dt, bool compact = false)
 	std::string res = "";
 
 	// Day
-	if (d != 0) {
-		res = std::to_string(d);
-		if (compact) res += "d,";
-		else res += ((d == 1) ? " day, " : " days, ");
-	}
+	if (d != 0) res = std::to_string(d) + "d, ";
 
 	// Hour
 	if (h < 10) res += "0";
@@ -59,19 +55,19 @@ inline std::string prettyDuration(unsigned dt, bool compact = false)
 	return res;
 }
 
-inline std::string prettyDuration(const double& dt, bool compact = false)
+inline std::string prettyDuration(const double& dt)
 {
-	return prettyDuration((unsigned)std::round(dt), compact);
+	return prettyDuration((unsigned)std::round(dt));
 }
 
-inline std::string prettyDuration(const time_t& startTime, const time_t& endTime, bool compact = false)
+inline std::string prettyDuration(const time_t& startTime, const time_t& endTime)
 {
-	return prettyDuration(getDuration(startTime, endTime), compact);
+	return prettyDuration(getDuration(startTime, endTime));
 }
 
-inline std::string prettyDuration(const time_t& startTime, bool compact = false)
+inline std::string prettyDuration(const time_t& startTime)
 {
-	return prettyDuration(startTime, getTime(), compact);
+	return prettyDuration(startTime, getTime());
 }
 
 } // opt

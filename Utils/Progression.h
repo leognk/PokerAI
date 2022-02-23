@@ -30,6 +30,13 @@ inline double remainingTime(
 	return timeSpent * ((double)endIter / currIter - 1.0);
 }
 
+inline double remainingTime(
+	const uint64_t currIter, const uint64_t endIter,
+	const time_t startTime)
+{
+	return getDuration(startTime) * ((double)endIter / currIter - 1.0);
+}
+
 inline double remainingTime(const double timeSpent, const double totalTime)
 {
 	return totalTime - timeSpent;
@@ -47,7 +54,7 @@ inline double secPerIter(const uint64_t currIter, const double timeSpent)
 
 inline std::string progressStr(
 	const uint64_t currIter, const uint64_t endIter,
-	const time_t startTime, bool withSpace = true, bool compactDuration = false)
+	const time_t startTime, bool align = true)
 {
 	const std::string perc = progressPerc(currIter, endIter);
 
@@ -56,19 +63,18 @@ inline std::string progressStr(
 
 	const double timeSpent = getDuration(startTime);
 	const double totTime = totalTime(currIter, endIter, timeSpent);
-	const std::string remTimeStr = prettyDuration(remainingTime(timeSpent, totTime), compactDuration);
-	const std::string timeSpentStr = prettyDuration(timeSpent, compactDuration);
-	const std::string totalTimeStr = prettyDuration(totTime, compactDuration);
+	const std::string remTimeStr = prettyDuration(remainingTime(timeSpent, totTime));
+	const std::string timeSpentStr = prettyDuration(timeSpent);
+	const std::string totalTimeStr = prettyDuration(totTime);
 
 	const std::string itPerSec = prettyNumDg(iterPerSec(currIter, timeSpent), 3, true);
 	const std::string secPerIt = prettyNumDg(secPerIter(currIter, timeSpent), 3, true);
 
 	std::ostringstream os;
-	std::string sp = withSpace ? " " : "";
 
-	os << std::setw(4) << perc
-		<< " | " << std::setw(5) << currIterStr << sp << "/" << sp << endIterStr
-		<< " | " << remTimeStr << sp << "->" << sp << timeSpentStr << sp << "/" << sp << totalTimeStr
+	os << std::setw(align ? 4 : 0) << perc
+		<< " | " << std::setw(align ? 5 : 0) << currIterStr << " / " << endIterStr
+		<< " | " << remTimeStr << " -> " << timeSpentStr << " / " << totalTimeStr
 		<< " | " << itPerSec << "it/s"
 		<< " | " << secPerIt << "s/it";
 
