@@ -69,8 +69,8 @@ inline std::string progressStr(
 	os << std::setw(4) << perc
 		<< " | " << std::setw(5) << currIterStr << sp << "/" << sp << endIterStr
 		<< " | " << remTimeStr << sp << "->" << sp << timeSpentStr << sp << "/" << sp << totalTimeStr
-		<< " | " << std::setw(5) << itPerSec << "it/s"
-		<< " | " << std::setw(5) << secPerIt << "sec/it";
+		<< " | " << itPerSec << "it/s"
+		<< " | " << secPerIt << "s/it";
 
 	return os.str();
 }

@@ -15,5 +15,5 @@
 
 int main()
 {
-	std::cout << opt::prettyNumDg(57.85e-20, 5) << "\n";
+	std::cout << std::setw(6) << opt::prettyNumDg(1.65, 3, true) << "s/it\n";
 }

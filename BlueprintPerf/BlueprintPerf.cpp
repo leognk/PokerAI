@@ -24,5 +24,5 @@ int main()
 		<< opt::prettyDuration(duration) << "\n"
 		<< opt::prettyNumDg(calculator.currIter, 3, true) << "it\n"
 		<< opt::prettyNumDg(calculator.currIter / duration, 3, true) << "it/s\n"
-		<< opt::prettyNumDg(duration / calculator.currIter, 3, true) << "sec/it\n";
+		<< opt::prettyNumDg(duration / calculator.currIter, 3, true) << "s/it\n";
 }
