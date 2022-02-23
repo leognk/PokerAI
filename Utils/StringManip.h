@@ -45,7 +45,7 @@ inline std::string prettyNumCase(
 }
 
 // Output the double d in a string with a maximum of 4 characters if precision = 0
-// or 5 + precision characters using G (giga), M (mega), K (kilo), m (milli), mu (micro), n (nano).
+// or 5 + precision characters using G (giga), M (mega), k (kilo), m (milli), u (micro), n (nano).
 inline std::string prettyNum(
 	const double d, const unsigned precision = 0, const bool withSpace = false)
 {
@@ -54,7 +54,7 @@ inline std::string prettyNum(
 	// mega
 	else if (d >= 1e6) return prettyNumCase(d * 1e-6, precision, withSpace, "M");
 	// kilo
-	else if (d >= 1e3) return prettyNumCase(d * 1e-3, precision, withSpace, "K");
+	else if (d >= 1e3) return prettyNumCase(d * 1e-3, precision, withSpace, "k");
 	// unity
 	else if (d >= 1.0 || d == 0) {
 		if (std::round(d) == d) return prettyNumCase(d, 0, withSpace, "");
@@ -63,7 +63,7 @@ inline std::string prettyNum(
 	// milli
 	else if (d >= 1e-3) return prettyNumCase(d * 1e3, precision, withSpace, "m");
 	// micro
-	else if (d >= 1e-6) return prettyNumCase(d * 1e6, precision, withSpace, "\u03BC");
+	else if (d >= 1e-6) return prettyNumCase(d * 1e6, precision, withSpace, "u");
 	// nano
 	else return prettyNumCase(d * 1e9, precision, withSpace, "n");
 }
@@ -92,7 +92,7 @@ inline std::string prettyNumDg(
 	// mega
 	else if (d >= 1e6) return prettyNumDgCase(d * 1e-6, nDigits, withSpace, "M");
 	// kilo
-	else if (d >= 1e3) return prettyNumDgCase(d * 1e-3, nDigits, withSpace, "K");
+	else if (d >= 1e3) return prettyNumDgCase(d * 1e-3, nDigits, withSpace, "k");
 	// unity
 	else if (d >= 1.0 || d == 0) {
 		if (std::round(d) == d) return std::to_string((uint64_t)d) + (withSpace ? " " : "");
@@ -101,7 +101,7 @@ inline std::string prettyNumDg(
 	// milli
 	else if (d >= 1e-3) return prettyNumDgCase(d * 1e3, nDigits, withSpace, "m");
 	// micro
-	else if (d >= 1e-6) return prettyNumDgCase(d * 1e6, nDigits, withSpace, "\u03BC");
+	else if (d >= 1e-6) return prettyNumDgCase(d * 1e6, nDigits, withSpace, "u");
 	// nano
 	else return prettyNumDgCase(d * 1e9, nDigits, withSpace, "n");
 }
