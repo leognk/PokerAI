@@ -643,7 +643,7 @@ void BlueprintCalculator::printProgress() const
 
 	std::cout << "VM: " << opt::vmUsedByMeStr(1) << " | RAM: " << opt::ramUsedByMeStr(1) << "\n";
 
-	std::cout << printSep << "\n\n"
+	std::cout << printSep << "\n\n";
 }
 
 void BlueprintCalculator::printFinalStats() const
