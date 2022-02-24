@@ -116,7 +116,7 @@ public:
 	egn::GameState state;
 	abc::ActionAbstraction actionAbc;
 
-private:
+protected:
 
 	void calculateHandsIds()
 	{

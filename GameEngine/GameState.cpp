@@ -67,7 +67,7 @@ void GameState::resetPlayers()
         if (stakes[i]) {
             addAlive(i);
             addActing(i);
-            mBets[i] = 0;
+            bets[i] = 0;
             mActed[i] = false;
         }
     }
@@ -131,7 +131,7 @@ void GameState::chargeAnte()
         // The player must all-in on the ante.
         if (stakes[i] <= mAnte) {
             pot += stakes[i];
-            mBets[i] += stakes[i];
+            bets[i] += stakes[i];
             stakes[i] = 0;
             eraseActing(i);
             // Everybody went all-in.
@@ -144,7 +144,7 @@ void GameState::chargeAnte()
         }
         else {
             pot += mAnte;
-            mBets[i] += mAnte;
+            bets[i] += mAnte;
             stakes[i] -= mAnte;
         }
     } while (nextAlive(i) != firstAlive);
@@ -176,13 +176,13 @@ void GameState::chargeBlinds()
         // The player must all-in on the sb.
         if (stakes[sbPlayer] <= mSB) {
             pot += stakes[sbPlayer];
-            mBets[sbPlayer] += stakes[sbPlayer];
+            bets[sbPlayer] += stakes[sbPlayer];
             stakes[sbPlayer] = 0;
             eraseActing(sbPlayer);
         }
         else {
             pot += mSB;
-            mBets[sbPlayer] += mSB;
+            bets[sbPlayer] += mSB;
             stakes[sbPlayer] -= mSB;
         }
     }
@@ -193,13 +193,13 @@ void GameState::chargeBlinds()
         // The player must all-in on the bb.
         if (stakes[bbPlayer] <= mBB) {
             pot += stakes[bbPlayer];
-            mBets[bbPlayer] += stakes[bbPlayer];
+            bets[bbPlayer] += stakes[bbPlayer];
             stakes[bbPlayer] = 0;
             eraseActing(bbPlayer);
         }
         else {
             pot += mBB;
-            mBets[bbPlayer] += mBB;
+            bets[bbPlayer] += mBB;
             stakes[bbPlayer] -= mBB;
         }
     }
@@ -214,10 +214,10 @@ void GameState::chargeBlinds()
     // to call is still the bb.
     mToCall = mAnte + mBB;
     mLargestRaise = mBB;
-    mMaxBet = std::max(std::max(mBets[sbPlayer], mBets[bbPlayer]), mAnte);
+    mMaxBet = std::max(std::max(bets[sbPlayer], bets[bbPlayer]), mAnte);
 
     // Everybody went all-in but one.
-    if (mNActing == 1 && mBets[mFirstActing] == mMaxBet) {
+    if (mNActing == 1 && bets[mFirstActing] == mMaxBet) {
         endGame();
         return;
     }
@@ -310,7 +310,7 @@ void GameState::nextState()
     case CALL:
         if (call) {
             pot += call;
-            mBets[actingPlayer] += call;
+            bets[actingPlayer] += call;
             stakes[actingPlayer] -= call;
             // All-in
             if (!stakes[actingPlayer])
@@ -319,17 +319,17 @@ void GameState::nextState()
                 // mMaxBet must be updated if there is only
                 // one acting player remaining and the legal call is
                 // larger than the posted all-ins.
-                mMaxBet = mBets[actingPlayer];
+                mMaxBet = bets[actingPlayer];
         }
         break;
 
     case RAISE:
         pot += bet;
-        mBets[actingPlayer] += bet;
+        bets[actingPlayer] += bet;
         stakes[actingPlayer] -= bet;
 
-        mLargestRaise = std::max(mBets[actingPlayer] - mToCall, mLargestRaise);
-        mToCall = mBets[actingPlayer];
+        mLargestRaise = std::max(bets[actingPlayer] - mToCall, mLargestRaise);
+        mToCall = bets[actingPlayer];
         mMaxBet = mToCall;
         // All-in
         if (!stakes[actingPlayer])
@@ -357,7 +357,7 @@ void GameState::nextState()
     nextActing(actingPlayer);
 
     // Max bet is matched.
-    if (mBets[actingPlayer] == mMaxBet) {
+    if (bets[actingPlayer] == mMaxBet) {
 
         // Everybody folded but one.
         if (mNActing == 1) {
@@ -392,7 +392,7 @@ void GameState::nextState()
 void GameState::setLegalActions()
 {
     //ZoneScoped;
-    chips legalCall = mToCall - mBets[actingPlayer];
+    chips legalCall = mToCall - bets[actingPlayer];
     call = std::min(legalCall, stakes[actingPlayer]);
     minRaise = legalCall + mLargestRaise;
     allin = stakes[actingPlayer];
@@ -474,18 +474,18 @@ void GameState::showdown()
         // (deal with this specific case to speed up the computation)
         if (nSameRank == 1) {
             uint8_t winner = mRankings[mCumNSameRanks[k - 1]];
-            chips winnerBet = mBets[winner];
+            chips winnerBet = bets[winner];
             if (!winnerBet)
                 continue;
             // Build the pot corresponding to the winner's bet.
             chips currentPot = 0;
             for (uint8_t player = 0; player < MAX_PLAYERS; ++player) {
-                if (!mBets[player])
+                if (!bets[player])
                     continue;
-                chips due = std::min(winnerBet, mBets[player]);
+                chips due = std::min(winnerBet, bets[player]);
                 currentPot += due;
                 pot -= due;
-                mBets[player] -= due;
+                bets[player] -= due;
             }
             stakes[winner] += currentPot;
             continue;
@@ -497,8 +497,8 @@ void GameState::showdown()
         uint8_t nBets = 0;
         for (uint8_t i = mCumNSameRanks[k - 1]; i < mCumNSameRanks[k]; ++i) {
             // Skip null bets.
-            if (mBets[mRankings[i]])
-                mSortedBets[nBets++] = mBets[mRankings[i]];
+            if (bets[mRankings[i]])
+                mSortedBets[nBets++] = bets[mRankings[i]];
         }
         // Skip if nobody in this bracket has a gain.
         if (!nBets) continue;
@@ -520,7 +520,7 @@ void GameState::showdown()
         for (uint8_t b = 0; b < nBets; ++b) {
             // Unflag winners who are not eligible for the current pot.
             for (uint8_t i = mCumNSameRanks[k - 1]; i < mCumNSameRanks[k]; ++i) {
-                if (mGiveGain[mRankings[i]] && !mBets[mRankings[i]]) {
+                if (mGiveGain[mRankings[i]] && !bets[mRankings[i]]) {
                     mGiveGain[mRankings[i]] = false;
                     --nWinners;
                 }
@@ -528,12 +528,12 @@ void GameState::showdown()
             // Build the pot corresponding to winnerBet.
             chips currentPot = 0;
             for (uint8_t player = 0; player < MAX_PLAYERS; ++player) {
-                if (!mBets[player])
+                if (!bets[player])
                     continue;
-                chips due = std::min(mSortedBets[b], mBets[player]);
+                chips due = std::min(mSortedBets[b], bets[player]);
                 currentPot += due;
                 pot -= due;
-                mBets[player] -= due;
+                bets[player] -= due;
             }
             // Distribute the gains to each winner.
             chips gain = currentPot / nWinners;
@@ -555,11 +555,11 @@ void GameState::showdown()
 
 bool GameState::onePotUsed() const
 {
-    chips prevBet = mBets[firstAlive];
+    chips prevBet = bets[firstAlive];
     uint8_t i = firstAlive;
     nextAlive(i);
     do {
-        if (mBets[i] != prevBet) return false;
+        if (bets[i] != prevBet) return false;
     } while (nextAlive(i) != firstAlive);
     return true;
 }

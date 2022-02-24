@@ -31,6 +31,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AbstractInfoset.h" />
+    <ClInclude Include="AbstractInfosetDebug.h" />
     <ClInclude Include="ActionAbstraction.h" />
     <ClInclude Include="ActionSeq.h" />
     <ClInclude Include="ActionSeqIndexer.h" />

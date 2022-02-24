@@ -162,6 +162,8 @@ public:
 	Round round;
 	// Sum of all pots
 	chips pot;
+	// Bets since the start of a hand.
+	std::array<chips, MAX_PLAYERS> bets{};
 	// Whether the hand is finished.
 	bool finished;
 
@@ -202,8 +204,6 @@ protected:
 
 	// Stakes at the beginning of the hand.
 	std::array<chips, MAX_PLAYERS> mInitialStakes{};
-	// Bets since the start of a hand.
-	std::array<chips, MAX_PLAYERS> mBets{};
 	// Acted on the current round.
 	std::array<bool, MAX_PLAYERS> mActed{};
 
