@@ -22,11 +22,7 @@ public:
 		const std::string& actionSeqIndexerName,
 		unsigned rngSeed) :
 
-		abcInfo_t::AbstractInfoset(maxPlayers, ante, bigBlind, initialStake, betSizes, actionSeqIndexerName, rngSeed),
-		debug(false),
-		iter(0),
-		traverser(0),
-		id(0)
+		abcInfo_t::AbstractInfoset(maxPlayers, ante, bigBlind, initialStake, betSizes, actionSeqIndexerName, rngSeed)
 	{
 	}
 
@@ -43,13 +39,8 @@ public:
 			actionIds = other.actionIds;
 			bets = other.bets;
 
-			// id is different to count if other was pushed back into a FastVector.
-			if (id == count) {
-				std::cout << *this;
-				++count;
-				id = count;
-			}
-			id = other.id;
+			std::cout << *this;
+			++count;
 		}
 
 		return *this;
@@ -66,7 +57,6 @@ public:
 			iter = currIter;
 			traverser = currTraverser;
 			count = 0;
-			id = 0;
 			players.clear();
 			actions.clear();
 			actionIds.clear();
@@ -92,17 +82,15 @@ public:
 			bets.push_back(this->state.bets[players.back()]);
 			std::cout << *this;
 			++count;
-			id = count;
 		}
 	}
 
 	static const std::string printSep;
 
-	bool debug;
-	uint64_t iter;
-	uint8_t traverser;
+	static bool debug;
+	static uint64_t iter;
+	static uint8_t traverser;
 	static unsigned count;
-	unsigned id;
 
 	std::vector<uint8_t> players;
 	std::vector<uint8_t> actions;
@@ -129,6 +117,15 @@ std::ostream& operator<<(std::ostream& os,
 
 template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
 const std::string AbstractInfosetDebug<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>::printSep(100, '_');
+
+template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
+bool AbstractInfosetDebug<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>::debug = false;
+
+template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
+uint64_t AbstractInfosetDebug<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>::iter = 0;
+
+template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
+uint8_t AbstractInfosetDebug<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>::traverser = 0;
 
 template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
 unsigned AbstractInfosetDebug<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>::count = 0;

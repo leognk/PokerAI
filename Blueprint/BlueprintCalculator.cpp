@@ -253,7 +253,8 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 	lastChild.clear();
 	expVals.clear();
 
-	abcInfo.startNewHand();
+	//abcInfo.startNewHand();
+	abcInfo.startNewHand(true, currIter, traverser);
 
 	// Do a DFS.
 	while (true) {
@@ -340,7 +341,8 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 	visited.clear();
 
 	//abcInfo.startNewHand();
-	abcInfo.startNewHand(currIter >= uint64_t(400e3), currIter, traverser);
+	//abcInfo.startNewHand(currIter >= uint64_t(400e3), currIter, traverser);
+	abcInfo.startNewHand(true, currIter, traverser);
 
 	// Do a DFS.
 	while (true) {

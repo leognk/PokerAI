@@ -190,8 +190,8 @@ static const uint64_t snapshotPeriod = 388e3; // Pluribus: 800e6 (200 min)
 static const uint64_t discountEndIter = 130e3; // Pluribus: 1.6e9 (400 min)
 static const uint64_t discountPeriod = 3.3e3; // Pluribus: 40e6 (10 min)
 
-static const uint64_t pruneBeginIter = 65e3; // Pluribus: 800e6 (200 min)
-static const uint8_t pruneProbaPerc = 95; // Pluribus: 95
+static const uint64_t pruneBeginIter = 65e3;//65e3; // Pluribus: 800e6 (200 min)
+static const uint8_t pruneProbaPerc = 100;//95; // Pluribus: 95
 static const int32_t pruneThreshold = -300e6; // Pluribus: -300e6
 static const int32_t minRegret = -310e6; // Pluribus: -310e6
 
