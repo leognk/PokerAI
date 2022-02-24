@@ -620,7 +620,6 @@ void BlueprintCalculator::updateCheckpoint()
 void BlueprintCalculator::printProgress() const
 {
 	std::cout
-		<< printSep << "\n\n"
 		<< BLUEPRINT_NAME << "\n\n"
 
 		<< opt::progressStr(currIter, endIter, startTime, false) << "\n\n"
@@ -643,6 +642,8 @@ void BlueprintCalculator::printProgress() const
 	else std::cout << " | no discount\n\n";
 
 	std::cout << "VM: " << opt::vmUsedByMeStr(1) << " | RAM: " << opt::ramUsedByMeStr(1) << "\n";
+
+	std::cout << printSep << "\n\n"
 }
 
 void BlueprintCalculator::printFinalStats() const
