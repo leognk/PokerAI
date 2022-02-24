@@ -23,86 +23,91 @@ public:
 		unsigned rngSeed) :
 
 		abcInfo_t::AbstractInfoset(maxPlayers, ante, bigBlind, initialStake, betSizes, actionSeqIndexerName, rngSeed),
-		print(false),
-		id(0),
+		debug(false),
+		iter(0),
 		traverser(0),
-		iter(0)
+		id(0)
 	{
 	}
 
 	AbstractInfosetDebug& operator=(const AbstractInfosetDebug& other)
 	{
 		if (this == &other) return *this;
+
 		abcInfo_t::operator=(other);
 
-		players = other.players;
-		actions = other.actions;
-		actionIds = other.actionIds;
-		bets = other.bets;
+		if (debug) {
 
-		// id is different to count if other was pushed back into a FastVector.
-		if (id == count && print) {
-			std::cout << *this;
-			hist.push_back(*this);
-			++count;
-			id = count;
+			players = other.players;
+			actions = other.actions;
+			actionIds = other.actionIds;
+			bets = other.bets;
+
+			// id is different to count if other was pushed back into a FastVector.
+			if (id == count) {
+				std::cout << *this;
+				++count;
+				id = count;
+			}
+			id = other.id;
 		}
-		id = other.id;
 
 		return *this;
 	}
 
-	void startNewHand(uint8_t currTraverser = 0, uint64_t currIter = 0, bool mustPrint = false)
+	void startNewHand(bool mustDebug = false, uint64_t currIter = 0, uint8_t currTraverser = 0)
 	{
 		abcInfo_t::startNewHand();
 
-		print = mustPrint;
-		hist.clear();
-		players.clear();
-		actions.clear();
-		actionIds.clear();
-		bets.clear();
-		count = 0;
-		id = 0;
-		traverser = currTraverser;
-		iter = currIter;
+		debug = mustDebug;
 
-		if (print)
+		if (debug) {
+
+			iter = currIter;
+			traverser = currTraverser;
+			count = 0;
+			id = 0;
+			players.clear();
+			actions.clear();
+			actionIds.clear();
+			bets.clear();
+
 			std::cout
 				<< printSep << "\n\n" << iter + 1 << "/" << bp::endIter
 				<< " | " << std::to_string(traverser) << "/" << std::to_string(bp::MAX_PLAYERS - 1) << "\n\n";
+		}
 	}
 
 	void nextState(uint8_t actionId)
 	{
-		players.push_back(this->state.actingPlayer);
-		actions.push_back(this->actionAbc.legalActions[actionId]);
-		actionIds.push_back(actionId);
+		if (debug) {
+			players.push_back(this->state.actingPlayer);
+			actions.push_back(this->actionAbc.legalActions[actionId]);
+			actionIds.push_back(actionId);
+		}
 
 		abcInfo_t::nextState(actionId);
 
-		bets.push_back(this->state.bets[players.back()]);
-
-		if (print) std::cout << *this;
-		hist.push_back(*this);
-		++count;
-		id = count;
+		if (debug) {
+			bets.push_back(this->state.bets[players.back()]);
+			std::cout << *this;
+			++count;
+			id = count;
+		}
 	}
 
-	static std::vector<AbstractInfosetDebug> hist;
-
 	static const std::string printSep;
-	bool print;
+
+	bool debug;
+	uint64_t iter;
+	uint8_t traverser;
+	static unsigned count;
+	unsigned id;
 
 	std::vector<uint8_t> players;
 	std::vector<uint8_t> actions;
 	std::vector<uint8_t> actionIds;
 	std::vector<egn::chips> bets;
-
-	static unsigned count;
-	unsigned id;
-	uint8_t traverser;
-	uint64_t iter;
 
 }; // AbstractInfosetDebug
 
@@ -110,10 +115,10 @@ template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_
 std::ostream& operator<<(std::ostream& os,
 	const AbstractInfosetDebug<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>& abcInfo)
 {
-	os << std::setw(3) << abcInfo.count;
+	os << std::setw(3) << abcInfo.count << " | ";
 
 	for (uint8_t i = 0; i < abcInfo.actions.size(); ++i) {
-		os << " | " << std::to_string(abcInfo.players[i]) << ": " << std::to_string(abcInfo.actions[i]);
+		os << ((i == 0) ? "" : " | ") << std::to_string(abcInfo.players[i]) << ": " << std::to_string(abcInfo.actions[i]);
 		if (abcInfo.players[i] == abcInfo.traverser) os << "/" << std::to_string(abcInfo.actionIds[i]);
 		os << " (" << abcInfo.bets[i] << ")";
 	}
@@ -123,24 +128,10 @@ std::ostream& operator<<(std::ostream& os,
 }
 
 template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
-void printAbcInfoHist(const std::vector<AbstractInfosetDebug<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>>& hist)
-{
-	std::cout
-		<< hist[0].iter + 1 << "/" << bp::endIter
-		<< " | " << std::to_string(hist[0].traverser) << "/" << std::to_string(bp::MAX_PLAYERS - 1) << "\n\n";
-	for (const auto& abcInfo : hist)
-		std::cout << abcInfo;
-}
-
-template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
 const std::string AbstractInfosetDebug<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>::printSep(100, '_');
 
 template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
 unsigned AbstractInfosetDebug<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>::count = 0;
-
-template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
-std::vector<AbstractInfosetDebug<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>>
-	AbstractInfosetDebug<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>::hist;
 
 } // abc
 

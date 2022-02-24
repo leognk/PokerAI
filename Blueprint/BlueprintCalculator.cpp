@@ -339,7 +339,8 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 	// visited will only deal with children of nodes where traverser plays.
 	visited.clear();
 
-	abcInfo.startNewHand(traverser, currIter, false);
+	//abcInfo.startNewHand();
+	abcInfo.startNewHand(currIter >= uint64_t(400e3), currIter, traverser);
 
 	// Do a DFS.
 	while (true) {
