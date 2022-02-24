@@ -25,7 +25,8 @@ public:
 		abcInfo_t::AbstractInfoset(maxPlayers, ante, bigBlind, initialStake, betSizes, actionSeqIndexerName, rngSeed),
 		print(false),
 		id(0),
-		traverser(0)
+		traverser(0),
+		iter(0)
 	{
 	}
 
@@ -42,6 +43,7 @@ public:
 		// id is different to count if other was pushed back into a FastVector.
 		if (id == count && print) {
 			std::cout << *this;
+			hist.push_back(*this);
 			++count;
 			id = count;
 		}
@@ -55,6 +57,7 @@ public:
 		abcInfo_t::startNewHand();
 
 		print = mustPrint;
+		hist.clear();
 		players.clear();
 		actions.clear();
 		actionIds.clear();
@@ -62,10 +65,11 @@ public:
 		count = 0;
 		id = 0;
 		traverser = currTraverser;
+		iter = currIter;
 
 		if (print)
 			std::cout
-				<< printSep << "\n\n" << currIter + 1 << "/" << bp::endIter
+				<< printSep << "\n\n" << iter + 1 << "/" << bp::endIter
 				<< " | " << std::to_string(traverser) << "/" << std::to_string(bp::MAX_PLAYERS - 1) << "\n\n";
 	}
 
@@ -80,9 +84,12 @@ public:
 		bets.push_back(this->state.bets[players.back()]);
 
 		if (print) std::cout << *this;
+		hist.push_back(*this);
 		++count;
 		id = count;
 	}
+
+	static std::vector<AbstractInfosetDebug> hist;
 
 	static const std::string printSep;
 	bool print;
@@ -95,6 +102,7 @@ public:
 	static unsigned count;
 	unsigned id;
 	uint8_t traverser;
+	uint64_t iter;
 
 }; // AbstractInfosetDebug
 
@@ -115,10 +123,24 @@ std::ostream& operator<<(std::ostream& os,
 }
 
 template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
+void printAbcInfoHist(const std::vector<AbstractInfosetDebug<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>>& hist)
+{
+	std::cout
+		<< hist[0].iter + 1 << "/" << bp::endIter
+		<< " | " << std::to_string(hist[0].traverser) << "/" << std::to_string(bp::MAX_PLAYERS - 1) << "\n\n";
+	for (const auto& abcInfo : hist)
+		std::cout << abcInfo;
+}
+
+template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
 const std::string AbstractInfosetDebug<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>::printSep(100, '_');
 
 template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
 unsigned AbstractInfosetDebug<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>::count = 0;
+
+template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
+std::vector<AbstractInfosetDebug<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>>
+	AbstractInfosetDebug<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>::hist;
 
 } // abc
 

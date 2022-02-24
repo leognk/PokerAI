@@ -39,6 +39,8 @@ public:
 
 	uint64_t currIter;
 
+	abcInfo_t abcInfo;
+
 private:
 
 	typedef omp::XoroShiro128Plus Rng;
@@ -88,8 +90,6 @@ private:
 	opt::time_t startTime;
 	unsigned nextSnapshotId;
 	unsigned nCheckpointsDone;
-
-	abcInfo_t abcInfo;
 
 	abc::GroupedActionSeqs gpSeqs;
 
