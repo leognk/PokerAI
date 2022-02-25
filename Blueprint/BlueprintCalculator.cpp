@@ -5,9 +5,8 @@ namespace bp {
 const std::string BlueprintCalculator::printSep(20, '_');
 const opt::FastRandomChoice<15> BlueprintCalculator::cumWeightsRescaler;
 
-BlueprintCalculator::BlueprintCalculator(bool resumeFromCheckpoint, unsigned rngSeed, bool verbose) :
+BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 
-	resumeFromCheckpoint(resumeFromCheckpoint),
 	rng{ (!rngSeed) ? std::random_device{}() : rngSeed },
 	verbose(verbose),
 	pruneCumWeights(buildPruneCumWeights()),
@@ -34,20 +33,6 @@ BlueprintCalculator::BlueprintCalculator(bool resumeFromCheckpoint, unsigned rng
 	nextSnapshotId(1),
 	nCheckpointsDone(0)
 {
-	// Create save folders.
-	std::filesystem::create_directory(blueprintDir);
-	std::filesystem::create_directory(blueprintTmpDir);
-
-	// Save the constants.
-	if (!resumeFromCheckpoint) {
-		auto file = std::ofstream(constantPath);
-		if (!file) throw std::runtime_error("File could not be opened.");
-		writeConstants(file);
-		file.close();
-	}
-	// Verify that the constants are the same as the ones used in the checkpoint.
-	else verifyConstants();
-
 	// Allocate memory for the regrets.
 	regrets = {
 		std::vector<std::vector<regret_t>>(N_BCK_PREFLOP, std::vector<regret_t>(nActionSeqIds(egn::PREFLOP))),
@@ -62,7 +47,24 @@ BlueprintCalculator::BlueprintCalculator(bool resumeFromCheckpoint, unsigned rng
 
 	gpSeqs.load();
 
-	if (resumeFromCheckpoint) loadCheckpoint();
+	// Create save folders.
+	std::filesystem::create_directory(blueprintDir);
+	std::filesystem::create_directory(blueprintTmpDir);
+
+	// If a checkpoint file is found, resume from it.
+	auto checkpointFile = std::fstream(checkpointPath, std::ios::in | std::ios::binary);
+	if (checkpointFile) {
+		// Verify that the constants are the same as the ones used in the checkpoint.
+		verifyConstants();
+		loadCheckpoint(checkpointFile);
+	}
+	else {
+		// Save the constants.
+		auto file = std::ofstream(constantPath);
+		writeConstants(file);
+		file.close();
+	}
+	checkpointFile.close();
 }
 
 void BlueprintCalculator::buildStrategy()
@@ -705,11 +707,8 @@ void BlueprintCalculator::updateCheckpoint()
 	file.close();
 }
 
-void BlueprintCalculator::loadCheckpoint()
+void BlueprintCalculator::loadCheckpoint(std::fstream& file)
 {
-	auto file = std::fstream(checkpointPath, std::ios::in | std::ios::binary);
-	if (!file) throw std::runtime_error("File could not be opened.");
-
 	rng.load(file);
 	pruneRandChoice.load(file);
 	actionRandChoice.load(file);
@@ -721,8 +720,6 @@ void BlueprintCalculator::loadCheckpoint()
 	opt::loadVar(extraDuration, file);
 	opt::loadVar(nextSnapshotId, file);
 	opt::loadVar(nCheckpointsDone, file);
-
-	file.close();
 }
 
 void BlueprintCalculator::printProgress() const

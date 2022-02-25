@@ -33,7 +33,7 @@ class BlueprintCalculator
 public:
 
 	// Set rngSeed to 0 to set a random seed.
-	BlueprintCalculator(bool resumeFromCheckpoint = false, unsigned rngSeed = 0, bool verbose = true);
+	BlueprintCalculator(unsigned rngSeed = 0, bool verbose = true);
 
 	// Conduct MCCFR and save the final strategy to the disk.
 	void buildStrategy();
@@ -73,12 +73,11 @@ private:
 	void writeConstants(std::ostream& os) const;
 	void verifyConstants() const;
 	void updateCheckpoint();
-	void loadCheckpoint();
+	void loadCheckpoint(std::fstream& file);
 
 	void printProgress() const;
 	void printFinalStats() const;
 
-	bool resumeFromCheckpoint;
 	bool verbose;
 
 	Rng rng;
