@@ -41,6 +41,7 @@ BlueprintCalculator::BlueprintCalculator(bool resumeFromCheckpoint, unsigned rng
 	// Save the constants.
 	if (!resumeFromCheckpoint) {
 		auto file = std::ofstream(constantPath);
+		if (!file) throw std::runtime_error("File could not be opened.");
 		writeConstants(file);
 		file.close();
 	}
@@ -108,62 +109,6 @@ std::array<uint8_t, 2> BlueprintCalculator::buildPruneCumWeights()
 	std::array<uint8_t, 2> res = { pruneProbaPerc, 100 };
 	pruneRandChoice.rescaleCumWeights(res);
 	return res;
-}
-
-void BlueprintCalculator::writeConstants(std::ostream& os) const
-{
-	WRITE_VAR(os, BLUEPRINT_GAME_NAME);
-	os << "\n";
-	WRITE_VAR(os, N_BCK_PREFLOP);
-	WRITE_VAR(os, N_BCK_FLOP);
-	WRITE_VAR(os, N_BCK_TURN);
-	WRITE_VAR(os, N_BCK_RIVER);
-	os << "\n";
-	WRITE_VAR(os, MAX_PLAYERS);
-	os << "\n";
-	WRITE_VAR(os, ANTE);
-	WRITE_VAR(os, BIG_BLIND);
-	WRITE_VAR(os, INITIAL_STAKE);
-	os << "\n";
-	WRITE_VAR(os, BET_SIZES);
-
-	os << "\n" << printSep << "\n\n";
-
-	WRITE_VAR(os, BLUEPRINT_BUILD_NAME);
-	os << "\n";
-	WRITE_VAR(os, nSnapshots);
-	os << "\n";
-	WRITE_VAR(os, snapshotBeginIter);
-	WRITE_VAR(os, snapshotPeriod);
-	os << "\n";
-	WRITE_VAR(os, discountEndIter);
-	WRITE_VAR(os, discountPeriod);
-	os << "\n";
-	WRITE_VAR(os, pruneBeginIter);
-	WRITE_VAR(os, pruneProbaPerc);
-	WRITE_VAR(os, pruneThreshold);
-	WRITE_VAR(os, minRegret);
-	os << "\n";
-	WRITE_VAR(os, preflopStratUpdatePeriod);
-	os << "\n";
-	WRITE_VAR(os, checkpointPeriod);
-	WRITE_VAR(os, printPeriod);
-	os << "\n";
-	WRITE_VAR(os, endIter);
-}
-
-void BlueprintCalculator::verifyConstants() const
-{
-	std::ostringstream buffer1;
-	std::ifstream file(constantPath);
-	buffer1 << file.rdbuf();
-	file.close();
-
-	std::ostringstream buffer2;
-	writeConstants(buffer2);
-
-	if (buffer1.str() != buffer2.str())
-		throw std::runtime_error("The constants differ from the ones used in the checkpoint.");
 }
 
 size_t BlueprintCalculator::nHandIds(egn::Round round) const
@@ -682,6 +627,62 @@ std::string BlueprintCalculator::getStratPath(uint8_t roundId)
 		+ "_" + opt::toUpper(egn::roundToString(roundId)) + ".bin";
 }
 
+void BlueprintCalculator::writeConstants(std::ostream& os) const
+{
+	WRITE_VAR(os, BLUEPRINT_GAME_NAME);
+	os << "\n";
+	WRITE_VAR(os, N_BCK_PREFLOP);
+	WRITE_VAR(os, N_BCK_FLOP);
+	WRITE_VAR(os, N_BCK_TURN);
+	WRITE_VAR(os, N_BCK_RIVER);
+	os << "\n";
+	WRITE_VAR(os, MAX_PLAYERS);
+	os << "\n";
+	WRITE_VAR(os, ANTE);
+	WRITE_VAR(os, BIG_BLIND);
+	WRITE_VAR(os, INITIAL_STAKE);
+	os << "\n";
+	WRITE_VAR(os, BET_SIZES);
+
+	os << "\n" << printSep << "\n\n";
+
+	WRITE_VAR(os, BLUEPRINT_BUILD_NAME);
+	os << "\n";
+	WRITE_VAR(os, nSnapshots);
+	os << "\n";
+	WRITE_VAR(os, snapshotBeginIter);
+	WRITE_VAR(os, snapshotPeriod);
+	os << "\n";
+	WRITE_VAR(os, discountEndIter);
+	WRITE_VAR(os, discountPeriod);
+	os << "\n";
+	WRITE_VAR(os, pruneBeginIter);
+	WRITE_VAR(os, pruneProbaPerc);
+	WRITE_VAR(os, pruneThreshold);
+	WRITE_VAR(os, minRegret);
+	os << "\n";
+	WRITE_VAR(os, preflopStratUpdatePeriod);
+	os << "\n";
+	WRITE_VAR(os, checkpointPeriod);
+	WRITE_VAR(os, printPeriod);
+	os << "\n";
+	WRITE_VAR(os, endIter);
+}
+
+void BlueprintCalculator::verifyConstants() const
+{
+	std::ostringstream buffer1;
+	std::ifstream file(constantPath);
+	buffer1 << file.rdbuf();
+	file.close();
+
+	std::ostringstream buffer2;
+	writeConstants(buffer2);
+
+	if (buffer1.str() != buffer2.str())
+		throw std::runtime_error("The constants differ from the ones used in the checkpoint.");
+}
+
 void BlueprintCalculator::updateCheckpoint()
 {
 	++nCheckpointsDone;
@@ -707,6 +708,7 @@ void BlueprintCalculator::updateCheckpoint()
 void BlueprintCalculator::loadCheckpoint()
 {
 	auto file = std::fstream(checkpointPath, std::ios::in | std::ios::binary);
+	if (!file) throw std::runtime_error("File could not be opened.");
 
 	rng.load(file);
 	pruneRandChoice.load(file);

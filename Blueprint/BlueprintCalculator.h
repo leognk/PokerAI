@@ -49,9 +49,6 @@ private:
 
 	std::array<uint8_t, 2> buildPruneCumWeights();
 
-	void writeConstants(std::ostream& os) const;
-	void verifyConstants() const;
-
 	size_t nHandIds(egn::Round round) const;
 	size_t nActionSeqIds(egn::Round round) const;
 
@@ -70,12 +67,14 @@ private:
 	void takeSnapshot();
 	void averageSnapshots();
 	void normalizePreflopStrat();
-
 	static std::string getSnapshotPath(unsigned snapshotId, uint8_t roundId);
 	static std::string getStratPath(uint8_t roundId);
 
+	void writeConstants(std::ostream& os) const;
+	void verifyConstants() const;
 	void updateCheckpoint();
 	void loadCheckpoint();
+
 	void printProgress() const;
 	void printFinalStats() const;
 

@@ -20,19 +20,19 @@ int main()
 	uint64_t nNodes = nNodesPreflop + nNodesNoPreflop;
 
 	// Memory for the regrets and the preflop final strategy.
-	uint64_t ramMem = nNodes * sizeof(int32_t) + nNodesPreflop * sizeof(uint32_t);
+	uint64_t ram = nNodes * sizeof(int32_t) + nNodesPreflop * sizeof(uint32_t);
 
-	// Memory for the snapshots and the final strategy stored to the disk.
-	uint64_t stratHddMem = nNodes * sizeof(uint16_t);
-	uint64_t hddMem = bp::nSnapshots * nNodesNoPreflop * sizeof(uint16_t) + stratHddMem;
+	// Memory for the snapshots, the checkpoint, and the final strategy stored to the disk.
+	uint64_t stratHdd = nNodes * sizeof(uint16_t);
+	uint64_t hdd = bp::nSnapshots * nNodesNoPreflop * sizeof(uint16_t) + ram + stratHdd;
 
 	const std::string duration = opt::prettyDuration(startTime);
 
 	std::cout
 		<< "TOTAL with card abc\n"
 		<< "nodes: " << opt::prettyNum(nNodes, 2, true)
-		<< " | RAM: " << opt::prettyNum(ramMem, 2, true) << "o"
-		<< " | HDD: " << opt::prettyNum(hddMem, 2, true) << "o"
-		<< " | strat HDD: " << opt::prettyNum(stratHddMem, 2, true) << "o"
+		<< " | RAM: " << opt::prettyNum(ram, 2, true) << "o"
+		<< " | HDD: " << opt::prettyNum(hdd, 2, true) << "o"
+		<< " | strat HDD: " << opt::prettyNum(stratHdd, 2, true) << "o"
 		<< " | " << duration << "\n";
 }
