@@ -22,6 +22,7 @@
     <ClInclude Include="BitOp.h" />
     <ClInclude Include="FastVector.h" />
     <ClInclude Include="Hash.h" />
+    <ClInclude Include="ioVar.h" />
     <ClInclude Include="Progression.h" />
     <ClInclude Include="ioContainer.h" />
     <ClInclude Include="HardwareUsage.h" />

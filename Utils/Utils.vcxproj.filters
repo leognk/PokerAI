@@ -42,6 +42,9 @@
     <ClInclude Include="Progression.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ioVar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">

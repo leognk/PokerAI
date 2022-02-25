@@ -35,6 +35,8 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 	std::filesystem::create_directory(blueprintDir);
 	std::filesystem::create_directory(blueprintTmpDir);
 
+	saveConstants();
+
 	// Allocate memory for the regrets.
 	regrets = {
 		std::vector<std::vector<regret_t>>(N_BCK_PREFLOP, std::vector<regret_t>(nActionSeqIds(egn::PREFLOP))),
@@ -94,6 +96,52 @@ std::array<uint8_t, 2> BlueprintCalculator::buildPruneCumWeights()
 	std::array<uint8_t, 2> res = { pruneProbaPerc, 100 };
 	pruneRandChoice.rescaleCumWeights(res);
 	return res;
+}
+
+void BlueprintCalculator::saveConstants() const
+{
+	auto file = std::fstream(constantPath, std::ios::out);
+
+	WRITE_VAR(file, BLUEPRINT_GAME_NAME);
+	file << "\n";
+	WRITE_VAR(file, N_BCK_PREFLOP);
+	WRITE_VAR(file, N_BCK_FLOP);
+	WRITE_VAR(file, N_BCK_TURN);
+	WRITE_VAR(file, N_BCK_RIVER);
+	file << "\n";
+	WRITE_VAR(file, MAX_PLAYERS);
+	file << "\n";
+	WRITE_VAR(file, ANTE);
+	WRITE_VAR(file, BIG_BLIND);
+	WRITE_VAR(file, INITIAL_STAKE);
+	file << "\n";
+	WRITE_VAR(file, BET_SIZES);
+
+	file << "\n" << printSep << "\n\n";
+
+	WRITE_VAR(file, BLUEPRINT_BUILD_NAME);
+	file << "\n";
+	WRITE_VAR(file, nSnapshots);
+	file << "\n";
+	WRITE_VAR(file, snapshotBeginIter);
+	WRITE_VAR(file, snapshotPeriod);
+	file << "\n";
+	WRITE_VAR(file, discountEndIter);
+	WRITE_VAR(file, discountPeriod);
+	file << "\n";
+	WRITE_VAR(file, pruneBeginIter);
+	WRITE_VAR(file, pruneProbaPerc);
+	WRITE_VAR(file, pruneThreshold);
+	WRITE_VAR(file, minRegret);
+	file << "\n";
+	WRITE_VAR(file, preflopStratUpdatePeriod);
+	file << "\n";
+	WRITE_VAR(file, checkpointPeriod);
+	WRITE_VAR(file, printPeriod);
+	file << "\n";
+	WRITE_VAR(file, endIter);
+
+	file.close();
 }
 
 size_t BlueprintCalculator::nHandIds(egn::Round round) const
@@ -603,17 +651,24 @@ void BlueprintCalculator::normalizePreflopStrat()
 std::string BlueprintCalculator::getSnapshotPath(unsigned snapshotId, uint8_t roundId)
 {
 	return snapshotPath + "_" + std::to_string(snapshotId)
-		+ "_" + opt::toUpper(egn::roundToString(egn::Round(roundId))) + ".bin";
+		+ "_" + opt::toUpper(egn::roundToString(roundId)) + ".bin";
 }
 
 std::string BlueprintCalculator::getStratPath(uint8_t roundId)
 {
 	return stratPath
-		+ "_" + opt::toUpper(egn::roundToString(egn::Round(roundId))) + ".bin";
+		+ "_" + opt::toUpper(egn::roundToString(roundId)) + ".bin";
 }
 
 void BlueprintCalculator::updateCheckpoint()
 {
+	// Open the file.
+	auto file = std::fstream(checkpointPath, std::ios::out | std::ios::binary);
+
+
+
+	file.close();
+
 	++nCheckpointsDone;
 }
 
@@ -648,7 +703,7 @@ void BlueprintCalculator::printProgress() const
 
 void BlueprintCalculator::printFinalStats() const
 {
-	std::cout << "Duration: " << opt::prettyDuration(startTime) << printSep << "\n\n";
+	std::cout << "Duration: " << opt::prettyDuration(startTime) << "\n";
 }
 
 } // bp

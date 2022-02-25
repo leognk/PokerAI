@@ -71,6 +71,11 @@ inline std::string roundToString(const Round& r)
 	}
 }
 
+inline std::string roundToString(const uint8_t& r)
+{
+	return roundToString(Round(r));
+}
+
 inline Round roundFromString(const std::string& roundStr)
 {
 	if (roundStr == "preflop")

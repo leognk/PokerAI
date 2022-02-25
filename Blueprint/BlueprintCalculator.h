@@ -8,6 +8,7 @@
 #include "../Utils/FastVector.h"
 #include "../Utils/Progression.h"
 #include "../Utils/HardwareUsage.h"
+#include "../Utils/ioVar.h"
 #include <filesystem>
 
 namespace bp {
@@ -16,7 +17,8 @@ static const std::string blueprintDir = "../data/Blueprint/" + BLUEPRINT_NAME + 
 static const std::string blueprintTmpDir = blueprintDir + "tmp/";
 
 static const std::string snapshotPath = blueprintTmpDir + "SNAPSHOT";
-static const std::string checkpointPath = blueprintTmpDir + "CHECKPOINT";
+static const std::string checkpointPath = blueprintTmpDir + "CHECKPOINT.bin";
+static const std::string constantPath = blueprintDir + "CONSTANTS.txt";
 static const std::string stratPath = blueprintDir + "STRATEGY";
 
 typedef int32_t regret_t;
@@ -46,6 +48,8 @@ private:
 	typedef omp::XoroShiro128Plus Rng;
 
 	std::array<uint8_t, 2> buildPruneCumWeights();
+
+	void saveConstants() const;
 
 	size_t nHandIds(egn::Round round) const;
 	size_t nActionSeqIds(egn::Round round) const;

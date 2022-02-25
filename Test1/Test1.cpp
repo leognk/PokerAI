@@ -11,9 +11,27 @@
 #include <fstream>
 #include <bitset>
 
-#include "../Utils/StringManip.h"
+#include "../Utils/ioVar.h"
 
 int main()
 {
-	std::cout << std::setw(6) << opt::prettyNumDg(1.65, 3, true) << "s/it\n";
+	std::vector<std::vector<std::vector<float>>> x = {
+		{
+			{ 1, 2 },
+			{ 1 }
+		},
+		{
+			{ 1, 2 },
+			{ 1 }
+		},
+		{
+			{ 1, 2 },
+			{ 1 }
+		},
+		{
+			{ 1, 2 },
+			{ 1 }
+		}
+		};
+	WRITE_VAR(std::cout, x);
 }
