@@ -1,7 +1,7 @@
 #ifndef OPT_IOVAR_H
 #define OPT_IOVAR_H
 
-#include <ostream>
+#include <fstream>
 #include <vector>
 #include <string>
 
@@ -14,7 +14,7 @@ inline void saveVar(const T& var, std::fstream& file)
 }
 
 template<typename T>
-inline void loadVar(T& var, const std::fstream& file)
+inline void loadVar(T& var, std::fstream& file)
 {
 	file.read((char*)&var, sizeof(var));
 }

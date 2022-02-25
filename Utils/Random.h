@@ -1,8 +1,8 @@
 #ifndef OPT_RANDOM_H
 #define OPT_RANDOM_H
 
-#include <cstdint>
 #include <stdexcept>
+#include "ioVar.h"
 
 namespace opt {
 
@@ -51,6 +51,18 @@ public:
         unsigned i = 0;
         while (cumWeights[i] <= x) ++i;
         return i;
+    }
+
+    void save(std::fstream& file) const
+    {
+        saveVar(mBuffer, file);
+        saveVar(mBufferUsesLeft, file);
+    }
+
+    void load(std::fstream& file)
+    {
+        loadVar(mBuffer, file);
+        loadVar(mBufferUsesLeft, file);
     }
 
     static const uint64_t RANGE = 1ull << tBits;
@@ -102,6 +114,18 @@ public:
         unsigned i = 0;
         while (cumWeights[i] <= x) ++i;
         return i;
+    }
+
+    void save(std::fstream& file) const
+    {
+        saveVar(mBuffer, file);
+        saveVar(mBufferUsesLeft, file);
+    }
+
+    void load(std::fstream& file)
+    {
+        loadVar(mBuffer, file);
+        loadVar(mBufferUsesLeft, file);
     }
 
     static const uint64_t RANGE = 1ull << tBits;

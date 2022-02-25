@@ -3,6 +3,7 @@
 
 #include "../libdivide/libdivide.h"
 #include "../../Utils/Random.h"
+#include "../../Utils/ioContainer.h"
 #include <cstdint>
 #include <climits>
 
@@ -43,6 +44,16 @@ public:
     static uint64_t (max)()
     {
         return ~(uint64_t)0;
+    }
+
+    void save(std::fstream& file) const
+    {
+        opt::saveArray(mState, file);
+    }
+
+    void load(std::fstream& file)
+    {
+        opt::loadVar(mState, file);
     }
 
 private:

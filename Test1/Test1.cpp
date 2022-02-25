@@ -15,5 +15,6 @@
 
 int main()
 {
-
+	uint8_t a[3];
+	std::cout << sizeof(a) << "\n";
 }

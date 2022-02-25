@@ -38,11 +38,13 @@ BlueprintCalculator::BlueprintCalculator(bool resumeFromCheckpoint, unsigned rng
 	std::filesystem::create_directory(blueprintDir);
 	std::filesystem::create_directory(blueprintTmpDir);
 
+	// Save the constants.
 	if (!resumeFromCheckpoint) {
 		auto file = std::ofstream(constantPath);
 		writeConstants(file);
 		file.close();
 	}
+	// Verify that the constants are the same as the ones used in the checkpoint.
 	else verifyConstants();
 
 	// Allocate memory for the regrets.
