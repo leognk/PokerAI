@@ -253,8 +253,7 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 	lastChild.clear();
 	expVals.clear();
 
-	//abcInfo.startNewHand();
-	abcInfo.startNewHand(true, currIter, traverser);
+	abcInfo.startNewHand();
 
 	// Do a DFS.
 	while (true) {
@@ -340,9 +339,8 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 	// visited will only deal with children of nodes where traverser plays.
 	visited.clear();
 
-	//abcInfo.startNewHand();
-	//abcInfo.startNewHand(currIter >= uint64_t(400e3), currIter, traverser);
-	abcInfo.startNewHand(true, currIter, traverser);
+	abcInfo.startNewHand();
+	//abcInfo.startNewHand(currIter >= uint64_t(390e3), currIter, traverser);
 
 	// Do a DFS.
 	while (true) {
@@ -650,7 +648,7 @@ void BlueprintCalculator::printProgress() const
 
 void BlueprintCalculator::printFinalStats() const
 {
-	std::cout << printSep << "\n\nDuration: " << opt::prettyDuration(startTime) << "\n";
+	std::cout << "Duration: " << opt::prettyDuration(startTime) << printSep << "\n\n";
 }
 
 } // bp

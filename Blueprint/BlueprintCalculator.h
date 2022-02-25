@@ -23,8 +23,8 @@ typedef int32_t regret_t;
 typedef uint32_t sumRegret_t;
 typedef uint16_t strat_t;
 typedef uint32_t sumStrat_t;
-//typedef abc::AbstractInfoset<bckSize_t, N_BCK_PREFLOP, N_BCK_FLOP, N_BCK_TURN, N_BCK_RIVER> abcInfo_t;
-typedef abc::AbstractInfosetDebug<bckSize_t, N_BCK_PREFLOP, N_BCK_FLOP, N_BCK_TURN, N_BCK_RIVER> abcInfo_t;
+typedef abc::AbstractInfoset<bckSize_t, N_BCK_PREFLOP, N_BCK_FLOP, N_BCK_TURN, N_BCK_RIVER> abcInfo_t;
+//typedef abc::AbstractInfosetDebug<bckSize_t, N_BCK_PREFLOP, N_BCK_FLOP, N_BCK_TURN, N_BCK_RIVER> abcInfo_t;
 
 class BlueprintCalculator
 {
