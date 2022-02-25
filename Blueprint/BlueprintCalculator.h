@@ -33,7 +33,7 @@ class BlueprintCalculator
 public:
 
 	// Set rngSeed to 0 to set a random seed.
-	BlueprintCalculator(unsigned rngSeed = 0, bool verbose = true);
+	BlueprintCalculator(bool resumeFromCheckpoint = false, unsigned rngSeed = 0, bool verbose = true);
 
 	// Conduct MCCFR and save the final strategy to the disk.
 	void buildStrategy();
@@ -49,7 +49,8 @@ private:
 
 	std::array<uint8_t, 2> buildPruneCumWeights();
 
-	void saveConstants() const;
+	void writeConstants(std::ostream& os) const;
+	void verifyConstants() const;
 
 	size_t nHandIds(egn::Round round) const;
 	size_t nActionSeqIds(egn::Round round) const;
@@ -74,15 +75,17 @@ private:
 	static std::string getStratPath(uint8_t roundId);
 
 	void updateCheckpoint();
+	void loadCheckpoint();
 	void printProgress() const;
 	void printFinalStats() const;
 
+	bool resumeFromCheckpoint;
 	bool verbose;
 
 	Rng rng;
 	opt::FastRandomChoice<7> pruneRandChoice;
 	opt::FastRandomChoiceRNGRescale<16> actionRandChoice;
-	opt::FastRandomChoice<15> cumWeightsRescaler;
+	static const opt::FastRandomChoice<15> cumWeightsRescaler;
 	const std::array<uint8_t, 2> pruneCumWeights;
 	std::vector<sumRegret_t> cumRegrets;
 	std::vector<sumRegret_t> cumProbas;
@@ -91,6 +94,7 @@ private:
 	// Non-normalized strategy on preflop.
 	std::vector<std::vector<sumRegret_t>> preflopStrat;
 
+	double extraDuration;
 	opt::time_t startTime;
 	unsigned nextSnapshotId;
 	unsigned nCheckpointsDone;

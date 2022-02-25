@@ -3,9 +3,11 @@
 namespace bp {
 
 const std::string BlueprintCalculator::printSep(20, '_');
+const opt::FastRandomChoice<15> BlueprintCalculator::cumWeightsRescaler;
 
-BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
+BlueprintCalculator::BlueprintCalculator(bool resumeFromCheckpoint, unsigned rngSeed, bool verbose) :
 
+	resumeFromCheckpoint(resumeFromCheckpoint),
 	rng{ (!rngSeed) ? std::random_device{}() : rngSeed },
 	verbose(verbose),
 	pruneCumWeights(buildPruneCumWeights()),
@@ -28,6 +30,7 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 		BLUEPRINT_GAME_NAME),
 
 	currIter(0),
+	extraDuration(0),
 	nextSnapshotId(1),
 	nCheckpointsDone(0)
 {
@@ -35,7 +38,12 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 	std::filesystem::create_directory(blueprintDir);
 	std::filesystem::create_directory(blueprintTmpDir);
 
-	saveConstants();
+	if (!resumeFromCheckpoint) {
+		auto file = std::ofstream(constantPath);
+		writeConstants(file);
+		file.close();
+	}
+	else verifyConstants();
 
 	// Allocate memory for the regrets.
 	regrets = {
@@ -50,6 +58,8 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 		N_BCK_PREFLOP, std::vector<sumRegret_t>(nActionSeqIds(egn::PREFLOP)));
 
 	gpSeqs.load();
+
+	if (resumeFromCheckpoint) loadCheckpoint();
 }
 
 void BlueprintCalculator::buildStrategy()
@@ -98,50 +108,60 @@ std::array<uint8_t, 2> BlueprintCalculator::buildPruneCumWeights()
 	return res;
 }
 
-void BlueprintCalculator::saveConstants() const
+void BlueprintCalculator::writeConstants(std::ostream& os) const
 {
-	auto file = std::fstream(constantPath, std::ios::out);
+	WRITE_VAR(os, BLUEPRINT_GAME_NAME);
+	os << "\n";
+	WRITE_VAR(os, N_BCK_PREFLOP);
+	WRITE_VAR(os, N_BCK_FLOP);
+	WRITE_VAR(os, N_BCK_TURN);
+	WRITE_VAR(os, N_BCK_RIVER);
+	os << "\n";
+	WRITE_VAR(os, MAX_PLAYERS);
+	os << "\n";
+	WRITE_VAR(os, ANTE);
+	WRITE_VAR(os, BIG_BLIND);
+	WRITE_VAR(os, INITIAL_STAKE);
+	os << "\n";
+	WRITE_VAR(os, BET_SIZES);
 
-	WRITE_VAR(file, BLUEPRINT_GAME_NAME);
-	file << "\n";
-	WRITE_VAR(file, N_BCK_PREFLOP);
-	WRITE_VAR(file, N_BCK_FLOP);
-	WRITE_VAR(file, N_BCK_TURN);
-	WRITE_VAR(file, N_BCK_RIVER);
-	file << "\n";
-	WRITE_VAR(file, MAX_PLAYERS);
-	file << "\n";
-	WRITE_VAR(file, ANTE);
-	WRITE_VAR(file, BIG_BLIND);
-	WRITE_VAR(file, INITIAL_STAKE);
-	file << "\n";
-	WRITE_VAR(file, BET_SIZES);
+	os << "\n" << printSep << "\n\n";
 
-	file << "\n" << printSep << "\n\n";
+	WRITE_VAR(os, BLUEPRINT_BUILD_NAME);
+	os << "\n";
+	WRITE_VAR(os, nSnapshots);
+	os << "\n";
+	WRITE_VAR(os, snapshotBeginIter);
+	WRITE_VAR(os, snapshotPeriod);
+	os << "\n";
+	WRITE_VAR(os, discountEndIter);
+	WRITE_VAR(os, discountPeriod);
+	os << "\n";
+	WRITE_VAR(os, pruneBeginIter);
+	WRITE_VAR(os, pruneProbaPerc);
+	WRITE_VAR(os, pruneThreshold);
+	WRITE_VAR(os, minRegret);
+	os << "\n";
+	WRITE_VAR(os, preflopStratUpdatePeriod);
+	os << "\n";
+	WRITE_VAR(os, checkpointPeriod);
+	WRITE_VAR(os, printPeriod);
+	os << "\n";
+	WRITE_VAR(os, endIter);
+}
 
-	WRITE_VAR(file, BLUEPRINT_BUILD_NAME);
-	file << "\n";
-	WRITE_VAR(file, nSnapshots);
-	file << "\n";
-	WRITE_VAR(file, snapshotBeginIter);
-	WRITE_VAR(file, snapshotPeriod);
-	file << "\n";
-	WRITE_VAR(file, discountEndIter);
-	WRITE_VAR(file, discountPeriod);
-	file << "\n";
-	WRITE_VAR(file, pruneBeginIter);
-	WRITE_VAR(file, pruneProbaPerc);
-	WRITE_VAR(file, pruneThreshold);
-	WRITE_VAR(file, minRegret);
-	file << "\n";
-	WRITE_VAR(file, preflopStratUpdatePeriod);
-	file << "\n";
-	WRITE_VAR(file, checkpointPeriod);
-	WRITE_VAR(file, printPeriod);
-	file << "\n";
-	WRITE_VAR(file, endIter);
-
+void BlueprintCalculator::verifyConstants() const
+{
+	std::ostringstream buffer1;
+	std::ifstream file(constantPath);
+	buffer1 << file.rdbuf();
 	file.close();
+
+	std::ostringstream buffer2;
+	writeConstants(buffer2);
+
+	if (buffer1.str() != buffer2.str())
+		throw std::runtime_error("The constants differ from the ones used in the checkpoint.");
 }
 
 size_t BlueprintCalculator::nHandIds(egn::Round round) const
@@ -543,10 +563,10 @@ void BlueprintCalculator::takeSnapshot()
 				// Normalize the regrets and write them in the file.
 				cumWeightsRescaler.rescaleCumWeights(cumRegrets);
 				strat_t strat = cumRegrets[0];
-				file.write((char*)&strat, sizeof(strat));
+				opt::saveVar(strat, file);
 				for (uint8_t i = 1; i < nLegalActions; ++i) {
 					strat = cumRegrets[i] - cumRegrets[i - 1];
-					file.write((char*)&strat, sizeof(strat));
+					opt::saveVar(strat, file);
 				}
 			}
 		}
@@ -578,7 +598,7 @@ void BlueprintCalculator::averageSnapshots()
 			for (bckSize_t handIdx = 0; handIdx < sumStrats.size(); ++handIdx) {
 				for (size_t seqIdx = 0; seqIdx < sumStrats[0].size(); ++seqIdx) {
 					strat_t strat;
-					snapshotFile.read((char*)&strat, sizeof(strat));
+					opt::loadVar(strat, snapshotFile);
 					sumStrats[handIdx][seqIdx] += strat;
 				}
 			}
@@ -594,7 +614,7 @@ void BlueprintCalculator::averageSnapshots()
 			for (const sumStrat_t& sumStrat : handSumStrats) {
 #pragma warning(suppress: 4244)
 				strat_t strat = std::round((double)sumStrat / nSnapshots);
-				file.write((char*)&strat, sizeof(strat));
+				opt::saveVar(strat, file);
 			}
 		}
 
@@ -637,10 +657,10 @@ void BlueprintCalculator::normalizePreflopStrat()
 			// Normalize the probas and write them in the file.
 			cumWeightsRescaler.rescaleCumWeights(cumProbas);
 			strat_t strat = cumProbas[0];
-			file.write((char*)&strat, sizeof(strat));
+			opt::saveVar(strat, file);
 			for (uint8_t i = 1; i < nLegalActions; ++i) {
 				strat = cumProbas[i] - cumProbas[i - 1];
-				file.write((char*)&strat, sizeof(strat));
+				opt::saveVar(strat, file);
 			}
 		}
 	}
@@ -662,14 +682,43 @@ std::string BlueprintCalculator::getStratPath(uint8_t roundId)
 
 void BlueprintCalculator::updateCheckpoint()
 {
-	// Open the file.
+	++nCheckpointsDone;
+
 	auto file = std::fstream(checkpointPath, std::ios::out | std::ios::binary);
 
+	rng.save(file);
+	pruneRandChoice.save(file);
+	actionRandChoice.save(file);
 
+	opt::save3DVector(regrets, file);
+	opt::save2DVector(preflopStrat, file);
+
+	opt::saveVar(currIter, file);
+	double duration = extraDuration + opt::getDuration(startTime);
+	opt::saveVar(duration, file);
+	opt::saveVar(nextSnapshotId, file);
+	opt::saveVar(nCheckpointsDone, file);
 
 	file.close();
+}
 
-	++nCheckpointsDone;
+void BlueprintCalculator::loadCheckpoint()
+{
+	auto file = std::fstream(checkpointPath, std::ios::in | std::ios::binary);
+
+	rng.load(file);
+	pruneRandChoice.load(file);
+	actionRandChoice.load(file);
+
+	opt::load3DVector(regrets, file);
+	opt::load2DVector(preflopStrat, file);
+
+	opt::loadVar(currIter, file);
+	opt::loadVar(extraDuration, file);
+	opt::loadVar(nextSnapshotId, file);
+	opt::loadVar(nCheckpointsDone, file);
+
+	file.close();
 }
 
 void BlueprintCalculator::printProgress() const
@@ -677,23 +726,23 @@ void BlueprintCalculator::printProgress() const
 	std::cout
 		<< BLUEPRINT_NAME << "\n\n"
 
-		<< opt::progressStr(currIter, endIter, startTime, false) << "\n\n"
+		<< opt::progressStr(currIter, endIter, startTime, extraDuration) << "\n\n"
 
 		<< "next checkpoint: " << opt::prettyDuration(
-			opt::remainingTime(currIter, (nCheckpointsDone + 1) * checkpointPeriod, startTime))
+			opt::remainingTime(currIter, (nCheckpointsDone + 1) * checkpointPeriod, startTime, extraDuration))
 
 		<< " | next snapshot: " << opt::prettyDuration(
-			opt::remainingTime(currIter, snapshotBeginIter + (nextSnapshotId - 1) * snapshotPeriod, startTime))
+			opt::remainingTime(currIter, snapshotBeginIter + (nextSnapshotId - 1) * snapshotPeriod, startTime, extraDuration))
 		<< " (" << nextSnapshotId - 1 << "/" << nSnapshots << ")\n";
 
 	if (currIter < pruneBeginIter)
 		std::cout << "prune start: " << opt::prettyDuration(
-			opt::remainingTime(currIter, pruneBeginIter, startTime));
+			opt::remainingTime(currIter, pruneBeginIter, startTime, extraDuration));
 	else std::cout << "pruning";
 
 	if (currIter < discountEndIter)
 		std::cout << " | discount end: " << opt::prettyDuration(
-			opt::remainingTime(currIter, discountEndIter, startTime)) << "\n\n";
+			opt::remainingTime(currIter, discountEndIter, startTime, extraDuration)) << "\n\n";
 	else std::cout << " | no discount\n\n";
 
 	std::cout << "VM: " << opt::vmUsedByMeStr(1) << " | RAM: " << opt::ramUsedByMeStr(1) << "\n";
@@ -703,7 +752,7 @@ void BlueprintCalculator::printProgress() const
 
 void BlueprintCalculator::printFinalStats() const
 {
-	std::cout << "Duration: " << opt::prettyDuration(startTime) << "\n";
+	std::cout << "Duration: " << opt::prettyDuration(extraDuration + opt::getDuration(startTime)) << "\n";
 }
 
 } // bp

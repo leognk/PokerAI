@@ -32,9 +32,9 @@ inline double remainingTime(
 
 inline double remainingTime(
 	const uint64_t currIter, const uint64_t endIter,
-	const time_t startTime)
+	const time_t startTime, const double extraDuration = 0.0)
 {
-	return getDuration(startTime) * ((double)endIter / currIter - 1.0);
+	return (extraDuration + getDuration(startTime)) * ((double)endIter / currIter - 1.0);
 }
 
 inline double remainingTime(const double timeSpent, const double totalTime)
@@ -54,14 +54,15 @@ inline double secPerIter(const uint64_t currIter, const double timeSpent)
 
 inline std::string progressStr(
 	const uint64_t currIter, const uint64_t endIter,
-	const time_t startTime, bool align = true)
+	const time_t startTime, double extraDuration = 0,
+	bool align = false)
 {
 	const std::string perc = progressPerc(currIter, endIter);
 
 	const std::string currIterStr = prettyNumDg(currIter, 3);
 	const std::string endIterStr = prettyNumDg(endIter, 3);
 
-	const double timeSpent = getDuration(startTime);
+	const double timeSpent = extraDuration + getDuration(startTime);
 	const double totTime = totalTime(currIter, endIter, timeSpent);
 	const std::string remTimeStr = prettyDuration(remainingTime(timeSpent, totTime));
 	const std::string timeSpentStr = prettyDuration(timeSpent);

@@ -3,8 +3,21 @@
 
 #include <ostream>
 #include <vector>
+#include <string>
 
 namespace opt {
+
+template<typename T>
+inline void saveVar(const T& var, std::fstream& file)
+{
+	file.write((char*)&var, sizeof(var));
+}
+
+template<typename T>
+inline void loadVar(T& var, const std::fstream& file)
+{
+	file.read((char*)&var, sizeof(var));
+}
 
 #define WRITE_VAR(os, var) opt::writeVar(os, var, #var)
 
