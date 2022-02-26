@@ -41,10 +41,6 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 		std::vector<std::vector<regret_t>>(N_BCK_RIVER, std::vector<regret_t>(nActionSeqIds(egn::RIVER)))
 	};
 
-	// Allocate memory for the preflop strategy.
-	preflopStrat = std::vector<std::vector<sumRegret_t>>(
-		N_BCK_PREFLOP, std::vector<sumRegret_t>(nActionSeqIds(egn::PREFLOP)));
-
 	gpSeqs.load();
 
 	// Create save folders.
@@ -71,7 +67,6 @@ void BlueprintCalculator::buildStrategy()
 	// Free memory allocated for regrets.
 	std::vector<std::vector<std::vector<regret_t>>>().swap(regrets);
 	// Perform final calculations for the final strategy and save it to the disk.
-	normalizePreflopStrat();
 	averageSnapshots();
 
 	printFinalStats();
@@ -80,12 +75,10 @@ void BlueprintCalculator::buildStrategy()
 void BlueprintCalculator::oneIter()
 {
 	bool mustPrune = currIter >= pruneBeginIter && pruneRandChoice(pruneCumWeights, rng) == 0;
-	bool mustUpdatePreflopStrat = currIter && (currIter % preflopStratUpdatePeriod == 0);
 
 	for (uint8_t traverser = 0; traverser < MAX_PLAYERS; ++traverser) {
 		if (mustPrune) traverseMCCFRP(traverser);
 		else traverseMCCFR(traverser);
-		if (mustUpdatePreflopStrat) updatePreflopStrat(traverser);
 	}
 
 	if (currIter && currIter < discountEndIter && currIter % discountPeriod == 0)
@@ -182,76 +175,6 @@ void BlueprintCalculator::applyDiscounting()
 			for (regret_t& regret : handRegrets)
 #pragma warning(suppress: 4244)
 				regret = std::round(regret * d);
-		}
-	}
-
-	// Discount final strategy on preflop.
-	// (discount is done before taking the snapshots for the other rounds' strategies)
-	for (auto& handStrat : preflopStrat) {
-		for (sumRegret_t& strat : handStrat)
-#pragma warning(suppress: 4244)
-			strat = std::round(strat * d);
-	}
-}
-
-void BlueprintCalculator::updatePreflopStrat(uint8_t traverser)
-{
-	stack.clear();
-	hist.clear();
-	lastChild.clear();
-
-	abcInfo.startNewHand();
-
-	// Do a DFS.
-	while (true) {
-
-		hist.push_back(abcInfo);
-
-		// Reached leaf node.
-		if (abcInfo.state.finished || abcInfo.state.round != egn::PREFLOP
-			|| !abcInfo.state.isActing(traverser)) {
-
-			// All leafs visited: end of DFS.
-			if (stack.empty()) return;
-
-			// Go back to the latest node having children not visited yet.
-			bool wasLastChild;
-			do {
-				hist.pop_back();
-				wasLastChild = lastChild.back();
-				lastChild.pop_back();
-			} while (wasLastChild);
-			abcInfo = hist.back();
-
-			// Go to the next node.
-			uint8_t a = stack.back();
-			stack.pop_back();
-			abcInfo.nextState(a);
-			lastChild.push_back(a == 0);
-		}
-
-		// Current node has children.
-		else {
-			if (abcInfo.state.actingPlayer == traverser) {
-				// Sample an action with the current strategy.
-				calculateCumRegrets();
-#pragma warning(suppress: 4244)
-				uint8_t a = actionRandChoice(cumRegrets, rng);
-				// Increment the final strategy.
-				++preflopStrat[abcInfo.handIdx()][abcInfo.actionSeqIds[a]];
-				// Go to the next node.
-				abcInfo.nextState(a);
-				lastChild.push_back(true);
-			}
-			else {
-				// Add all actions.
-				for (uint8_t a = 0; a < nActions() - 1; ++a)
-					stack.push_back(a);
-				// Go to the next node.
-				abcInfo.nextState(nActions() - 1);
-				// There will always be at least two legal actions, so this is never the last.
-				lastChild.push_back(false);
-			}
 		}
 	}
 }
@@ -496,10 +419,10 @@ egn::dchips BlueprintCalculator::calculateExpectedValueP() const
 	return v / s;
 }
 
-// Save the current strategy of the rounds after the preflop on the disk.
+// Save the current strategy of each round on the disk.
 void BlueprintCalculator::takeSnapshot()
 {
-	for (uint8_t r = 1; r < egn::N_ROUNDS; ++r) {
+	for (uint8_t r = 0; r < egn::N_ROUNDS; ++r) {
 
 		// Open the file.
 		auto file = std::fstream(
@@ -553,11 +476,11 @@ void BlueprintCalculator::takeSnapshot()
 	++nextSnapshotId;
 }
 
-// Average the snapshots into the final strategy for the rounds
-// after the preflop and save it to the disk.
+// Average the snapshots into the final strategy for each round
+// and save it to the disk.
 void BlueprintCalculator::averageSnapshots()
 {
-	for (uint8_t r = 1; r < egn::N_ROUNDS; ++r) {
+	for (uint8_t r = 0; r < egn::N_ROUNDS; ++r) {
 
 		// Allocate memory for the sum of the snapshots' strategies.
 		std::vector<std::vector<sumStrat_t>> sumStrats(
@@ -596,52 +519,6 @@ void BlueprintCalculator::averageSnapshots()
 
 		file.close();
 	}
-}
-
-void BlueprintCalculator::normalizePreflopStrat()
-{
-	// Open the file.
-	auto file = std::fstream(getStratPath(egn::PREFLOP), std::ios::out | std::ios::binary);
-
-	// Normalize the final strategy and save it to the disk.
-	// Loop over the strategy.
-	for (bckSize_t handIdx = 0; handIdx < preflopStrat.size(); ++handIdx) {
-
-		abc::GroupedActionSeqs::seqIdx_t currSeq = 0;
-
-		for (const uint8_t nLegalActions : gpSeqs.lens[egn::PREFLOP]) {
-
-			// Calculate the cumulated sums of the non-normalized probas
-			// of the legal actions.
-			cumProbas.resize(nLegalActions);
-			auto seqIdx = gpSeqs.seqs[egn::PREFLOP][currSeq];
-			sumRegret_t proba = preflopStrat[handIdx][seqIdx];
-			++currSeq;
-			for (uint8_t a = 1; a < nLegalActions; ++a) {
-				seqIdx = gpSeqs.seqs[egn::PREFLOP][currSeq];
-				proba = preflopStrat[handIdx][seqIdx];
-				cumProbas[a] = cumProbas[a - 1] + proba;
-				++currSeq;
-			}
-			// If all probas are null, the strategy is to choose
-			// with a uniform distribution.
-			if (cumProbas.back() == 0) {
-				for (uint8_t i = 0; i < cumProbas.size(); ++i)
-					cumProbas[i] = i + 1;
-			}
-
-			// Normalize the probas and write them in the file.
-			cumWeightsRescaler.rescaleCumWeights(cumProbas);
-			strat_t strat = cumProbas[0];
-			opt::saveVar(strat, file);
-			for (uint8_t i = 1; i < nLegalActions; ++i) {
-				strat = cumProbas[i] - cumProbas[i - 1];
-				opt::saveVar(strat, file);
-			}
-		}
-	}
-
-	file.close();
 }
 
 std::string BlueprintCalculator::getSnapshotPath(unsigned snapshotId, uint8_t roundId)
@@ -691,8 +568,6 @@ void BlueprintCalculator::writeConstants() const
 	WRITE_VAR(file, pruneProbaPerc);
 	WRITE_VAR(file, pruneThreshold);
 	WRITE_VAR(file, minRegret);
-	file << "\n";
-	WRITE_VAR(file, preflopStratUpdatePeriod);
 	file << "\n";
 	WRITE_VAR(file, checkpointPeriod);
 	WRITE_VAR(file, printPeriod);
@@ -761,7 +636,6 @@ void BlueprintCalculator::updateCheckpoint()
 	actionRandChoice.save(file);
 
 	opt::save3DVector(regrets, file);
-	opt::save2DVector(preflopStrat, file);
 
 	opt::saveVar(currIter, file);
 	double duration = extraDuration + opt::getDuration(startTime);
@@ -779,7 +653,6 @@ void BlueprintCalculator::loadCheckpoint(std::fstream& file)
 	actionRandChoice.load(file);
 
 	opt::load3DVector(regrets, file);
-	opt::load2DVector(preflopStrat, file);
 
 	opt::loadVar(currIter, file);
 	opt::loadVar(extraDuration, file);

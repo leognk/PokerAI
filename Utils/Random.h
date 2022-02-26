@@ -110,7 +110,7 @@ public:
     {
         // Rounding is very important (no flooring nor ceiling).
         // x's max value must be the sum of the weights minus 1.
-        uint64_t x = round((double)rand(rng) / MASK * (cumWeights.back() - 1));
+        uint64_t x = (uint64_t)round((double)rand(rng) / MASK * (cumWeights.back() - 1));
         unsigned i = 0;
         while (cumWeights[i] <= x) ++i;
         return i;

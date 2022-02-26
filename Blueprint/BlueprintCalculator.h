@@ -58,7 +58,6 @@ private:
 	sumRegret_t calculateSumRegrets() const;
 
 	void applyDiscounting();
-	void updatePreflopStrat(uint8_t traverser);
 	void traverseMCCFR(uint8_t traverser);
 	void traverseMCCFRP(uint8_t traverser);
 	egn::dchips calculateExpectedValue() const;
@@ -66,7 +65,6 @@ private:
 
 	void takeSnapshot();
 	void averageSnapshots();
-	void normalizePreflopStrat();
 	static std::string getSnapshotPath(unsigned snapshotId, uint8_t roundId);
 	static std::string getStratPath(uint8_t roundId);
 
@@ -89,11 +87,8 @@ private:
 	static const opt::FastRandomChoice<15> cumWeightsRescaler;
 	const std::array<uint8_t, 2> pruneCumWeights;
 	std::vector<sumRegret_t> cumRegrets;
-	std::vector<sumRegret_t> cumProbas;
 
 	std::vector<std::vector<std::vector<regret_t>>> regrets;
-	// Non-normalized strategy on preflop.
-	std::vector<std::vector<sumRegret_t>> preflopStrat;
 
 	double extraDuration;
 	opt::time_t startTime;

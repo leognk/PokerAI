@@ -167,13 +167,12 @@ static const uint8_t pruneProbaPerc = 95; // Pluribus: 95
 static const int32_t pruneThreshold = -300e6; // Pluribus: -300e6
 static const int32_t minRegret = -310e6; // Pluribus: -310e6
 
-static const uint64_t preflopStratUpdatePeriod = 10e3; // Pluribus: 10e3
-
 static const uint64_t checkpointPeriod = 240e6; // 240e6 (60 min)
 static const uint64_t printPeriod = 1e6; // 1e6 (15 s)
 
 static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotPeriod;
 
+// This is needed because the snapshots are not discounted.
 static_assert(discountEndIter <= snapshotBeginIter);
 
 
@@ -195,13 +194,12 @@ static const uint8_t pruneProbaPerc = 95; // Pluribus: 95
 static const int32_t pruneThreshold = -300e6; // Pluribus: -300e6
 static const int32_t minRegret = -310e6; // Pluribus: -310e6
 
-static const uint64_t preflopStratUpdatePeriod = 2; // Pluribus: 10e3
-
 static const uint64_t checkpointPeriod = 375e3; // 240e6 (60 min)
 static const uint64_t printPeriod = 10e3; // 1e6 (15 s)
 
 static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotPeriod;
 
+// This is needed because the snapshots are not discounted.
 static_assert(discountEndIter <= snapshotBeginIter);
 
 
@@ -223,13 +221,12 @@ static const uint8_t pruneProbaPerc = 95; // Pluribus: 95
 static const int32_t pruneThreshold = -300e6; // Pluribus: -300e6
 static const int32_t minRegret = -310e6; // Pluribus: -310e6
 
-static const uint64_t preflopStratUpdatePeriod = 10; // Pluribus: 10e3
-
 static const uint64_t checkpointPeriod = 50; // 1e8 (25 min)
 static const uint64_t printPeriod = 5; // 1e6 (15 s)
 
 static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotPeriod;
 
+// This is needed because the snapshots are not discounted.
 static_assert(discountEndIter <= snapshotBeginIter);
 
 
