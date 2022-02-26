@@ -332,9 +332,8 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 				// Sample an action with the current strategy.
 				calculateCumRegrets();
 #pragma warning(suppress: 4244)
-				uint8_t a = actionRandChoice(cumRegrets, rng);
 				// Go to the next node.
-				abcInfo.nextState(a);
+				abcInfo.nextState(actionRandChoice(cumRegrets, rng));
 			}
 		}
 	}
@@ -343,6 +342,9 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 {
 	stack.clear();
+	// firstAction[i] indicates whether the action stack[i] is the first one
+	// in the list of legal actions.
+	firstAction.clear();
 	// hist will only contain no-leaf nodes where traverser plays.
 	hist.clear();
 	// lastChild will only deal with children of nodes where traverser plays.
@@ -352,7 +354,6 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 	visited.clear();
 
 	abcInfo.startNewHand();
-	//abcInfo.startNewHand(true, currIter, traverser);
 
 	// Do a DFS.
 	while (true) {
@@ -379,7 +380,7 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 
 				// The expected values of all children have been calculated and
 				// we can average them into the parent node's expected value.
-				egn::dchips v = calculateExpectedValue();
+				egn::dchips v = calculateExpectedValueP();
 				// Update the regrets.
 				for (uint8_t a = 0; a < nActions(); ++a) {
 					if (visited.rbegin()[nActions() - 1 - a]) {
@@ -401,16 +402,17 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 			}
 
 			// Go to the next node.
-			uint8_t a = stack.back();
+			abcInfo.nextState(stack.back());
 			stack.pop_back();
-			abcInfo.nextState(a);
-			lastChild.push_back(a == 0);
+			lastChild.push_back(firstAction.back());
+			firstAction.pop_back();
 		}
 
 		// Current node has children.
 		else {
 			if (abcInfo.state.actingPlayer == traverser) {
 				// Add all actions.
+				bool first = true;
 				for (uint8_t a = 0; a < nActions(); ++a) {
 					const auto action = abcInfo.actionAbc.legalActions[a];
 					// Prune only if the action is not on the last betting
@@ -419,22 +421,24 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 						|| abcInfo.state.round == egn::RIVER
 						|| getRegret(a) > pruneThreshold
 						|| (action == abc::CALL && abcInfo.state.call == abcInfo.state.stakes[traverser]));
-					if (visited.back())
+					if (visited.back()) {
 						stack.push_back(a);
+						firstAction.push_back(first);
+						first = false;
+					}
 				}
 				// Go to the next node.
-				uint8_t a = stack.back();
+				abcInfo.nextState(stack.back());
 				stack.pop_back();
-				abcInfo.nextState(a);
-				lastChild.push_back(a == 0);
+				lastChild.push_back(firstAction.back());
+				firstAction.pop_back();
 			}
 			else {
 				// Sample an action with the current strategy.
 				calculateCumRegrets();
 #pragma warning(suppress: 4244)
-				uint8_t a = actionRandChoice(cumRegrets, rng);
 				// Go to the next node.
-				abcInfo.nextState(a);
+				abcInfo.nextState(actionRandChoice(cumRegrets, rng));
 			}
 		}
 	}
@@ -462,6 +466,34 @@ egn::dchips BlueprintCalculator::calculateExpectedValue() const
 	}
 
 	return v;
+}
+
+egn::dchips BlueprintCalculator::calculateExpectedValueP() const
+{
+	egn::dchips v = 0;
+	sumRegret_t s = calculateSumRegrets();
+
+	// If no regret is positive, all actions have the same proba,
+	// so we take the arithmetic mean of the expected values.
+	if (s == 0) {
+		for (uint8_t a = 0; a < nActions(); ++a) {
+			if (visited.rbegin()[nActions() - 1 - a])
+				v += expVals.rbegin()[s++];
+		}
+	}
+
+	else {
+		uint8_t i = 0;
+		for (uint8_t a = 0; a < nActions(); ++a) {
+			if (visited.rbegin()[nActions() - 1 - a]) {
+				if (getRegret(a) > 0)
+					v += getRegret(a) * expVals.rbegin()[i];
+				++i;
+			}
+		}
+	}
+
+	return v / s;
 }
 
 // Save the current strategy of the rounds after the preflop on the disk.

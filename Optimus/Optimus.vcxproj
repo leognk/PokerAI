@@ -155,7 +155,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\tracy\TracyClient.cpp" />
     <ClCompile Include="Optimus.cpp" />
   </ItemGroup>
   <ItemGroup>
