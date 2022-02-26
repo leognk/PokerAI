@@ -3,6 +3,7 @@
 
 #include "TreeTraverser.h"
 #include "../Utils/Hash.h"
+#include "../Utils/Hash.h"
 #include "../BBHash/BooPHF.h"
 
 namespace abc {
@@ -26,8 +27,10 @@ public:
 		int nThreads = 1, double gamma = 2.0);
 
 	void buildMPHF();
-	void saveMPHF();
+	void saveMPHF() const;
 	void loadMPHF();
+
+	static std::string getSizesPath(const std::string& indexerName);
 
 	uint64_t index(egn::Round round, const seq_t& actionSeq);
 
@@ -35,10 +38,11 @@ public:
 	TreeTraverser traverser;
 
 private:
-	void savePreflopMPHF();
-	void saveFlopMPHF();
-	void saveTurnMPHF();
-	void saveRiverMPHF();
+	void savePreflopMPHF() const;
+	void saveFlopMPHF() const;
+	void saveTurnMPHF() const;
+	void saveRiverMPHF() const;
+	void saveSizes() const;
 
 	void loadPreflopMPHF();
 	void loadFlopMPHF();
@@ -52,6 +56,7 @@ private:
 	const std::string flopMPHFPath;
 	const std::string turnMPHFPath;
 	const std::string riverMPHFPath;
+	const std::string sizesPath;
 
 }; // ActionSeqIndexer
 

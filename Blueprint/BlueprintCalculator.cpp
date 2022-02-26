@@ -35,10 +35,10 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 {
 	// Allocate memory for the regrets.
 	regrets = {
-		std::vector<std::vector<regret_t>>(N_BCK_PREFLOP, std::vector<regret_t>(nActionSeqIds(egn::PREFLOP))),
-		std::vector<std::vector<regret_t>>(N_BCK_FLOP, std::vector<regret_t>(nActionSeqIds(egn::FLOP))),
-		std::vector<std::vector<regret_t>>(N_BCK_TURN, std::vector<regret_t>(nActionSeqIds(egn::TURN))),
-		std::vector<std::vector<regret_t>>(N_BCK_RIVER, std::vector<regret_t>(nActionSeqIds(egn::RIVER)))
+		std::vector<std::vector<regret_t>>(N_BCK_PREFLOP, std::vector<regret_t>(abcInfo.nActionSeqs(egn::PREFLOP))),
+		std::vector<std::vector<regret_t>>(N_BCK_FLOP, std::vector<regret_t>(abcInfo.nActionSeqs(egn::FLOP))),
+		std::vector<std::vector<regret_t>>(N_BCK_TURN, std::vector<regret_t>(abcInfo.nActionSeqs(egn::TURN))),
+		std::vector<std::vector<regret_t>>(N_BCK_RIVER, std::vector<regret_t>(abcInfo.nActionSeqs(egn::RIVER)))
 	};
 
 	gpSeqs.load();
@@ -88,7 +88,7 @@ void BlueprintCalculator::oneIter()
 
 	if (currIter >= snapshotBeginIter && (currIter - snapshotBeginIter) % snapshotPeriod == 0)
 		takeSnapshot();
-	if (currIter % checkpointPeriod == 0)
+	if (currIter % checkpointPeriod == 0 || currIter == endIter)
 		updateCheckpoint();
 	if (verbose && (currIter % printPeriod == 0 || currIter == endIter))
 		printProgress();
@@ -99,28 +99,6 @@ std::array<uint8_t, 2> BlueprintCalculator::buildPruneCumWeights()
 	std::array<uint8_t, 2> res = { pruneProbaPerc, 100 };
 	pruneRandChoice.rescaleCumWeights(res);
 	return res;
-}
-
-size_t BlueprintCalculator::nHandIds(egn::Round round) const
-{
-	switch (round) {
-	case egn::PREFLOP: return N_BCK_PREFLOP;
-	case egn::FLOP: return N_BCK_FLOP;
-	case egn::TURN: return N_BCK_TURN;
-	case egn::RIVER: return N_BCK_RIVER;
-	default: throw std::runtime_error("Unknown round.");
-	}
-}
-
-size_t BlueprintCalculator::nActionSeqIds(egn::Round round) const
-{
-	switch (round) {
-	case egn::PREFLOP: return abcInfo.preflopNActionSeqs();
-	case egn::FLOP: return abcInfo.flopNActionSeqs();
-	case egn::TURN: return abcInfo.turnNActionSeqs();
-	case egn::RIVER: return abcInfo.riverNActionSeqs();
-	default: throw std::runtime_error("Unknown round.");
-	}
 }
 
 uint8_t BlueprintCalculator::nActions() const
@@ -484,7 +462,7 @@ void BlueprintCalculator::averageSnapshots()
 
 		// Allocate memory for the sum of the snapshots' strategies.
 		std::vector<std::vector<sumStrat_t>> sumStrats(
-			nHandIds(egn::Round(r)), std::vector<sumStrat_t>(nActionSeqIds(egn::Round(r))));
+			abcInfo.nBcks(egn::Round(r)), std::vector<sumStrat_t>(abcInfo.nActionSeqs(egn::Round(r))));
 
 		// Calculate the sum of the snapshots' strategies.
 		for (unsigned snapshotId = 1; snapshotId <= nSnapshots; ++snapshotId) {

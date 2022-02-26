@@ -1,5 +1,4 @@
 #include "ActionSeqIndexer.h"
-#include <fstream>
 
 namespace abc {
 
@@ -18,8 +17,14 @@ ActionSeqIndexer::ActionSeqIndexer(
 	preflopMPHFPath(mphfDir + indexerName + "_PREFLOP_MPHF.bin"),
 	flopMPHFPath(mphfDir + indexerName + "_FLOP_MPHF.bin"),
 	turnMPHFPath(mphfDir + indexerName + "_TURN_MPHF.bin"),
-	riverMPHFPath(mphfDir + indexerName + "_RIVER_MPHF.bin")
+	riverMPHFPath(mphfDir + indexerName + "_RIVER_MPHF.bin"),
+	sizesPath(getSizesPath(indexerName))
 {
+}
+
+std::string ActionSeqIndexer::getSizesPath(const std::string& indexerName)
+{
+	return mphfDir + indexerName + "_ACTION_SEQ_SIZES.bin";
 }
 
 void ActionSeqIndexer::buildMPHF()
@@ -47,12 +52,13 @@ void ActionSeqIndexer::buildMPHF()
 	riverMPHF = mphf_t(allKeys[egn::RIVER].size(), allKeys[egn::RIVER], nThreads, gamma, 0);
 }
 
-void ActionSeqIndexer::saveMPHF()
+void ActionSeqIndexer::saveMPHF() const
 {
 	savePreflopMPHF();
 	saveFlopMPHF();
 	saveTurnMPHF();
 	saveRiverMPHF();
+	saveSizes();
 }
 
 void ActionSeqIndexer::loadMPHF()
@@ -63,31 +69,41 @@ void ActionSeqIndexer::loadMPHF()
 	loadRiverMPHF();
 }
 
-void ActionSeqIndexer::savePreflopMPHF()
+void ActionSeqIndexer::savePreflopMPHF() const
 {
 	auto file = std::fstream(preflopMPHFPath, std::ios::out | std::ios::binary);
 	preflopMPHF.save(file);
 	file.close();
 }
 
-void ActionSeqIndexer::saveFlopMPHF()
+void ActionSeqIndexer::saveFlopMPHF() const
 {
 	auto file = std::fstream(flopMPHFPath, std::ios::out | std::ios::binary);
 	flopMPHF.save(file);
 	file.close();
 }
 
-void ActionSeqIndexer::saveTurnMPHF()
+void ActionSeqIndexer::saveTurnMPHF() const
 {
 	auto file = std::fstream(turnMPHFPath, std::ios::out | std::ios::binary);
 	turnMPHF.save(file);
 	file.close();
 }
 
-void ActionSeqIndexer::saveRiverMPHF()
+void ActionSeqIndexer::saveRiverMPHF() const
 {
 	auto file = std::fstream(riverMPHFPath, std::ios::out | std::ios::binary);
 	riverMPHF.save(file);
+	file.close();
+}
+
+void ActionSeqIndexer::saveSizes() const
+{
+	auto file = std::fstream(sizesPath, std::ios::out | std::ios::binary);
+	opt::saveVar(preflopMPHF.nbKeys(), file);
+	opt::saveVar(flopMPHF.nbKeys(), file);
+	opt::saveVar(turnMPHF.nbKeys(), file);
+	opt::saveVar(riverMPHF.nbKeys(), file);
 	file.close();
 }
 

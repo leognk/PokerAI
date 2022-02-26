@@ -108,10 +108,27 @@ public:
 #pragma warning(suppress: 4267)
 	uint8_t nActions() const { return actionAbc.legalActions.size(); }
 
-	size_t preflopNActionSeqs() const { return actionSeqIndexer.preflopMPHF.nbKeys(); }
-	size_t flopNActionSeqs() const { return actionSeqIndexer.flopMPHF.nbKeys(); }
-	size_t turnNActionSeqs() const { return actionSeqIndexer.turnMPHF.nbKeys(); }
-	size_t riverNActionSeqs() const { return actionSeqIndexer.riverMPHF.nbKeys(); }
+	static size_t nBcks(egn::Round round)
+	{
+		switch (round) {
+		case egn::PREFLOP: return nBckPreflop;
+		case egn::FLOP: return nBckFlop;
+		case egn::TURN: return nBckTurn;
+		case egn::RIVER: return nBckRiver;
+		default: throw std::runtime_error("Unknown round.");
+		}
+	}
+
+	size_t nActionSeqs(egn::Round round) const
+	{
+		switch (round) {
+		case egn::PREFLOP: return actionSeqIndexer.preflopMPHF.nbKeys();
+		case egn::FLOP: return actionSeqIndexer.flopMPHF.nbKeys();
+		case egn::TURN: return actionSeqIndexer.turnMPHF.nbKeys();
+		case egn::RIVER: return actionSeqIndexer.riverMPHF.nbKeys();
+		default: throw std::runtime_error("Unknown round.");
+		}
+	}
 
 	egn::GameState state;
 	abc::ActionAbstraction actionAbc;

@@ -39,6 +39,9 @@
     <ClInclude Include="AbstractInfosetDebug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ActionSeqSize.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ActionAbstraction.cpp">
@@ -51,6 +54,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GroupedActionSeqs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ActionSeqSize.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -38,6 +38,9 @@ public:
 	void buildStrategy();
 	void oneIter();
 
+	static std::string getSnapshotPath(unsigned snapshotId, uint8_t roundId);
+	static std::string getStratPath(uint8_t roundId);
+
 	uint64_t currIter;
 
 	abcInfo_t abcInfo;
@@ -47,9 +50,6 @@ private:
 	typedef omp::XoroShiro128Plus Rng;
 
 	std::array<uint8_t, 2> buildPruneCumWeights();
-
-	size_t nHandIds(egn::Round round) const;
-	size_t nActionSeqIds(egn::Round round) const;
 
 	uint8_t nActions() const;
 	regret_t& getRegret(uint8_t actionId);
@@ -65,8 +65,6 @@ private:
 
 	void takeSnapshot();
 	void averageSnapshots();
-	static std::string getSnapshotPath(unsigned snapshotId, uint8_t roundId);
-	static std::string getStratPath(uint8_t roundId);
 
 	void writeConstants() const;
 	void verifyConstants() const;

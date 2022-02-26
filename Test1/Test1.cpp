@@ -11,9 +11,9 @@
 #include <fstream>
 #include <bitset>
 
-#include "../Utils/ioVar.h"
+
 
 int main()
 {
-	std::cout << opt::extractVarValue("BET_SIZES = azecan") << "\n";
+
 }
