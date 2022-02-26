@@ -70,8 +70,11 @@ private:
 	static std::string getSnapshotPath(unsigned snapshotId, uint8_t roundId);
 	static std::string getStratPath(uint8_t roundId);
 
-	void writeConstants(std::ostream& os) const;
+	void writeConstants() const;
 	void verifyConstants() const;
+	template<typename T>
+	void verifyOneConstant(std::ifstream& file, const T& v) const;
+
 	void updateCheckpoint();
 	void loadCheckpoint(std::fstream& file);
 
@@ -95,7 +98,7 @@ private:
 	double extraDuration;
 	opt::time_t startTime;
 	unsigned nextSnapshotId;
-	unsigned nCheckpointsDone;
+	uint64_t lastCheckpointIter;
 
 	abc::GroupedActionSeqs gpSeqs;
 

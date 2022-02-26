@@ -31,7 +31,7 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 	currIter(0),
 	extraDuration(0),
 	nextSnapshotId(1),
-	nCheckpointsDone(0)
+	lastCheckpointIter(0)
 {
 	// Allocate memory for the regrets.
 	regrets = {
@@ -58,13 +58,8 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 		verifyConstants();
 		loadCheckpoint(checkpointFile);
 	}
-	else {
-		// Save the constants.
-		auto file = std::ofstream(constantPath);
-		writeConstants(file);
-		file.close();
-	}
 	checkpointFile.close();
+	writeConstants();
 }
 
 void BlueprintCalculator::buildStrategy()
@@ -357,7 +352,7 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 	visited.clear();
 
 	abcInfo.startNewHand();
-	//abcInfo.startNewHand(currIter >= uint64_t(390e3), currIter, traverser);
+	//abcInfo.startNewHand(true, currIter, traverser);
 
 	// Do a DFS.
 	while (true) {
@@ -629,65 +624,103 @@ std::string BlueprintCalculator::getStratPath(uint8_t roundId)
 		+ "_" + opt::toUpper(egn::roundToString(roundId)) + ".bin";
 }
 
-void BlueprintCalculator::writeConstants(std::ostream& os) const
+void BlueprintCalculator::writeConstants() const
 {
-	WRITE_VAR(os, BLUEPRINT_GAME_NAME);
-	os << "\n";
-	WRITE_VAR(os, N_BCK_PREFLOP);
-	WRITE_VAR(os, N_BCK_FLOP);
-	WRITE_VAR(os, N_BCK_TURN);
-	WRITE_VAR(os, N_BCK_RIVER);
-	os << "\n";
-	WRITE_VAR(os, MAX_PLAYERS);
-	os << "\n";
-	WRITE_VAR(os, ANTE);
-	WRITE_VAR(os, BIG_BLIND);
-	WRITE_VAR(os, INITIAL_STAKE);
-	os << "\n";
-	WRITE_VAR(os, BET_SIZES);
+	auto file = std::ofstream(constantPath);
 
-	os << "\n" << printSep << "\n\n";
+	WRITE_VAR(file, BLUEPRINT_GAME_NAME);
+	file << "\n";
+	WRITE_VAR(file, N_BCK_PREFLOP);
+	WRITE_VAR(file, N_BCK_FLOP);
+	WRITE_VAR(file, N_BCK_TURN);
+	WRITE_VAR(file, N_BCK_RIVER);
+	file << "\n";
+	WRITE_VAR(file, MAX_PLAYERS);
+	file << "\n";
+	WRITE_VAR(file, ANTE);
+	WRITE_VAR(file, BIG_BLIND);
+	WRITE_VAR(file, INITIAL_STAKE);
+	file << "\n";
+	WRITE_VAR(file, BET_SIZES);
 
-	WRITE_VAR(os, BLUEPRINT_BUILD_NAME);
-	os << "\n";
-	WRITE_VAR(os, nSnapshots);
-	os << "\n";
-	WRITE_VAR(os, snapshotBeginIter);
-	WRITE_VAR(os, snapshotPeriod);
-	os << "\n";
-	WRITE_VAR(os, discountEndIter);
-	WRITE_VAR(os, discountPeriod);
-	os << "\n";
-	WRITE_VAR(os, pruneBeginIter);
-	WRITE_VAR(os, pruneProbaPerc);
-	WRITE_VAR(os, pruneThreshold);
-	WRITE_VAR(os, minRegret);
-	os << "\n";
-	WRITE_VAR(os, preflopStratUpdatePeriod);
-	os << "\n";
-	WRITE_VAR(os, checkpointPeriod);
-	WRITE_VAR(os, printPeriod);
-	os << "\n";
-	WRITE_VAR(os, endIter);
+	file << printSep << "\n\n";
+
+	WRITE_VAR(file, BLUEPRINT_BUILD_NAME);
+	file << "\n";
+	WRITE_VAR(file, nSnapshots);
+	file << "\n";
+	WRITE_VAR(file, snapshotBeginIter);
+	WRITE_VAR(file, snapshotPeriod);
+	file << "\n";
+	WRITE_VAR(file, discountEndIter);
+	WRITE_VAR(file, discountPeriod);
+	file << "\n";
+	WRITE_VAR(file, pruneBeginIter);
+	WRITE_VAR(file, pruneProbaPerc);
+	WRITE_VAR(file, pruneThreshold);
+	WRITE_VAR(file, minRegret);
+	file << "\n";
+	WRITE_VAR(file, preflopStratUpdatePeriod);
+	file << "\n";
+	WRITE_VAR(file, checkpointPeriod);
+	WRITE_VAR(file, printPeriod);
+	file << "\n";
+	WRITE_VAR(file, endIter);
+
+	file.close();
 }
 
 void BlueprintCalculator::verifyConstants() const
 {
-	std::ostringstream buffer1;
 	std::ifstream file(constantPath);
-	buffer1 << file.rdbuf();
+
+	verifyOneConstant(file, BLUEPRINT_GAME_NAME);
+	opt::skipLine(file);
+	verifyOneConstant(file, N_BCK_PREFLOP);
+	verifyOneConstant(file, N_BCK_FLOP);
+	verifyOneConstant(file, N_BCK_TURN);
+	verifyOneConstant(file, N_BCK_RIVER);
+	opt::skipLine(file);
+	verifyOneConstant(file, MAX_PLAYERS);
+	opt::skipLine(file);
+	verifyOneConstant(file, ANTE);
+	verifyOneConstant(file, BIG_BLIND);
+	verifyOneConstant(file, INITIAL_STAKE);
+	opt::skipLine(file);
+	verifyOneConstant(file, BET_SIZES);
+
+	opt::skipLine(file);
+	opt::skipLine(file);
+
+	verifyOneConstant(file, BLUEPRINT_BUILD_NAME);
+	opt::skipLine(file);
+	opt::skipLine(file);
+	opt::skipLine(file);
+	verifyOneConstant(file, snapshotBeginIter);
+	verifyOneConstant(file, snapshotPeriod);
+	opt::skipLine(file);
+	verifyOneConstant(file, discountEndIter);
+	verifyOneConstant(file, discountPeriod);
+
 	file.close();
+}
 
-	std::ostringstream buffer2;
-	writeConstants(buffer2);
+template<typename T>
+void BlueprintCalculator::verifyOneConstant(std::ifstream& file, const T& v) const
+{
+	std::string line;
+	std::getline(file, line);
 
-	if (buffer1.str() != buffer2.str())
-		throw std::runtime_error("The constants differ from the ones used in the checkpoint.");
+	std::ostringstream os;
+	WRITE_VAR(os, v);
+
+	if (opt::extractVarValue(line) != opt::extractVarValue(os.str()))
+		throw std::runtime_error("A constant differs from the one used in the checkpoint.");
 }
 
 void BlueprintCalculator::updateCheckpoint()
 {
-	++nCheckpointsDone;
+	lastCheckpointIter = currIter;
 
 	auto file = std::fstream(checkpointPath, std::ios::out | std::ios::binary);
 
@@ -702,7 +735,7 @@ void BlueprintCalculator::updateCheckpoint()
 	double duration = extraDuration + opt::getDuration(startTime);
 	opt::saveVar(duration, file);
 	opt::saveVar(nextSnapshotId, file);
-	opt::saveVar(nCheckpointsDone, file);
+	opt::saveVar(lastCheckpointIter, file);
 
 	file.close();
 }
@@ -719,7 +752,7 @@ void BlueprintCalculator::loadCheckpoint(std::fstream& file)
 	opt::loadVar(currIter, file);
 	opt::loadVar(extraDuration, file);
 	opt::loadVar(nextSnapshotId, file);
-	opt::loadVar(nCheckpointsDone, file);
+	opt::loadVar(lastCheckpointIter, file);
 }
 
 void BlueprintCalculator::printProgress() const
@@ -730,7 +763,7 @@ void BlueprintCalculator::printProgress() const
 		<< opt::progressStr(currIter, endIter, startTime, extraDuration) << "\n\n"
 
 		<< "next checkpoint: " << opt::prettyDuration(
-			opt::remainingTime(currIter, (nCheckpointsDone + 1) * checkpointPeriod, startTime, extraDuration))
+			opt::remainingTime(currIter, lastCheckpointIter + checkpointPeriod, startTime, extraDuration))
 
 		<< " | next snapshot: " << opt::prettyDuration(
 			opt::remainingTime(currIter, snapshotBeginIter + (nextSnapshotId - 1) * snapshotPeriod, startTime, extraDuration))

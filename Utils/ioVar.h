@@ -4,6 +4,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <regex>
 
 namespace opt {
 
@@ -43,6 +44,22 @@ inline std::ostream& writeVar(std::ostream& os, const T& var, const char* varNam
 {
 
 	return os << varName << " = " << var << "\n";
+}
+
+inline std::string extractVarValue(const std::string& var)
+{
+	static const std::regex rgx(R"(\S+ = (.+))");
+	std::smatch match;
+	if (std::regex_search(var, match, rgx))
+		return match.str(1);
+	else
+		throw std::runtime_error("Variable's value not found.");
+}
+
+inline void skipLine(std::istream& is)
+{
+	std::string line;
+	std::getline(is, line);
 }
 
 } // opt
