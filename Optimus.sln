@@ -65,6 +65,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BlueprintPerf", "BlueprintP
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BuildGpActionSeqs", "BuildGpActionSeqs\BuildGpActionSeqs.vcxproj", "{9E950228-EE96-4768-A2AE-116F5D040A49}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BuildBlueprintHists", "BuildBlueprintHists\BuildBlueprintHists.vcxproj", "{DBD59F9D-6AF2-41E6-BF39-110EFBE6AD28}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -321,6 +323,14 @@ Global
 		{9E950228-EE96-4768-A2AE-116F5D040A49}.Release|x64.Build.0 = Release|x64
 		{9E950228-EE96-4768-A2AE-116F5D040A49}.Release|x86.ActiveCfg = Release|Win32
 		{9E950228-EE96-4768-A2AE-116F5D040A49}.Release|x86.Build.0 = Release|Win32
+		{DBD59F9D-6AF2-41E6-BF39-110EFBE6AD28}.Debug|x64.ActiveCfg = Debug|x64
+		{DBD59F9D-6AF2-41E6-BF39-110EFBE6AD28}.Debug|x64.Build.0 = Debug|x64
+		{DBD59F9D-6AF2-41E6-BF39-110EFBE6AD28}.Debug|x86.ActiveCfg = Debug|Win32
+		{DBD59F9D-6AF2-41E6-BF39-110EFBE6AD28}.Debug|x86.Build.0 = Debug|Win32
+		{DBD59F9D-6AF2-41E6-BF39-110EFBE6AD28}.Release|x64.ActiveCfg = Release|x64
+		{DBD59F9D-6AF2-41E6-BF39-110EFBE6AD28}.Release|x64.Build.0 = Release|x64
+		{DBD59F9D-6AF2-41E6-BF39-110EFBE6AD28}.Release|x86.ActiveCfg = Release|Win32
+		{DBD59F9D-6AF2-41E6-BF39-110EFBE6AD28}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
