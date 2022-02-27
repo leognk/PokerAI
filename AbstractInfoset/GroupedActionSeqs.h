@@ -13,15 +13,14 @@ public:
 	typedef uint32_t seqIdx_t;
 
 	// groupedActionSeqsName is used in files names.
-	GroupedActionSeqs(
+	GroupedActionSeqs(const std::string& groupedActionSeqsName);
+
+	void build(
 		uint8_t maxPlayers,
 		egn::chips ante,
 		egn::chips bigBlind,
 		egn::chips initialStake,
-		const betSizes_t& betSizes,
-		const std::string& groupedActionSeqsName);
-
-	void build();
+		const betSizes_t& betSizes);
 	void save();
 	void load();
 
@@ -29,8 +28,7 @@ public:
 	std::vector<std::vector<uint8_t>> lens;
 
 private:
-	ActionSeqIndexer indexer;
-
+	const std::string groupedActionSeqsName;
 	const std::string filePath;
 
 };

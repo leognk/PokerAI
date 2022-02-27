@@ -2,7 +2,7 @@
 #define BP_BLUEPRINT_H
 
 #include "BlueprintCalculator.h"
-#include "../AbstractInfoset/ActionSeqSize.h"
+#include "../AbstractInfoset/GroupedActionSeqsInv.h"
 
 namespace bp {
 
@@ -35,6 +35,8 @@ private:
 
 	const std::string bpGameName;
 	const std::string bpName;
+
+	abc::GroupedActionSeqsInv gpSeqsInv;
 
 	Rng rng;
 	opt::FastRandomChoiceRNGRescale<15> actionRandChoice;

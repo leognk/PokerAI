@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="SaveBlueprintNodes.cpp">
+    <ClCompile Include="BuildGpActionSeqs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

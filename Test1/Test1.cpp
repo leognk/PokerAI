@@ -18,6 +18,7 @@ int main()
 	const unsigned rngSeed = 1;
 
 	bp::Blueprint blueprint(bp::BLUEPRINT_GAME_NAME, bp::BLUEPRINT_BUILD_NAME, rngSeed);
+	blueprint.loadStrat();
 
 	bp::abcInfo_t abcInfo(
 		bp::MAX_PLAYERS,

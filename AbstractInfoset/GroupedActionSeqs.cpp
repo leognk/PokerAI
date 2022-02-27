@@ -3,21 +3,22 @@
 
 namespace abc {
 
-GroupedActionSeqs::GroupedActionSeqs(
-	uint8_t maxPlayers,
-	egn::chips ante,
-	egn::chips bigBlind,
-	egn::chips initialStake,
-	const betSizes_t& betSizes,
-	const std::string& groupedActionSeqsName) :
+GroupedActionSeqs::GroupedActionSeqs(const std::string& groupedActionSeqsName) :
 
-	indexer(maxPlayers, ante, bigBlind, initialStake, betSizes, groupedActionSeqsName),
+	groupedActionSeqsName(groupedActionSeqsName),
 	filePath(groupedActionSeqsDir + groupedActionSeqsName + "_GROUPED_ACTION_SEQS.bin")
 {
 }
 
-void GroupedActionSeqs::build()
+void GroupedActionSeqs::build(
+	uint8_t maxPlayers,
+	egn::chips ante,
+	egn::chips bigBlind,
+	egn::chips initialStake,
+	const betSizes_t& betSizes)
 {
+	ActionSeqIndexer indexer(maxPlayers, ante, bigBlind, initialStake, betSizes, groupedActionSeqsName);
+
 	indexer.loadMPHF();
 
 	// Allocate memory for seqs and lens.

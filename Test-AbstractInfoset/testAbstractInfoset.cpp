@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "../AbstractInfoset/ActionSeqIndexer.h"
-#include "../AbstractInfoset/GroupedActionSeqs.h"
+#include "../AbstractInfoset/GroupedActionSeqsInv.h"
 #include "../AbstractInfoset/TreeTraverser.h"
 #include "../Blueprint/Constants.h"
 
@@ -38,18 +38,19 @@ class GroupedActionSeqsTest : public ::testing::Test
 {
 protected:
 	GroupedActionSeqsTest() :
-		gpSeqs(
-			bp::MAX_PLAYERS, bp::ANTE, bp::BIG_BLIND,
-			bp::INITIAL_STAKE, bp::BET_SIZES, bp::BLUEPRINT_GAME_NAME)
+		gpSeqs(bp::BLUEPRINT_GAME_NAME),
+		gpSeqsInv(bp::BLUEPRINT_GAME_NAME)
 	{
 	}
 
 	void SetUp() override
 	{
 		gpSeqs.load();
+		gpSeqsInv.load();
 	}
 	
 	abc::GroupedActionSeqs gpSeqs;
+	abc::GroupedActionSeqsInv gpSeqsInv;
 };
 
 TEST_F(GroupedActionSeqsTest, LengthsSumEqualsNSeqs)
@@ -75,6 +76,31 @@ TEST_F(GroupedActionSeqsTest, SeqsContainAllIds)
 		}
 		// Not necessary in theory but just in case.
 		for (bool flag : flags) EXPECT_TRUE(flag);
+	}
+}
+
+TEST_F(GroupedActionSeqsTest, InvSeqsContainAllIds)
+{
+	for (uint8_t r = 0; r < egn::N_ROUNDS; ++r) {
+		// Verify that all the integers between 0 and
+		// n_action_sequences - 1 are in invSeqs[r].
+		std::vector<bool> flags(gpSeqsInv.invSeqs[r].size(), false);
+		for (const auto& idx : gpSeqsInv.invSeqs[r]) {
+			EXPECT_LT(idx, flags.size());
+			EXPECT_FALSE(flags[idx]);
+			flags[idx] = true;
+		}
+		// Not necessary in theory but just in case.
+		for (bool flag : flags) EXPECT_TRUE(flag);
+	}
+}
+
+// Verify that invSeqs is the inverse permutation of seqs.
+TEST_F(GroupedActionSeqsTest, InvSeqsIsInv)
+{
+	for (uint8_t r = 0; r < egn::N_ROUNDS; ++r) {
+		for (size_t i = 0; i < gpSeqs.seqs[r].size(); ++i)
+			EXPECT_EQ(gpSeqs.seqs[r][gpSeqsInv.invSeqs[r][i]], i);
 	}
 }
 

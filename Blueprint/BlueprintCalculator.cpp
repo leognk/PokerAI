@@ -23,13 +23,7 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 		BLUEPRINT_GAME_NAME,
 		rngSeed),
 
-	gpSeqs(
-		MAX_PLAYERS,
-		ANTE,
-		BIG_BLIND,
-		INITIAL_STAKE,
-		BET_SIZES,
-		BLUEPRINT_GAME_NAME),
+	gpSeqs(BLUEPRINT_GAME_NAME),
 
 	currIter(0),
 	extraDuration(0),
