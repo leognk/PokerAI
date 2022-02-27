@@ -11,12 +11,27 @@ typedef std::vector<std::vector<std::vector<strat_t>>> strats_t;
 class Blueprint
 {
 public:
-	static strats_t loadStrat();
+	// Set rngSeed to 0 to set a random seed.
+	Blueprint(
+		const std::string& blueprintGameName,
+		const std::string& blueprintBuildName,
+		unsigned rngSeed = 0);
 
-	static const strats_t strat;
+	uint8_t chooseAction(const abcInfo_t& abcInfo);
+
+	const strats_t strat;
 
 private:
-	static const abc::ActionSeqSize seqSizes;
+	typedef omp::XoroShiro128Plus Rng;
+
+	static strats_t loadStrat(const std::string& blueprintGameName, const std::string& blueprintBuildName);
+
+	strat_t getProba(const abcInfo_t& abcInfo, uint8_t actionId);
+	void calculateCumProbas(const abcInfo_t& abcInfo);
+
+	Rng rng;
+	opt::FastRandomChoiceRNGRescale<15> actionRandChoice;
+	std::vector<strat_t> cumProbas;
 
 }; // Blueprint
 

@@ -13,14 +13,6 @@
 
 namespace bp {
 
-static const std::string blueprintDir = "../data/Blueprint/" + BLUEPRINT_NAME + "/";
-static const std::string blueprintTmpDir = blueprintDir + "tmp/";
-
-static const std::string snapshotPath = blueprintTmpDir + "SNAPSHOT";
-static const std::string checkpointPath = blueprintTmpDir + "CHECKPOINT.bin";
-static const std::string constantPath = blueprintDir + "CONSTANTS.txt";
-static const std::string stratPath = blueprintDir + "STRATEGY";
-
 typedef int32_t regret_t;
 typedef uint32_t sumRegret_t;
 typedef uint16_t strat_t;
@@ -38,8 +30,21 @@ public:
 	void buildStrategy();
 	void oneIter();
 
-	static std::string getSnapshotPath(unsigned snapshotId, uint8_t roundId);
-	static std::string getStratPath(uint8_t roundId);
+	static std::string blueprintDir(const std::string& blueprintName);
+	static std::string blueprintTmpDir(const std::string& blueprintName);
+
+	static std::string snapshotPath(const std::string& blueprintName, unsigned snapshotId, uint8_t roundId);
+	static std::string checkpointPath(const std::string& blueprintName);
+	static std::string constantPath(const std::string& blueprintName);
+	static std::string stratPath(const std::string& blueprintName, uint8_t roundId);
+
+	static std::string blueprintDir();
+	static std::string blueprintTmpDir();
+
+	static std::string snapshotPath(unsigned snapshotId, uint8_t roundId);
+	static std::string checkpointPath();
+	static std::string constantPath();
+	static std::string stratPath(uint8_t roundId);
 
 	uint64_t currIter;
 
@@ -80,8 +85,8 @@ private:
 	bool verbose;
 
 	Rng rng;
-	opt::FastRandomChoice<7> pruneRandChoice;
-	opt::FastRandomChoiceRNGRescale<16> actionRandChoice;
+	static opt::FastRandomChoice<7> pruneRandChoice;
+	static opt::FastRandomChoiceRNGRescale<16> actionRandChoice;
 	static const opt::FastRandomChoice<15> cumWeightsRescaler;
 	const std::array<uint8_t, 2> pruneCumWeights;
 	std::vector<sumRegret_t> cumRegrets;

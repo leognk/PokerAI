@@ -3,6 +3,9 @@
 namespace bp {
 
 const std::string BlueprintCalculator::printSep(20, '_');
+
+opt::FastRandomChoice<7> BlueprintCalculator::pruneRandChoice;
+opt::FastRandomChoiceRNGRescale<16> BlueprintCalculator::actionRandChoice;
 const opt::FastRandomChoice<15> BlueprintCalculator::cumWeightsRescaler;
 
 BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
@@ -44,11 +47,11 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 	gpSeqs.load();
 
 	// Create save folders.
-	std::filesystem::create_directory(blueprintDir);
-	std::filesystem::create_directory(blueprintTmpDir);
+	std::filesystem::create_directory(blueprintDir());
+	std::filesystem::create_directory(blueprintTmpDir());
 
 	// If a checkpoint file is found, resume from it.
-	auto checkpointFile = std::fstream(checkpointPath, std::ios::in | std::ios::binary);
+	auto checkpointFile = std::fstream(checkpointPath(), std::ios::in | std::ios::binary);
 	if (checkpointFile) {
 		// Verify that the constants are the same as the ones used in the checkpoint.
 		verifyConstants();
@@ -120,7 +123,7 @@ void BlueprintCalculator::calculateCumRegrets()
 {
 	cumRegrets.resize(nActions());
 	cumRegrets[0] = (getRegret(0) > 0) ? getRegret(0) : 0;
-	for (uint8_t a = 1; a < cumRegrets.size(); a++) {
+	for (uint8_t a = 1; a < cumRegrets.size(); ++a) {
 		if (getRegret(a) > 0)
 			cumRegrets[a] = cumRegrets[a - 1] + getRegret(a);
 		else
@@ -404,7 +407,7 @@ void BlueprintCalculator::takeSnapshot()
 
 		// Open the file.
 		auto file = std::fstream(
-			getSnapshotPath(nextSnapshotId, r), std::ios::out | std::ios::binary);
+			snapshotPath(nextSnapshotId, r), std::ios::out | std::ios::binary);
 
 		// Write in the file.
 		// Loop over all the regrets of the round.
@@ -469,7 +472,7 @@ void BlueprintCalculator::averageSnapshots()
 
 			// Open the snapshot.
 			auto snapshotFile = std::fstream(
-				getSnapshotPath(snapshotId, r), std::ios::in | std::ios::binary);
+				snapshotPath(snapshotId, r), std::ios::in | std::ios::binary);
 
 			// Add the snapshot's strategy to the total sum.
 			for (bckSize_t handIdx = 0; handIdx < sumStrats.size(); ++handIdx) {
@@ -484,7 +487,7 @@ void BlueprintCalculator::averageSnapshots()
 		}
 
 		// Open the file.
-		auto file = std::fstream(getStratPath(r), std::ios::out | std::ios::binary);
+		auto file = std::fstream(stratPath(r), std::ios::out | std::ios::binary);
 
 		// Write the average of the snapshots' strategies.
 		for (const auto& handSumStrats : sumStrats) {
@@ -499,21 +502,9 @@ void BlueprintCalculator::averageSnapshots()
 	}
 }
 
-std::string BlueprintCalculator::getSnapshotPath(unsigned snapshotId, uint8_t roundId)
-{
-	return snapshotPath + "_" + std::to_string(snapshotId)
-		+ "_" + opt::toUpper(egn::roundToString(roundId)) + ".bin";
-}
-
-std::string BlueprintCalculator::getStratPath(uint8_t roundId)
-{
-	return stratPath
-		+ "_" + opt::toUpper(egn::roundToString(roundId)) + ".bin";
-}
-
 void BlueprintCalculator::writeConstants() const
 {
-	auto file = std::ofstream(constantPath);
+	auto file = std::ofstream(constantPath());
 
 	WRITE_VAR(file, BLUEPRINT_GAME_NAME);
 	file << "\n";
@@ -557,7 +548,7 @@ void BlueprintCalculator::writeConstants() const
 
 void BlueprintCalculator::verifyConstants() const
 {
-	std::ifstream file(constantPath);
+	std::ifstream file(constantPath());
 
 	verifyOneConstant(file, BLUEPRINT_GAME_NAME);
 	opt::skipLine(file);
@@ -607,7 +598,7 @@ void BlueprintCalculator::updateCheckpoint()
 {
 	lastCheckpointIter = currIter;
 
-	auto file = std::fstream(checkpointPath, std::ios::out | std::ios::binary);
+	auto file = std::fstream(checkpointPath(), std::ios::out | std::ios::binary);
 
 	rng.save(file);
 	pruneRandChoice.save(file);
@@ -641,7 +632,7 @@ void BlueprintCalculator::loadCheckpoint(std::fstream& file)
 void BlueprintCalculator::printProgress() const
 {
 	std::cout
-		<< BLUEPRINT_NAME << "\n\n"
+		<< blueprintName() << "\n\n"
 
 		<< opt::progressStr(currIter, endIter, startTime, extraDuration) << "\n\n"
 
@@ -670,6 +661,69 @@ void BlueprintCalculator::printProgress() const
 void BlueprintCalculator::printFinalStats() const
 {
 	std::cout << "Duration: " << opt::prettyDuration(extraDuration + opt::getDuration(startTime)) << "\n";
+}
+
+std::string BlueprintCalculator::blueprintDir(const std::string& blueprintName)
+{
+	return "../data/Blueprint/" + blueprintName + "/";
+}
+
+std::string BlueprintCalculator::blueprintTmpDir(const std::string& blueprintName)
+{
+	return blueprintDir(blueprintName) + "tmp/";
+}
+
+std::string BlueprintCalculator::snapshotPath(
+	const std::string& blueprintName, unsigned snapshotId, uint8_t roundId)
+{
+	return blueprintTmpDir(blueprintName) + "SNAPSHOT"
+		+ "_" + std::to_string(snapshotId) + "_" + opt::toUpper(egn::roundToString(roundId)) + ".bin";
+}
+
+std::string BlueprintCalculator::checkpointPath(const std::string& blueprintName)
+{
+	return blueprintTmpDir(blueprintName) + "CHECKPOINT.bin";
+}
+
+std::string BlueprintCalculator::constantPath(const std::string& blueprintName)
+{
+	return blueprintDir(blueprintName) + "CONSTANTS.txt";
+}
+
+std::string BlueprintCalculator::stratPath(const std::string& blueprintName, uint8_t roundId)
+{
+	return blueprintDir(blueprintName) + "STRATEGY"
+		+ "_" + opt::toUpper(egn::roundToString(roundId)) + ".bin";
+}
+
+std::string BlueprintCalculator::blueprintDir()
+{
+	return blueprintDir(blueprintName());
+}
+
+std::string BlueprintCalculator::blueprintTmpDir()
+{
+	return blueprintTmpDir(blueprintName());
+}
+
+std::string BlueprintCalculator::snapshotPath(unsigned snapshotId, uint8_t roundId)
+{
+	return snapshotPath(blueprintName(), snapshotId, roundId);
+}
+
+std::string BlueprintCalculator::checkpointPath()
+{
+	return checkpointPath(blueprintName());
+}
+
+std::string BlueprintCalculator::constantPath()
+{
+	return constantPath(blueprintName());
+}
+
+std::string BlueprintCalculator::stratPath(uint8_t roundId)
+{
+	return stratPath(blueprintName(), roundId);
 }
 
 } // bp

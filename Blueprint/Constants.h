@@ -233,7 +233,15 @@ static_assert(discountEndIter <= snapshotBeginIter);
 #endif // BLUEPRINT_BUILD_SIZE
 
 
-static const std::string BLUEPRINT_NAME = BLUEPRINT_GAME_NAME + "_" + BLUEPRINT_BUILD_NAME;
+static std::string blueprintName(const std::string& blueprintGameName, const std::string& blueprintBuildName)
+{
+	return blueprintGameName + "_" + blueprintBuildName;
+}
+
+static std::string blueprintName()
+{
+	return blueprintName(BLUEPRINT_GAME_NAME, BLUEPRINT_BUILD_NAME);
+}
 
 
 }
