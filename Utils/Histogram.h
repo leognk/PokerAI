@@ -65,7 +65,7 @@ static void accHist(
 
 // xticks is modified in-place. Its size has to be nBins + 1.
 template<typename T>
-static std::vector<uint64_t> buildHistFrom1D(
+static std::vector<uint64_t> buildHist(
 	const std::vector<T>& v, std::vector<T>& xticks, const T min, const T max)
 {
 	const T width = calculateXTicks(xticks, min, max);
@@ -75,15 +75,15 @@ static std::vector<uint64_t> buildHistFrom1D(
 }
 
 template<typename T>
-static std::vector<uint64_t> buildHistFrom1D(
+static std::vector<uint64_t> buildHist(
 	const std::vector<T>& v, std::vector<T>& xticks)
 {
 	const auto [min, max] = std::minmax_element(v.begin(), v.end());
-	return buildHistFrom1D<T>(v, xticks, *min, *max);
+	return buildHist<T>(v, xticks, *min, *max);
 }
 
 template<typename T>
-static std::vector<uint64_t> buildHistFrom2D(
+static std::vector<uint64_t> buildHist(
 	const std::vector<std::vector<T>>& v, std::vector<T>& xticks, T min, T max)
 {
 	const T width = calculateXTicks(xticks, min, max);
@@ -94,15 +94,15 @@ static std::vector<uint64_t> buildHistFrom2D(
 }
 
 template<typename T>
-static std::vector<uint64_t> buildHistFrom2D(
+static std::vector<uint64_t> buildHist(
 	const std::vector<std::vector<T>>& v, std::vector<T>& xticks)
 {
 	const auto [min, max] = findMinMax(v);
-	return buildHistFrom2D<T>(v, xticks, min, max);
+	return buildHist<T>(v, xticks, min, max);
 }
 
 template<typename T>
-static std::vector<uint64_t> buildHistFrom3D(
+static std::vector<uint64_t> buildHist(
 	const std::vector< std::vector<std::vector<T>>>& v, std::vector<T>& xticks, T min, T max)
 {
 	const T width = calculateXTicks(xticks, min, max);
@@ -115,11 +115,11 @@ static std::vector<uint64_t> buildHistFrom3D(
 }
 
 template<typename T>
-static std::vector<uint64_t> buildHistFrom3D(
+static std::vector<uint64_t> buildHist(
 	const std::vector<std::vector<std::vector<T>>>& v, std::vector<T>& xticks)
 {
 	const auto [min, max] = findMinMax(v);
-	return buildHistFrom3D<T>(v, xticks, min, max);
+	return buildHist<T>(v, xticks, min, max);
 }
 
 } // opt
