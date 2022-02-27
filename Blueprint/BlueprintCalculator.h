@@ -15,6 +15,7 @@ namespace bp {
 
 typedef int32_t regret_t;
 typedef uint32_t sumRegret_t;
+typedef std::vector<std::vector<std::vector<regret_t>>> regrets_t;
 typedef uint16_t strat_t;
 typedef uint32_t sumStrat_t;
 typedef abc::AbstractInfoset<bckSize_t, N_BCK_PREFLOP, N_BCK_FLOP, N_BCK_TURN, N_BCK_RIVER> abcInfo_t;
@@ -91,7 +92,7 @@ private:
 	const std::array<uint8_t, 2> pruneCumWeights;
 	std::vector<sumRegret_t> cumRegrets;
 
-	std::vector<std::vector<std::vector<regret_t>>> regrets;
+	regrets_t regrets;
 
 	double extraDuration;
 	opt::time_t startTime;

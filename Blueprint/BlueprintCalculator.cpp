@@ -68,7 +68,7 @@ void BlueprintCalculator::buildStrategy()
 	while (currIter < endIter) oneIter();
 
 	// Free memory allocated for regrets.
-	std::vector<std::vector<std::vector<regret_t>>>().swap(regrets);
+	regrets_t().swap(regrets);
 	// Perform final calculations for the final strategy and save it to the disk.
 	averageSnapshots();
 
@@ -600,11 +600,11 @@ void BlueprintCalculator::updateCheckpoint()
 
 	auto file = std::fstream(checkpointPath(), std::ios::out | std::ios::binary);
 
+	opt::save3DVector(regrets, file);
+
 	rng.save(file);
 	pruneRandChoice.save(file);
 	actionRandChoice.save(file);
-
-	opt::save3DVector(regrets, file);
 
 	opt::saveVar(currIter, file);
 	double duration = extraDuration + opt::getDuration(startTime);
@@ -617,11 +617,11 @@ void BlueprintCalculator::updateCheckpoint()
 
 void BlueprintCalculator::loadCheckpoint(std::fstream& file)
 {
+	opt::load3DVector(regrets, file);
+
 	rng.load(file);
 	pruneRandChoice.load(file);
 	actionRandChoice.load(file);
-
-	opt::load3DVector(regrets, file);
 
 	opt::loadVar(currIter, file);
 	opt::loadVar(extraDuration, file);

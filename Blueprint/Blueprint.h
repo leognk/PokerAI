@@ -17,17 +17,24 @@ public:
 		const std::string& blueprintBuildName,
 		unsigned rngSeed = 0);
 
+	void loadStrat();
+	void loadRegrets();
+
 	uint8_t chooseAction(const abcInfo_t& abcInfo);
 
-	const strats_t strat;
+	strats_t strat;
+	regrets_t regrets;
 
 private:
 	typedef omp::XoroShiro128Plus Rng;
 
-	static strats_t loadStrat(const std::string& blueprintGameName, const std::string& blueprintBuildName);
-
 	strat_t getProba(const abcInfo_t& abcInfo, uint8_t actionId);
+	regret_t getRegret(const abcInfo_t& abcInfo, uint8_t actionId);
+
 	void calculateCumProbas(const abcInfo_t& abcInfo);
+
+	const std::string bpGameName;
+	const std::string bpName;
 
 	Rng rng;
 	opt::FastRandomChoiceRNGRescale<15> actionRandChoice;
