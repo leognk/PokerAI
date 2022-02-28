@@ -30,6 +30,7 @@
     <ClInclude Include="Random.h" />
     <ClInclude Include="StringManip.h" />
     <ClInclude Include="Time.h" />
+    <ClInclude Include="VectorMemory.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <algorithm>
+#include "ioContainer.h"
 
 namespace opt {
 
@@ -41,7 +42,7 @@ template<typename T>
 static T calculateXTicks(std::vector<T>& xticks, const T min, const T max)
 {
 	const size_t nBins = xticks.size() - 1;
-	const T width = (T)std::round((double)(max - min) / nBins);
+	const T width = (T)std::round(((double)max - min) / nBins);
 
 	xticks[0] = min;
 	for (size_t i = 1; i < nBins; ++i)
@@ -103,7 +104,7 @@ static std::vector<uint64_t> buildHist(
 
 template<typename T>
 static std::vector<uint64_t> buildHist(
-	const std::vector< std::vector<std::vector<T>>>& v, std::vector<T>& xticks, T min, T max)
+	const std::vector<std::vector<std::vector<T>>>& v, std::vector<T>& xticks, T min, T max)
 {
 	const T width = calculateXTicks(xticks, min, max);
 	std::vector<uint64_t> hist(xticks.size() - 1);
@@ -120,6 +121,41 @@ static std::vector<uint64_t> buildHist(
 {
 	const auto [min, max] = findMinMax(v);
 	return buildHist<T>(v, xticks, min, max);
+}
+
+template<typename T, typename V>
+static void buildAndSaveHist(const V& v, const size_t nBins, std::fstream& file)
+{
+	std::vector<T> xticks(nBins + 1);
+	const std::vector<uint64_t> hist = buildHist(v, xticks);
+	save1DVector(hist, file);
+	save1DVector(xticks, file);
+}
+
+template<typename T>
+static void buildAndSaveHist(const std::vector<T>& v, const size_t nBins, std::fstream& file)
+{
+	buildAndSaveHist<T, std::vector<T>>(v, nBins, file);
+}
+
+template<typename T>
+static void buildAndSaveHist(const std::vector<std::vector<T>>& v, const size_t nBins, std::fstream& file)
+{
+	buildAndSaveHist<T, std::vector<std::vector<T>>>(v, nBins, file);
+}
+
+template<typename T>
+static void buildAndSaveHist(const std::vector<std::vector<std::vector<T>>>& v, const size_t nBins, std::fstream& file)
+{
+	buildAndSaveHist<T, std::vector<std::vector<std::vector<T>>>>(v, nBins, file);
+}
+
+template<typename V>
+static void buildAndSaveHist(const V& v, const size_t nBins, const std::string& filePath)
+{
+	auto file = std::fstream(filePath, std::ios::in | std::ios::binary);
+	buildAndSaveHist(v, nBins, file);
+	file.close();
 }
 
 } // opt

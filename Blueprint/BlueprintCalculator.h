@@ -9,6 +9,7 @@
 #include "../Utils/Progression.h"
 #include "../Utils/HardwareUsage.h"
 #include "../Utils/ioVar.h"
+#include "../Utils/VectorMemory.h"
 #include <filesystem>
 
 namespace bp {

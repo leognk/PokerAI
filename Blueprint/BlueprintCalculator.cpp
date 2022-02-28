@@ -62,7 +62,7 @@ void BlueprintCalculator::buildStrategy()
 	while (currIter < endIter) oneIter();
 
 	// Free memory allocated for regrets.
-	regrets_t().swap(regrets);
+	opt::freeVectMem(regrets);
 	// Perform final calculations for the final strategy and save it to the disk.
 	averageSnapshots();
 
