@@ -112,6 +112,14 @@ inline std::string prettyNumDg(
 	return prettyNumDg((double)n, nDigits, withSpace);
 }
 
+template<typename T>
+inline std::string prettyPerc(
+	const T x, const T total,
+	const unsigned precision = 0, const bool withSpace = false)
+{
+	return roundStr(100.0 * x / total, precision) + (withSpace ? " " : "") + "%";
+}
+
 } // opt
 
 #endif // OPT_STRINGMANIP_H

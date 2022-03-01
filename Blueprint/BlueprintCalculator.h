@@ -70,6 +70,9 @@ private:
 	egn::dchips calculateExpectedValue() const;
 	egn::dchips calculateExpectedValueP() const;
 
+	void incrNodesCount(uint8_t actionId);
+	uint64_t getNUniqueNodes() const;
+
 	void takeSnapshot();
 	void averageSnapshots();
 
@@ -109,6 +112,10 @@ private:
 	std::vector<bool> lastChild;
 	std::vector<egn::dchips> expVals;
 	std::vector<bool> visited;
+
+	uint64_t nodesCount;
+	uint64_t nodesUniqueCount;
+	const uint64_t totUniqueNodes;
 
 	static const std::string printSep;
 

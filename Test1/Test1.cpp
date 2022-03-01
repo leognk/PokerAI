@@ -30,6 +30,14 @@ int main()
 		rngSeed);
 
 	abcInfo.startNewHand();
-	uint8_t a = blueprint.chooseAction(abcInfo);
-	std::cout << std::to_string(a) << "\n";
+
+	blueprint.loadRegrets();
+	for (size_t i = 0; i < blueprint.regrets[0][0].size(); ++i) {
+		const int r = blueprint.regrets[0][0][i];
+		if (r > 0) {
+			const int diff = (std::numeric_limits<bp::regret_t>::max)() - r;
+			if (diff < 10000)
+				std::cout << i << ": " << diff << " " << r << "\n";
+		}
+	}
 }

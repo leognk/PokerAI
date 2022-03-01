@@ -7,13 +7,6 @@
 
 namespace opt {
 
-inline std::string progressPerc(
-	const uint64_t currIter, const uint64_t endIter,
-	const unsigned precision = 0, const bool withSpace = false)
-{
-	return roundStr(100.0 * currIter / endIter, precision) + (withSpace ? " " : "") + "%";
-}
-
 // Return the total time to finish all the iterations in seconds.
 inline double totalTime(
 	const uint64_t currIter, const uint64_t endIter,
@@ -57,7 +50,7 @@ inline std::string progressStr(
 	const time_t startTime, double extraDuration = 0,
 	bool align = false)
 {
-	const std::string perc = progressPerc(currIter, endIter);
+	const std::string perc = prettyPerc(currIter, endIter);
 
 	const std::string currIterStr = prettyNumDg(currIter, 3);
 	const std::string endIterStr = prettyNumDg(endIter, 3);

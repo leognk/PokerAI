@@ -28,7 +28,11 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 	currIter(0),
 	extraDuration(0),
 	nextSnapshotId(1),
-	lastCheckpointIter(0)
+	lastCheckpointIter(0),
+
+	nodesCount(0),
+	nodesUniqueCount(0),
+	totUniqueNodes(getNUniqueNodes())
 {
 	// Allocate memory for the regrets.
 	regrets = {
@@ -209,10 +213,11 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 			}
 
 			// Go to the next node.
-			uint8_t a = stack.back();
-			stack.pop_back();
+			const uint8_t a = stack.back();
 			abcInfo.nextState(a);
+			stack.pop_back();
 			lastChild.push_back(a == 0);
+			incrNodesCount(a);
 		}
 
 		// Current node has children.
@@ -222,16 +227,20 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 				for (uint8_t a = 0; a < nActions() - 1; ++a)
 					stack.push_back(a);
 				// Go to the next node.
-				abcInfo.nextState(nActions() - 1);
+				const uint8_t a = nActions() - 1;
+				abcInfo.nextState(a);
 				// There will always be at least two legal actions, so this is never the last.
 				lastChild.push_back(false);
+				incrNodesCount(a);
 			}
 			else {
 				// Sample an action with the current strategy.
 				calculateCumRegrets();
 #pragma warning(suppress: 4244)
 				// Go to the next node.
-				abcInfo.nextState(actionRandChoice(cumRegrets, rng));
+				const uint8_t a = actionRandChoice(cumRegrets, rng);
+				abcInfo.nextState(a);
+				incrNodesCount(a);
 			}
 		}
 	}
@@ -282,7 +291,8 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 				// Update the regrets.
 				for (uint8_t a = 0; a < nActions(); ++a) {
 					if (visited.rbegin()[nActions() - 1 - a]) {
-						getRegret(a) += expVals.back() - v;
+						if ((getRegret(a) += expVals.back() - v) < minRegret)
+							getRegret(a) = minRegret;
 						expVals.pop_back();
 					}
 				}
@@ -300,10 +310,12 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 			}
 
 			// Go to the next node.
-			abcInfo.nextState(stack.back());
+			const uint8_t a = stack.back();
+			abcInfo.nextState(a);
 			stack.pop_back();
 			lastChild.push_back(firstAction.back());
 			firstAction.pop_back();
+			incrNodesCount(a);
 		}
 
 		// Current node has children.
@@ -326,17 +338,21 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 					}
 				}
 				// Go to the next node.
-				abcInfo.nextState(stack.back());
+				const uint8_t a = stack.back();
+				abcInfo.nextState(a);
 				stack.pop_back();
 				lastChild.push_back(firstAction.back());
 				firstAction.pop_back();
+				incrNodesCount(a);
 			}
 			else {
 				// Sample an action with the current strategy.
 				calculateCumRegrets();
 #pragma warning(suppress: 4244)
 				// Go to the next node.
-				abcInfo.nextState(actionRandChoice(cumRegrets, rng));
+				const uint8_t a = actionRandChoice(cumRegrets, rng);
+				abcInfo.nextState(a);
+				incrNodesCount(a);
 			}
 		}
 	}
@@ -392,6 +408,20 @@ egn::dchips BlueprintCalculator::calculateExpectedValueP() const
 	}
 
 	return v / s;
+}
+
+void BlueprintCalculator::incrNodesCount(uint8_t actionId)
+{
+	++nodesCount;
+	if (getRegret(actionId) == 0) ++nodesUniqueCount;
+}
+
+uint64_t BlueprintCalculator::getNUniqueNodes() const
+{
+	return N_BCK_PREFLOP * abcInfo.nActionSeqs(egn::PREFLOP)
+		+ N_BCK_FLOP * abcInfo.nActionSeqs(egn::FLOP)
+		+ N_BCK_TURN * abcInfo.nActionSeqs(egn::TURN)
+		+ N_BCK_RIVER * abcInfo.nActionSeqs(egn::RIVER);
 }
 
 // Save the current strategy of each round on the disk.
@@ -606,6 +636,9 @@ void BlueprintCalculator::updateCheckpoint()
 	opt::saveVar(nextSnapshotId, file);
 	opt::saveVar(lastCheckpointIter, file);
 
+	opt::saveVar(nodesCount, file);
+	opt::saveVar(nodesUniqueCount, file);
+
 	file.close();
 }
 
@@ -621,6 +654,9 @@ void BlueprintCalculator::loadCheckpoint(std::fstream& file)
 	opt::loadVar(extraDuration, file);
 	opt::loadVar(nextSnapshotId, file);
 	opt::loadVar(lastCheckpointIter, file);
+
+	opt::loadVar(nodesCount, file);
+	opt::loadVar(nodesUniqueCount, file);
 }
 
 void BlueprintCalculator::printProgress() const
@@ -646,6 +682,12 @@ void BlueprintCalculator::printProgress() const
 		std::cout << " | discount end: " << opt::prettyDuration(
 			opt::remainingTime(currIter, discountEndIter, startTime, extraDuration)) << "\n\n";
 	else std::cout << " | no discount\n\n";
+
+	std::cout
+		<< "nodes: " << opt::prettyNumDg(nodesCount, 3)
+		<< " | unique nodes: " << opt::prettyNumDg(nodesUniqueCount, 3)
+		<< " / " << opt::prettyNumDg(totUniqueNodes, 3)
+		<< " (" << opt::prettyPerc(nodesUniqueCount, totUniqueNodes) << ")\n\n";
 
 	std::cout << "VM: " << opt::vmUsedByMeStr(1) << " | RAM: " << opt::ramUsedByMeStr(1) << "\n";
 
