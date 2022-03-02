@@ -31,14 +31,9 @@ int main()
 
 	abcInfo.startNewHand();
 
-	blueprint.loadRegrets();
-	for (size_t i = 0; i < blueprint.regrets[0][0].size(); ++i) {
-		const int r = blueprint.regrets[0][0][i];
-		//if (r > 0) {
-		//	const int diff = (std::numeric_limits<bp::regret_t>::max)() - r;
-		//	if (diff < 10000)
-		//		std::cout << i << ": " << diff << " " << r << "\n";
-		//}
-		std::cout << i << ": " << r << "\n";
+	blueprint.loadStrat();
+	for (size_t i = 0; i < blueprint.strat[0][0].size(); ++i) {
+		const auto s = blueprint.strat[0][0][i];
+		std::cout << i << ": " << s << "\n";
 	}
 }

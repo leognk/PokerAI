@@ -24,6 +24,7 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 		rngSeed),
 
 	gpSeqs(BLUEPRINT_GAME_NAME),
+	gpSeqsInv(BLUEPRINT_GAME_NAME),
 
 	currIter(0),
 	extraDuration(0),
@@ -43,6 +44,7 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 	};
 
 	gpSeqs.load();
+	gpSeqsInv.load();
 
 	// Create save folders.
 	std::filesystem::create_directory(blueprintDir());
@@ -106,28 +108,6 @@ uint8_t BlueprintCalculator::nActions() const
 {
 	return abcInfo.nActions();
 }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void BlueprintCalculator::printRegret(uint8_t actionId, uint8_t traverser, egn::dchips actionEV, egn::dchips ev) const
-{
-	static uint64_t regretPrintCount = 0;
-	const auto i = abcInfo.roundIdx();
-	const auto j = abcInfo.handIdx();
-	const auto k = abcInfo.actionSeqIds[actionId];
-	if (i == 0 && j == 0 && k == 0) {
-		const auto r = regrets[i][j][k];
-		++regretPrintCount;
-		std::cout
-			<< regretPrintCount
-			<< " - REGRET " << std::to_string(i) << " " << std::to_string(j) << " " << std::to_string(k) << ": " << r
-			<< " (" << ((r < 0) ? "-" : "") << opt::prettyNumDg((uint64_t)std::abs(r), 3) << ")"
-			<< " | iter: " << currIter
-			<< " | trav: " << std::to_string(traverser)
-			<< " | EVa: " << actionEV
-			<< " | EV: " << ev << "\n\n";
-	}
-}
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 regret_t& BlueprintCalculator::getRegret(uint8_t actionId)
 {
@@ -221,9 +201,6 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 				for (uint8_t a = 0; a < nActions(); ++a) {
 					if ((getRegret(a) += expVals.back() - v) < minRegret)
 						getRegret(a) = minRegret;
-					///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-					//printRegret(a, traverser, expVals.back(), v);
-					///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 					expVals.pop_back();
 				}
 				// All leafs visited and traverser's regrets updated: end of MCCFR traversal.
@@ -316,9 +293,6 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 					if (visited.rbegin()[nActions() - 1 - a]) {
 						if ((getRegret(a) += expVals.back() - v) < minRegret)
 							getRegret(a) = minRegret;
-						///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-						//printRegret(a, traverser, expVals.back(), v);
-						///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 						expVals.pop_back();
 					}
 				}
@@ -509,8 +483,8 @@ void BlueprintCalculator::averageSnapshots()
 {
 	for (uint8_t r = 0; r < egn::N_ROUNDS; ++r) {
 
-		// Allocate memory for the sum of the snapshots' strategies.
-		std::vector<std::vector<sumStrat_t>> sumStrats(
+		// Allocate memory for the snapshots' strategies.
+		std::vector<std::vector<sumStrat_t>> strats(
 			abcInfo.nBcks(egn::Round(r)), std::vector<sumStrat_t>(abcInfo.nActionSeqs(egn::Round(r))));
 
 		// Calculate the sum of the snapshots' strategies.
@@ -521,25 +495,30 @@ void BlueprintCalculator::averageSnapshots()
 				snapshotPath(snapshotId, r), std::ios::in | std::ios::binary);
 
 			// Add the snapshot's strategy to the total sum.
-			for (bckSize_t handIdx = 0; handIdx < sumStrats.size(); ++handIdx) {
-				for (size_t seqIdx = 0; seqIdx < sumStrats[0].size(); ++seqIdx) {
+			for (bckSize_t handIdx = 0; handIdx < strats.size(); ++handIdx) {
+				for (size_t seqIdx = 0; seqIdx < strats[0].size(); ++seqIdx) {
 					strat_t strat;
 					opt::loadVar(strat, snapshotFile);
-					sumStrats[handIdx][seqIdx] += strat;
+					strats[handIdx][seqIdx] += strat;
 				}
 			}
 
 			snapshotFile.close();
 		}
 
+		// Normalize the snapshots' strategies.
+		for (auto& handStrats : strats) {
+			for (sumStrat_t& strat : handStrats)
+				strat = (sumStrat_t)std::round((double)strat / nSnapshots);
+		}
+
 		// Open the file.
 		auto file = std::fstream(stratPath(r), std::ios::out | std::ios::binary);
 
 		// Write the average of the snapshots' strategies.
-		for (const auto& handSumStrats : sumStrats) {
-			for (const sumStrat_t& sumStrat : handSumStrats) {
-#pragma warning(suppress: 4244)
-				strat_t strat = std::round((double)sumStrat / nSnapshots);
+		for (bckSize_t handIdx = 0; handIdx < strats.size(); ++handIdx) {
+			for (size_t seqIdx = 0; seqIdx < strats[0].size(); ++seqIdx) {
+				strat_t strat = (strat_t)strats[handIdx][gpSeqsInv.invSeqs[r][seqIdx]];
 				opt::saveVar(strat, file);
 			}
 		}

@@ -4,7 +4,7 @@
 #include "Constants.h"
 #include "../AbstractInfoset/AbstractInfoset.h"
 #include "../AbstractInfoset/AbstractInfosetDebug.h"
-#include "../AbstractInfoset/GroupedActionSeqs.h"
+#include "../AbstractInfoset/GroupedActionSeqsInv.h"
 #include "../Utils/FastVector.h"
 #include "../Utils/Progression.h"
 #include "../Utils/HardwareUsage.h"
@@ -58,9 +58,6 @@ private:
 	std::array<uint8_t, 2> buildPruneCumWeights();
 
 	uint8_t nActions() const;
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	void printRegret(uint8_t actionId, uint8_t traverser, egn::dchips actionEV, egn::dchips ev) const;
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	regret_t& getRegret(uint8_t actionId);
 	const regret_t getRegret(uint8_t actionId) const;
 	void calculateCumRegrets();
@@ -106,6 +103,7 @@ private:
 	uint64_t lastCheckpointIter;
 
 	abc::GroupedActionSeqs gpSeqs;
+	abc::GroupedActionSeqsInv gpSeqsInv;
 
 	// Variables used for DFS.
 	std::vector<uint8_t> stack;

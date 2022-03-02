@@ -9,7 +9,6 @@ Blueprint::Blueprint(
 
 	bpGameName(blueprintGameName),
 	bpName(blueprintName(blueprintGameName, blueprintBuildName)),
-	gpSeqsInv(blueprintGameName),
 	rng{ (!rngSeed) ? std::random_device{}() : rngSeed }
 {
 }
@@ -29,9 +28,6 @@ void Blueprint::loadStrat()
 	// Load the strategy.
 	for (uint8_t r = 0; r < egn::N_ROUNDS; ++r)
 		opt::load2DVector(strat[r], BlueprintCalculator::stratPath(bpName, r));
-
-	// Load GroupedActionSeqsInv.
-	gpSeqsInv.load();
 }
 
 void Blueprint::loadRegrets()
@@ -54,8 +50,7 @@ void Blueprint::loadRegrets()
 
 strat_t Blueprint::getProba(const abcInfo_t& abcInfo, uint8_t actionId)
 {
-	return strat[abcInfo.roundIdx()][abcInfo.handIdx()]
-		[gpSeqsInv.invSeqs[abcInfo.roundIdx()][abcInfo.actionSeqIds[actionId]]];
+	return strat[abcInfo.roundIdx()][abcInfo.handIdx()][abcInfo.actionSeqIds[actionId]];
 }
 
 regret_t Blueprint::getRegret(const abcInfo_t& abcInfo, uint8_t actionId)
