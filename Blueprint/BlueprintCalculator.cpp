@@ -107,6 +107,28 @@ uint8_t BlueprintCalculator::nActions() const
 	return abcInfo.nActions();
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void BlueprintCalculator::printRegret(uint8_t actionId, uint8_t traverser, egn::dchips actionEV, egn::dchips ev) const
+{
+	static uint64_t regretPrintCount = 0;
+	const auto i = abcInfo.roundIdx();
+	const auto j = abcInfo.handIdx();
+	const auto k = abcInfo.actionSeqIds[actionId];
+	if (i == 0 && j == 0 && k == 0) {
+		const auto r = regrets[i][j][k];
+		++regretPrintCount;
+		std::cout
+			<< regretPrintCount
+			<< " - REGRET " << std::to_string(i) << " " << std::to_string(j) << " " << std::to_string(k) << ": " << r
+			<< " (" << ((r < 0) ? "-" : "") << opt::prettyNumDg((uint64_t)std::abs(r), 3) << ")"
+			<< " | iter: " << currIter
+			<< " | trav: " << std::to_string(traverser)
+			<< " | EVa: " << actionEV
+			<< " | EV: " << ev << "\n\n";
+	}
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 regret_t& BlueprintCalculator::getRegret(uint8_t actionId)
 {
 	return regrets[abcInfo.roundIdx()][abcInfo.handIdx()][abcInfo.actionSeqIds[actionId]];
@@ -134,9 +156,9 @@ void BlueprintCalculator::calculateCumRegrets()
 	}
 }
 
-sumRegret_t BlueprintCalculator::calculateSumRegrets() const
+int64_t BlueprintCalculator::calculateSumRegrets() const
 {
-	sumRegret_t sum = 0;
+	int64_t sum = 0;
 	for (uint8_t a = 0; a < nActions(); ++a) {
 		if (getRegret(a) > 0) sum += getRegret(a);
 	}
@@ -199,6 +221,9 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 				for (uint8_t a = 0; a < nActions(); ++a) {
 					if ((getRegret(a) += expVals.back() - v) < minRegret)
 						getRegret(a) = minRegret;
+					///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+					//printRegret(a, traverser, expVals.back(), v);
+					///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 					expVals.pop_back();
 				}
 				// All leafs visited and traverser's regrets updated: end of MCCFR traversal.
@@ -214,10 +239,10 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 
 			// Go to the next node.
 			const uint8_t a = stack.back();
+			incrNodesCount(a);
 			abcInfo.nextState(a);
 			stack.pop_back();
 			lastChild.push_back(a == 0);
-			incrNodesCount(a);
 		}
 
 		// Current node has children.
@@ -228,10 +253,10 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 					stack.push_back(a);
 				// Go to the next node.
 				const uint8_t a = nActions() - 1;
+				incrNodesCount(a);
 				abcInfo.nextState(a);
 				// There will always be at least two legal actions, so this is never the last.
 				lastChild.push_back(false);
-				incrNodesCount(a);
 			}
 			else {
 				// Sample an action with the current strategy.
@@ -239,8 +264,8 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 #pragma warning(suppress: 4244)
 				// Go to the next node.
 				const uint8_t a = actionRandChoice(cumRegrets, rng);
-				abcInfo.nextState(a);
 				incrNodesCount(a);
+				abcInfo.nextState(a);
 			}
 		}
 	}
@@ -293,6 +318,9 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 					if (visited.rbegin()[nActions() - 1 - a]) {
 						if ((getRegret(a) += expVals.back() - v) < minRegret)
 							getRegret(a) = minRegret;
+						///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+						//printRegret(a, traverser, expVals.back(), v);
+						///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 						expVals.pop_back();
 					}
 				}
@@ -311,11 +339,11 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 
 			// Go to the next node.
 			const uint8_t a = stack.back();
+			incrNodesCount(a);
 			abcInfo.nextState(a);
 			stack.pop_back();
 			lastChild.push_back(firstAction.back());
 			firstAction.pop_back();
-			incrNodesCount(a);
 		}
 
 		// Current node has children.
@@ -339,11 +367,11 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 				}
 				// Go to the next node.
 				const uint8_t a = stack.back();
+				incrNodesCount(a);
 				abcInfo.nextState(a);
 				stack.pop_back();
 				lastChild.push_back(firstAction.back());
 				firstAction.pop_back();
-				incrNodesCount(a);
 			}
 			else {
 				// Sample an action with the current strategy.
@@ -351,8 +379,8 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 #pragma warning(suppress: 4244)
 				// Go to the next node.
 				const uint8_t a = actionRandChoice(cumRegrets, rng);
-				abcInfo.nextState(a);
 				incrNodesCount(a);
+				abcInfo.nextState(a);
 			}
 		}
 	}
@@ -360,15 +388,14 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 
 egn::dchips BlueprintCalculator::calculateExpectedValue() const
 {
-	egn::dchips v = 0;
-	sumRegret_t s = calculateSumRegrets();
+	int64_t v = 0;
+	int64_t s = calculateSumRegrets();
 
 	// If no regret is positive, all actions have the same proba,
 	// so we take the arithmetic mean of the expected values.
 	if (s == 0) {
-		for (uint8_t a = 0; a < nActions(); ++a)
-			v += expVals.rbegin()[a];
-		v /= nActions();
+		while (s < nActions())
+			v += expVals.rbegin()[s++];
 	}
 
 	else {
@@ -376,16 +403,15 @@ egn::dchips BlueprintCalculator::calculateExpectedValue() const
 			if (getRegret(a) > 0)
 				v += getRegret(a) * expVals.rbegin()[a];
 		}
-		v /= s;
 	}
 
-	return v;
+	return (egn::dchips)(v / s);
 }
 
 egn::dchips BlueprintCalculator::calculateExpectedValueP() const
 {
-	egn::dchips v = 0;
-	sumRegret_t s = calculateSumRegrets();
+	int64_t v = 0;
+	int64_t s = calculateSumRegrets();
 
 	// If no regret is positive, all actions have the same proba,
 	// so we take the arithmetic mean of the expected values.
@@ -407,7 +433,7 @@ egn::dchips BlueprintCalculator::calculateExpectedValueP() const
 		}
 	}
 
-	return v / s;
+	return (egn::dchips)(v / s);
 }
 
 void BlueprintCalculator::incrNodesCount(uint8_t actionId)
@@ -466,10 +492,10 @@ void BlueprintCalculator::takeSnapshot()
 
 				// Normalize the regrets and write them in the file.
 				cumWeightsRescaler.rescaleCumWeights(cumRegrets);
-				strat_t strat = cumRegrets[0];
+				strat_t strat = (strat_t)cumRegrets[0];
 				opt::saveVar(strat, file);
 				for (uint8_t i = 1; i < nLegalActions; ++i) {
-					strat = cumRegrets[i] - cumRegrets[i - 1];
+					strat = (strat_t)(cumRegrets[i] - cumRegrets[i - 1]);
 					opt::saveVar(strat, file);
 				}
 			}

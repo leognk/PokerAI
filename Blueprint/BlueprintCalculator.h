@@ -15,7 +15,6 @@
 namespace bp {
 
 typedef int32_t regret_t;
-typedef uint32_t sumRegret_t;
 typedef std::vector<std::vector<std::vector<regret_t>>> regrets_t;
 typedef uint16_t strat_t;
 typedef uint32_t sumStrat_t;
@@ -59,10 +58,13 @@ private:
 	std::array<uint8_t, 2> buildPruneCumWeights();
 
 	uint8_t nActions() const;
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	void printRegret(uint8_t actionId, uint8_t traverser, egn::dchips actionEV, egn::dchips ev) const;
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	regret_t& getRegret(uint8_t actionId);
 	const regret_t getRegret(uint8_t actionId) const;
 	void calculateCumRegrets();
-	sumRegret_t calculateSumRegrets() const;
+	int64_t calculateSumRegrets() const;
 
 	void applyDiscounting();
 	void traverseMCCFR(uint8_t traverser);
@@ -94,7 +96,7 @@ private:
 	static opt::FastRandomChoiceRNGRescale<16> actionRandChoice;
 	static const opt::FastRandomChoice<15> cumWeightsRescaler;
 	const std::array<uint8_t, 2> pruneCumWeights;
-	std::vector<sumRegret_t> cumRegrets;
+	std::vector<uint64_t> cumRegrets;
 
 	regrets_t regrets;
 
