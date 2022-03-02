@@ -263,9 +263,7 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 				calculateCumRegrets();
 #pragma warning(suppress: 4244)
 				// Go to the next node.
-				const uint8_t a = actionRandChoice(cumRegrets, rng);
-				incrNodesCount(a);
-				abcInfo.nextState(a);
+				abcInfo.nextState(actionRandChoice(cumRegrets, rng));
 			}
 		}
 	}
@@ -378,9 +376,7 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 				calculateCumRegrets();
 #pragma warning(suppress: 4244)
 				// Go to the next node.
-				const uint8_t a = actionRandChoice(cumRegrets, rng);
-				incrNodesCount(a);
-				abcInfo.nextState(a);
+				abcInfo.nextState(actionRandChoice(cumRegrets, rng));
 			}
 		}
 	}
