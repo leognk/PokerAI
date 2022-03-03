@@ -37,28 +37,37 @@ static std::pair<T, T> findMinMax(const std::vector<std::vector<std::vector<T>>>
 	return { min, max };
 }
 
-// Modify xticks in-place and return the width.
+// Modify xticks in-place and return the width and the extra left
+// due to the flooring approximation of the width.
 template<typename T>
-static T calculateXTicks(std::vector<T>& xticks, const T min, const T max)
+static std::pair<T, T> calculateXTicks(std::vector<T>& xticks, const T min, const T max)
 {
 	const size_t nBins = xticks.size() - 1;
-	const T width = (T)std::round(((double)max - min) / nBins);
+	const T width = (T)std::floor(((double)max - min) / nBins);
+	const T extra = (max - min) - (T)(nBins * width);
 
 	xticks[0] = min;
-	for (size_t i = 1; i < nBins; ++i)
+	for (size_t i = 1; i < extra + 1; ++i)
+		xticks[i] = xticks[i - 1] + width + 1;
+	for (size_t i = extra + 1; i < nBins; ++i)
 		xticks[i] = xticks[i - 1] + width;
-	xticks.back() = max;
+	xticks[nBins] = max;
 
-	return width;
+	return { width, extra };
 }
 
 // Modify hist in-place. Its size has to be nBins.
 template<typename T>
 static void accHist(
-	const std::vector<T>& v, std::vector<uint64_t>& hist, const T min, const T width)
+	const std::vector<T>& v, std::vector<uint64_t>& hist, const T min, const T width,
+	const T extra, const T endExtra)
 {
 	for (const T& x : v) {
-		size_t i = (size_t)((x - min) / width);
+		size_t i;
+		if (x < endExtra)
+			i = (size_t)((x - min) / (width + 1));
+		else
+			i = (size_t)extra + (size_t)((x - endExtra) / width);
 		if (i == hist.size()) --i;
 		++hist[i];
 	}
@@ -69,9 +78,9 @@ template<typename T>
 static std::vector<uint64_t> buildHist(
 	const std::vector<T>& v, std::vector<T>& xticks, const T min, const T max)
 {
-	const T width = calculateXTicks(xticks, min, max);
+	const auto [width, extra] = calculateXTicks(xticks, min, max);
 	std::vector<uint64_t> hist(xticks.size() - 1);
-	accHist(v, hist, min, width);
+	accHist(v, hist, min, width, extra, xticks[extra]);
 	return hist;
 }
 
@@ -87,10 +96,10 @@ template<typename T>
 static std::vector<uint64_t> buildHist(
 	const std::vector<std::vector<T>>& v, std::vector<T>& xticks, T min, T max)
 {
-	const T width = calculateXTicks(xticks, min, max);
+	const auto [width, extra] = calculateXTicks(xticks, min, max);
 	std::vector<uint64_t> hist(xticks.size() - 1);
 	for (const auto& w : v)
-		accHist(w, hist, min, width);
+		accHist(w, hist, min, width, extra, xticks[extra]);
 	return hist;
 }
 
@@ -106,11 +115,11 @@ template<typename T>
 static std::vector<uint64_t> buildHist(
 	const std::vector<std::vector<std::vector<T>>>& v, std::vector<T>& xticks, T min, T max)
 {
-	const T width = calculateXTicks(xticks, min, max);
+	const auto [width, extra] = calculateXTicks(xticks, min, max);
 	std::vector<uint64_t> hist(xticks.size() - 1);
 	for (const auto& w1 : v) {
 		for (const auto& w2 : w1)
-			accHist(w2, hist, min, width);
+			accHist(w2, hist, min, width, extra, xticks[extra]);
 	}
 	return hist;
 }

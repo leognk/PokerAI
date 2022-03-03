@@ -38,8 +38,8 @@ int main()
 	blueprint.loadStrat();
 	blueprint.loadRegrets();
 
-	const uint8_t round = 3;
-	const unsigned handIdx = 1;
+	const uint8_t round = 0;
+	const unsigned handIdx = 0;
 
 	abc::GroupedActionSeqs::seqIdx_t currSeq = 0;
 	for (const uint8_t nLegalActions : gpSeqs.lens[round]) {
