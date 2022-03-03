@@ -20,7 +20,8 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 		BIG_BLIND,
 		INITIAL_STAKE,
 		BET_SIZES,
-		BLUEPRINT_GAME_NAME),
+		BLUEPRINT_GAME_NAME,
+		rngSeed),
 
 	gpSeqs(BLUEPRINT_GAME_NAME),
 	gpSeqsInv(BLUEPRINT_GAME_NAME),
@@ -196,33 +197,38 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 				// The expected values of all children have been calculated and
 				// we can average them into the parent node's expected value.
 				/////////////////////////////////////////////////////////////////////////////////////////////
-				//const auto i = abcInfo.roundIdx();
-				//const auto j = abcInfo.handIdx();
-				//bool b = i == 0 && j == 0;
-				//if (b) {
-				//	for (uint8_t a = 0; a < nActions(); ++a) {
-				//		const auto k = abcInfo.actionSeqIds[a];
-				//		b = k == 45;
-				//		if (b) break;
-				//	}
-				//}
+				const auto i = abcInfo.roundIdx();
+				const auto j = abcInfo.handIdx();
+				bool b = i == 0 && j == 0;
+				if (b) {
+					for (uint8_t a = 0; a < nActions(); ++a) {
+						const auto k = abcInfo.actionSeqIds[a];
+						b = k == 1103;
+						if (b) break;
+					}
+				}
+				if (b) std::cout << currIter << ": ";
 				/////////////////////////////////////////////////////////////////////////////////////////////
 				egn::dchips v = calculateExpectedValue();
 				// Update the regrets.
 				for (uint8_t a = 0; a < nActions(); ++a) {
 					if ((getRegret(a) += expVals.back() - v) < minRegret)
 						getRegret(a) = minRegret;
-					/////////////////////////////////////////////////////////////////////////////////////////////
+					///////////////////////////////////////////////////////////////////////////////////////////
 					//const auto i = abcInfo.roundIdx();
 					//const auto j = abcInfo.handIdx();
 					//const auto k = abcInfo.actionSeqIds[a];
-					//if (i == 0 && j == 0 && k == 45) {
+					//if (i == 0 && j == 0 && k == 1103) {
 					//	const auto r = getRegret(a);
 					//	std::cout << currIter << ": " << r << "\n";
 					//}
+					if (b) std::cout << getRegret(a) << " | ";
 					/////////////////////////////////////////////////////////////////////////////////////////////
 					expVals.pop_back();
 				}
+				///////////////////////////////////////////////////////////////////////////////////////////
+				if (b) std::cout << "\n";
+				/////////////////////////////////////////////////////////////////////////////////////////////
 				// All leafs visited and traverser's regrets updated: end of MCCFR traversal.
 				if (lastChild.empty()) return;
 				expVals.push_back(v);
@@ -307,24 +313,41 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 
 				// The expected values of all children have been calculated and
 				// we can average them into the parent node's expected value.
+				/////////////////////////////////////////////////////////////////////////////////////////////
+				const auto i = abcInfo.roundIdx();
+				const auto j = abcInfo.handIdx();
+				bool b = i == 0 && j == 0;
+				if (b) {
+					for (uint8_t a = 0; a < nActions(); ++a) {
+						const auto k = abcInfo.actionSeqIds[a];
+						b = k == 1103;
+						if (b) break;
+					}
+				}
+				if (b) std::cout << currIter << ": ";
+				/////////////////////////////////////////////////////////////////////////////////////////////
 				egn::dchips v = calculateExpectedValueP();
 				// Update the regrets.
 				for (uint8_t a = 0; a < nActions(); ++a) {
 					if (visited.rbegin()[nActions() - 1 - a]) {
 						if ((getRegret(a) += expVals.back() - v) < minRegret)
 							getRegret(a) = minRegret;
-						/////////////////////////////////////////////////////////////////////////////////////////////
+						///////////////////////////////////////////////////////////////////////////////////////////
 						//const auto i = abcInfo.roundIdx();
 						//const auto j = abcInfo.handIdx();
 						//const auto k = abcInfo.actionSeqIds[a];
-						//if (i == 0 && j == 0 && k == 45) {
+						//if (i == 0 && j == 0 && k == 1103) {
 						//	const auto r = getRegret(a);
-						//	std::cout << "\n" << currIter << ": " << r << "\n";
+						//	std::cout << currIter << ": " << r << "\n";
 						//}
+						if (b) std::cout << getRegret(a) << " | ";
 						/////////////////////////////////////////////////////////////////////////////////////////////
 						expVals.pop_back();
 					}
 				}
+				///////////////////////////////////////////////////////////////////////////////////////////
+				if (b) std::cout << "\n";
+				/////////////////////////////////////////////////////////////////////////////////////////////
 				// All leafs visited and traverser's regrets updated: end of MCCFR traversal.
 				if (lastChild.empty()) return;
 				// Remove the last nActions elements.
@@ -502,6 +525,11 @@ void BlueprintCalculator::takeSnapshot()
 
 		file.close();
 	}
+	///////////////////////////////////////////////////////////////////////////////////////
+	auto file = std::ofstream(blueprintDir() + "regret.txt", std::ios::app);
+	file << nextSnapshotId << ": " << regrets[0][0][1103] << "\n";
+	file.close();
+	///////////////////////////////////////////////////////////////////////////////////////
 
 	++nextSnapshotId;
 }
@@ -529,6 +557,13 @@ void BlueprintCalculator::averageSnapshots()
 					strat_t strat;
 					opt::loadVar(strat, snapshotFile);
 					strats[handIdx][seqIdx] += strat;
+					///////////////////////////////////////////////////////////////////////////////////////
+					if (r == 0 && handIdx == 0 && gpSeqs.seqs[0][seqIdx] == 1103) {
+						auto fileTest = std::ofstream(blueprintDir() + "regret.txt", std::ios::app);
+						fileTest << strat << " | " << opt::prettyPerc(strat, uint16_t(1u << 15)) << "\n";
+						fileTest.close();
+					}
+					///////////////////////////////////////////////////////////////////////////////////////
 				}
 			}
 
