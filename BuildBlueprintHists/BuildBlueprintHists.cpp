@@ -18,13 +18,13 @@ int main()
 	opt::buildAndSaveHist(blueprint.regrets, nBins, histDir + "AllRegretsHist.bin");
 
 	// Histogram of regrets for each round.
-	auto file = std::fstream(histDir + "RoundRegretsHist.bin", std::ios::in | std::ios::binary);
+	auto file = std::fstream(histDir + "RoundRegretsHist.bin", std::ios::out | std::ios::binary);
 	for (const auto& roundRegrets : blueprint.regrets)
 		opt::buildAndSaveHist(roundRegrets, nBins, file);
 	file.close();
 
 	// Histogram of regrets for each hand bucket.
-	file = std::fstream(histDir + "HandRegretsHist.bin", std::ios::in | std::ios::binary);
+	file = std::fstream(histDir + "HandRegretsHist.bin", std::ios::out | std::ios::binary);
 	for (const auto& roundRegrets : blueprint.regrets) {
 		for (const auto& handRegrets : roundRegrets)
 			opt::buildAndSaveHist(handRegrets, nBins, file);

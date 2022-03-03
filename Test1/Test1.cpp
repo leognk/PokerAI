@@ -38,12 +38,15 @@ int main()
 	blueprint.loadStrat();
 	blueprint.loadRegrets();
 
+	const uint8_t round = 3;
+	const unsigned handIdx = 1;
+
 	abc::GroupedActionSeqs::seqIdx_t currSeq = 0;
-	for (const uint8_t nLegalActions : gpSeqs.lens[0]) {
+	for (const uint8_t nLegalActions : gpSeqs.lens[round]) {
 		for (uint8_t a = 0; a < nLegalActions; ++a) {
-			auto seqIdx = gpSeqs.seqs[0][currSeq];
-			const auto s = blueprint.strat[0][0][seqIdx];
-			const auto r = blueprint.regrets[0][0][seqIdx];
+			auto seqIdx = gpSeqs.seqs[round][currSeq];
+			const auto s = blueprint.strat[round][handIdx][seqIdx];
+			const auto r = blueprint.regrets[round][handIdx][seqIdx];
 			std::cout
 				<< std::setw(4) << currSeq
 				<< " | " << std::setw(5) << s

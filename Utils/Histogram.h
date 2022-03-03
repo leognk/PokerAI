@@ -153,7 +153,7 @@ static void buildAndSaveHist(const std::vector<std::vector<std::vector<T>>>& v, 
 template<typename V>
 static void buildAndSaveHist(const V& v, const size_t nBins, const std::string& filePath)
 {
-	auto file = std::fstream(filePath, std::ios::in | std::ios::binary);
+	auto file = std::fstream(filePath, std::ios::out | std::ios::binary);
 	buildAndSaveHist(v, nBins, file);
 	file.close();
 }

@@ -222,7 +222,7 @@ static const int32_t pruneThreshold = -300e6; // Pluribus: -300e6
 static const int32_t minRegret = -310e6; // Pluribus: -310e6
 
 static const uint64_t checkpointPeriod = 50; // 1e8 (25 min)
-static const uint64_t printPeriod = 1;//5; // 1e6 (15 s)
+static const uint64_t printPeriod = 5; // 1e6 (15 s)
 
 static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotPeriod;
 
