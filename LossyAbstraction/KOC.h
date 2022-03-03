@@ -48,7 +48,7 @@ public:
 	static void loadRivBckLUT()
 	{
 		opt::loadArray(RIV_BCK_LUT,
-			bckLutDir + std::format("RIV_BCK_{}_LUT.bin", nBckRiver));
+			bckLutDir + std::format("RIV_{}_BCK_LUT.bin", nBckRiver));
 	}
 
 	static std::array<bckSize_t, CMB_RIVER_SIZE> RIV_BCK_LUT;
