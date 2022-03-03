@@ -53,7 +53,7 @@ public:
 
     void load(std::fstream& file)
     {
-        opt::loadVar(mState, file);
+        opt::loadArray(mState, file);
     }
 
 private:
@@ -136,6 +136,18 @@ public:
         mBuffer >>= tBits;
         --mBufferUsesLeft;
         return mMin + res;
+    }
+
+    void save(std::fstream& file) const
+    {
+        opt::saveVar(mBuffer, file);
+        opt::saveVar(mBufferUsesLeft, file);
+    }
+
+    void load(std::fstream& file)
+    {
+        opt::loadVar(mBuffer, file);
+        opt::loadVar(mBufferUsesLeft, file);
     }
 
 private:

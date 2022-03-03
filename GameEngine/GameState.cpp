@@ -634,4 +634,16 @@ dchips GameState::reward(uint8_t i) const
     return dchips(stakes[i]) - dchips(mInitialStakes[i]);
 }
 
+void GameState::saveRng(std::fstream& file) const
+{
+    mRng.save(file);
+    mCardDist.save(file);
+}
+
+void GameState::loadRng(std::fstream& file)
+{
+    mRng.load(file);
+    mCardDist.load(file);
+}
+
 } // egn

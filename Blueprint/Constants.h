@@ -26,8 +26,8 @@ namespace bp {
 #define MACRO_BLUEPRINT_NAME SIMPLE_BLUEPRINT
 
 //#define BLUEPRINT_BUILD_SIZE ORIGINAL_BLUEPRINT_BUILD
-//#define BLUEPRINT_BUILD_SIZE MEDIUM_BLUEPRINT_BUILD
-#define BLUEPRINT_BUILD_SIZE SIMPLE_BLUEPRINT_BUILD
+#define BLUEPRINT_BUILD_SIZE MEDIUM_BLUEPRINT_BUILD
+//#define BLUEPRINT_BUILD_SIZE SIMPLE_BLUEPRINT_BUILD
 
 
 #if MACRO_BLUEPRINT_NAME == ORIGINAL_BLUEPRINT
@@ -194,8 +194,8 @@ static const uint8_t pruneProbaPerc = 95; // Pluribus: 95
 static const int32_t pruneThreshold = -300e6; // Pluribus: -300e6
 static const int32_t minRegret = -310e6; // Pluribus: -310e6
 
-static const uint64_t checkpointPeriod = 375e3; // 240e6 (60 min)
-static const uint64_t printPeriod = 10e3; // 1e6 (15 s)
+static const uint64_t checkpointPeriod = 10;//25602;//375e3; // 240e6 (60 min)
+static const uint64_t printPeriod = 10;//10e3; // 1e6 (15 s)
 
 static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotPeriod;
 

@@ -132,6 +132,9 @@ public:
 
 	dchips reward(uint8_t i) const;
 
+	void saveRng(std::fstream& file) const;
+	void loadRng(std::fstream& file);
+
 	std::array<chips, MAX_PLAYERS> stakes{};
 	std::array<std::array<uint8_t, omp::HOLE_CARDS>,
 		MAX_PLAYERS> hands;

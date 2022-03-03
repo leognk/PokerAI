@@ -20,8 +20,7 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 		BIG_BLIND,
 		INITIAL_STAKE,
 		BET_SIZES,
-		BLUEPRINT_GAME_NAME,
-		rngSeed),
+		BLUEPRINT_GAME_NAME),
 
 	gpSeqs(BLUEPRINT_GAME_NAME),
 	gpSeqsInv(BLUEPRINT_GAME_NAME),
@@ -196,11 +195,32 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 
 				// The expected values of all children have been calculated and
 				// we can average them into the parent node's expected value.
+				/////////////////////////////////////////////////////////////////////////////////////////////
+				//const auto i = abcInfo.roundIdx();
+				//const auto j = abcInfo.handIdx();
+				//bool b = i == 0 && j == 0;
+				//if (b) {
+				//	for (uint8_t a = 0; a < nActions(); ++a) {
+				//		const auto k = abcInfo.actionSeqIds[a];
+				//		b = k == 45;
+				//		if (b) break;
+				//	}
+				//}
+				/////////////////////////////////////////////////////////////////////////////////////////////
 				egn::dchips v = calculateExpectedValue();
 				// Update the regrets.
 				for (uint8_t a = 0; a < nActions(); ++a) {
 					if ((getRegret(a) += expVals.back() - v) < minRegret)
 						getRegret(a) = minRegret;
+					/////////////////////////////////////////////////////////////////////////////////////////////
+					//const auto i = abcInfo.roundIdx();
+					//const auto j = abcInfo.handIdx();
+					//const auto k = abcInfo.actionSeqIds[a];
+					//if (i == 0 && j == 0 && k == 45) {
+					//	const auto r = getRegret(a);
+					//	std::cout << currIter << ": " << r << "\n";
+					//}
+					/////////////////////////////////////////////////////////////////////////////////////////////
 					expVals.pop_back();
 				}
 				// All leafs visited and traverser's regrets updated: end of MCCFR traversal.
@@ -293,6 +313,15 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 					if (visited.rbegin()[nActions() - 1 - a]) {
 						if ((getRegret(a) += expVals.back() - v) < minRegret)
 							getRegret(a) = minRegret;
+						/////////////////////////////////////////////////////////////////////////////////////////////
+						//const auto i = abcInfo.roundIdx();
+						//const auto j = abcInfo.handIdx();
+						//const auto k = abcInfo.actionSeqIds[a];
+						//if (i == 0 && j == 0 && k == 45) {
+						//	const auto r = getRegret(a);
+						//	std::cout << "\n" << currIter << ": " << r << "\n";
+						//}
+						/////////////////////////////////////////////////////////////////////////////////////////////
 						expVals.pop_back();
 					}
 				}
@@ -630,6 +659,7 @@ void BlueprintCalculator::updateCheckpoint()
 	rng.save(file);
 	pruneRandChoice.save(file);
 	actionRandChoice.save(file);
+	abcInfo.state.saveRng(file);
 
 	opt::saveVar(currIter, file);
 	double duration = extraDuration + opt::getDuration(startTime);
@@ -650,6 +680,7 @@ void BlueprintCalculator::loadCheckpoint(std::fstream& file)
 	rng.load(file);
 	pruneRandChoice.load(file);
 	actionRandChoice.load(file);
+	abcInfo.state.loadRng(file);
 
 	opt::loadVar(currIter, file);
 	opt::loadVar(extraDuration, file);

@@ -26,7 +26,7 @@ public:
 		egn::chips initialStake,
 		const betSizes_t& betSizes,
 		const std::string& actionSeqIndexerName,
-		unsigned rngSeed) :
+		unsigned rngSeed = 0) :
 
 		dealer(maxPlayers - 1),
 		state(ante, bigBlind, {}, rngSeed),

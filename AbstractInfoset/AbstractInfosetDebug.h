@@ -20,7 +20,7 @@ public:
 		egn::chips initialStake,
 		const betSizes_t& betSizes,
 		const std::string& actionSeqIndexerName,
-		unsigned rngSeed) :
+		unsigned rngSeed = 0) :
 
 		abcInfo_t::AbstractInfoset(maxPlayers, ante, bigBlind, initialStake, betSizes, actionSeqIndexerName, rngSeed)
 	{
@@ -54,7 +54,6 @@ public:
 
 		if (debug) {
 
-			iter = currIter;
 			traverser = currTraverser;
 			count = 0;
 			players.clear();
@@ -63,7 +62,7 @@ public:
 			bets.clear();
 
 			std::cout
-				<< printSep << "\n\n" << iter + 1 << "/" << bp::endIter
+				<< printSep << "\n\n" << currIter << "/" << bp::endIter
 				<< " | " << std::to_string(traverser) << "/" << std::to_string(bp::MAX_PLAYERS - 1) << "\n\n";
 		}
 	}
@@ -88,7 +87,6 @@ public:
 	static const std::string printSep;
 
 	static bool debug;
-	static uint64_t iter;
 	static uint8_t traverser;
 	static unsigned count;
 
@@ -120,9 +118,6 @@ const std::string AbstractInfosetDebug<bckSize_t, nBckPreflop, nBckFlop, nBckTur
 
 template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
 bool AbstractInfosetDebug<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>::debug = false;
-
-template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
-uint64_t AbstractInfosetDebug<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>::iter = 0;
 
 template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
 uint8_t AbstractInfosetDebug<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver>::traverser = 0;

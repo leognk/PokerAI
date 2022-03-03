@@ -12,6 +12,7 @@
 #include <bitset>
 
 #include "../Blueprint/Blueprint.h"
+#include "../AbstractInfoset/GroupedActionSeqs.h"
 
 int main()
 {
@@ -31,9 +32,26 @@ int main()
 
 	abcInfo.startNewHand();
 
+	abc::GroupedActionSeqs gpSeqs(bp::BLUEPRINT_GAME_NAME);
+	gpSeqs.load();
+
 	blueprint.loadStrat();
-	for (size_t i = 0; i < blueprint.strat[0][0].size(); ++i) {
-		const auto s = blueprint.strat[0][0][i];
-		std::cout << i << ": " << s << "\n";
+	blueprint.loadRegrets();
+
+	abc::GroupedActionSeqs::seqIdx_t currSeq = 0;
+	for (const uint8_t nLegalActions : gpSeqs.lens[0]) {
+		for (uint8_t a = 0; a < nLegalActions; ++a) {
+			auto seqIdx = gpSeqs.seqs[0][currSeq];
+			const auto s = blueprint.strat[0][0][seqIdx];
+			const auto r = blueprint.regrets[0][0][seqIdx];
+			std::cout
+				<< std::setw(4) << currSeq
+				<< " | " << std::setw(5) << s
+				<< " | " << std::setw(4) << opt::prettyPerc(s, uint16_t(1u << 15))
+				<< " | " << r
+				<< " | " << seqIdx << "\n";
+			++currSeq;
+		}
+		std::cout << "\n";
 	}
 }
