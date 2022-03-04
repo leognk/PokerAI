@@ -112,6 +112,12 @@ inline std::string prettyNumDg(
 	return prettyNumDg((double)n, nDigits, withSpace);
 }
 
+inline std::string prettyNumDg(
+	const int64_t n, const unsigned nDigits, const bool withSpace = false)
+{
+	return ((n < 0) ? "-" : "") + prettyNumDg((double)std::abs(n), nDigits, withSpace);
+}
+
 template<typename T>
 inline std::string prettyPerc(
 	const T x, const T total,

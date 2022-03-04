@@ -21,6 +21,8 @@ public:
 
 	uint8_t chooseAction(const abcInfo_t& abcInfo);
 
+	static const strat_t stratMax = 1u << 15;
+
 	strats_t strat;
 	regrets_t regrets;
 

@@ -26,8 +26,8 @@ namespace bp {
 #define MACRO_BLUEPRINT_NAME SIMPLE_BLUEPRINT
 
 //#define BLUEPRINT_BUILD_SIZE ORIGINAL_BLUEPRINT_BUILD
-//#define BLUEPRINT_BUILD_SIZE MEDIUM_BLUEPRINT_BUILD
-#define BLUEPRINT_BUILD_SIZE SIMPLE_BLUEPRINT_BUILD
+#define BLUEPRINT_BUILD_SIZE MEDIUM_BLUEPRINT_BUILD
+//#define BLUEPRINT_BUILD_SIZE SIMPLE_BLUEPRINT_BUILD
 
 
 #if MACRO_BLUEPRINT_NAME == ORIGINAL_BLUEPRINT
@@ -45,7 +45,7 @@ static const uint8_t MAX_PLAYERS = 6; // Pluribus: 6
 
 static const egn::chips ANTE = 0; // Pluribus: 0
 static const egn::chips BIG_BLIND = 100; // Pluribus: 100
-static const egn::chips INITIAL_STAKE = 10e3; // Pluribus: 10e3
+static const egn::chips INITIAL_STAKE = 10000; // Pluribus: 10e3
 
 static const abc::betSizes_t BET_SIZES = {
 	{
@@ -85,7 +85,7 @@ static const uint8_t MAX_PLAYERS = 6; // Pluribus: 6
 
 static const egn::chips ANTE = 0; // Pluribus: 0
 static const egn::chips BIG_BLIND = 100; // Pluribus: 100
-static const egn::chips INITIAL_STAKE = 10e3; // Pluribus: 10e3
+static const egn::chips INITIAL_STAKE = 10000; // Pluribus: 10e3
 
 static const abc::betSizes_t BET_SIZES = {
 	{
@@ -124,7 +124,7 @@ static const uint8_t MAX_PLAYERS = 3; // Pluribus: 6
 
 static const egn::chips ANTE = 0; // Pluribus: 0
 static const egn::chips BIG_BLIND = 100; // Pluribus: 100
-static const egn::chips INITIAL_STAKE = 10e3; // Pluribus: 10e3
+static const egn::chips INITIAL_STAKE = 10000; // Pluribus: 10e3
 
 static const abc::betSizes_t BET_SIZES = {
 	{
