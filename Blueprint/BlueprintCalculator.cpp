@@ -196,13 +196,41 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 
 				// The expected values of all children have been calculated and
 				// we can average them into the parent node's expected value.
+				//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+				//std::cout << egn::Hand(abcInfo.state.hands[abcInfo.state.actingPlayer]) << " | " << egn::Hand(abcInfo.state.boardCards) << "\n";
+				//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 				egn::dchips v = calculateExpectedValue();
 				// Update the regrets.
 				for (uint8_t a = 0; a < nActions(); ++a) {
-					if ((getRegret(a) += expVals.back() - v) < minRegret)
+					getRegret(a) += expVals.back() - v;
+					if (getRegret(a) < minRegret)
 						getRegret(a) = minRegret;
+					else if (getRegret(a) > maxRegret)
+						throw std::runtime_error("Regret overflow");
 					expVals.pop_back();
 				}
+				//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+				//static uint64_t bTrueCount = 0;
+				//bool b = false;
+				//if (abcInfo.roundIdx() == 3 && abcInfo.handIdx() == 0) {
+				//	for (uint8_t a = 0; a < nActions(); ++a) {
+				//		b = abcInfo.actionSeqIds[a] == 232;
+				//		if (b) {
+				//			++bTrueCount;
+				//			break;
+				//		}
+				//	}
+				//}
+				//if (b && bTrueCount % 1 == 0) {
+				//	std::cout << "it: " << currIter << " | trav: " << std::to_string(traverser) << "\n";
+				//	for (uint8_t a = 0; a < nActions(); ++a) {
+				//		std::cout
+				//			<< std::setw(4) << abcInfo.actionSeqIds[a] << ": "
+				//			<< std::setw(6) << opt::prettyNumDg((int64_t)getRegret(a), 3) << "\n";
+				//	}
+				//	std::cout << "\n";
+				//}
+				//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 				// All leafs visited and traverser's regrets updated: end of MCCFR traversal.
 				if (lastChild.empty()) return;
 				expVals.push_back(v);
@@ -287,15 +315,43 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 
 				// The expected values of all children have been calculated and
 				// we can average them into the parent node's expected value.
+				//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+				//std::cout << egn::Hand(abcInfo.state.hands[abcInfo.state.actingPlayer]) << " | " << egn::Hand(abcInfo.state.boardCards) << "\n";
+				//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 				egn::dchips v = calculateExpectedValueP();
 				// Update the regrets.
 				for (uint8_t a = 0; a < nActions(); ++a) {
 					if (visited.rbegin()[nActions() - 1 - a]) {
-						if ((getRegret(a) += expVals.back() - v) < minRegret)
+						getRegret(a) += expVals.back() - v;
+						if (getRegret(a) < minRegret)
 							getRegret(a) = minRegret;
+						else if (getRegret(a) > maxRegret)
+							throw std::runtime_error("Regret overflow");
 						expVals.pop_back();
 					}
 				}
+				//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+				//static uint64_t bTrueCount = 0;
+				//bool b = false;
+				//if (abcInfo.roundIdx() == 3 && abcInfo.handIdx() == 0) {
+				//	for (uint8_t a = 0; a < nActions(); ++a) {
+				//		b = abcInfo.actionSeqIds[a] == 232;
+				//		if (b) {
+				//			++bTrueCount;
+				//			break;
+				//		}
+				//	}
+				//}
+				//if (b && bTrueCount % 1 == 0) {
+				//	std::cout << "it: " << currIter << " | trav: " << std::to_string(traverser) << "\n";
+				//	for (uint8_t a = 0; a < nActions(); ++a) {
+				//		std::cout
+				//			<< std::setw(4) << abcInfo.actionSeqIds[a] << ": "
+				//			<< std::setw(6) << opt::prettyNumDg((int64_t)getRegret(a), 3) << "\n";
+				//	}
+				//	std::cout << "\n";
+				//}
+				//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 				// All leafs visited and traverser's regrets updated: end of MCCFR traversal.
 				if (lastChild.empty()) return;
 				// Remove the last nActions elements.

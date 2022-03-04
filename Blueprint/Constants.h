@@ -166,6 +166,7 @@ static const uint64_t pruneBeginIter = 800e6; // Pluribus: 800e6 (200 min)
 static const uint8_t pruneProbaPerc = 95; // Pluribus: 95
 static const int32_t pruneThreshold = -300e6; // Pluribus: -300e6
 static const int32_t minRegret = -310e6; // Pluribus: -310e6
+static const int32_t maxRegret = 1e9; // 1e9
 
 static const uint64_t checkpointPeriod = 240e6; // 240e6 (60 min)
 static const uint64_t printPeriod = 1e6; // 1e6 (15 s)
@@ -193,6 +194,7 @@ static const uint64_t pruneBeginIter = 65e3; // Pluribus: 800e6 (200 min)
 static const uint8_t pruneProbaPerc = 95; // Pluribus: 95
 static const int32_t pruneThreshold = -300e6; // Pluribus: -300e6
 static const int32_t minRegret = -310e6; // Pluribus: -310e6
+static const int32_t maxRegret = 1e9; // 1e9
 
 static const uint64_t checkpointPeriod = 375e3; // 240e6 (60 min)
 static const uint64_t printPeriod = 10e3; // 1e6 (15 s)
@@ -220,6 +222,7 @@ static const uint64_t pruneBeginIter = 25; // Pluribus: 800e6 (200 min)
 static const uint8_t pruneProbaPerc = 95; // Pluribus: 95
 static const int32_t pruneThreshold = -300e6; // Pluribus: -300e6
 static const int32_t minRegret = -310e6; // Pluribus: -310e6
+static const int32_t maxRegret = 1e9; // 1e9
 
 static const uint64_t checkpointPeriod = 50; // 1e8 (25 min)
 static const uint64_t printPeriod = 5; // 1e6 (15 s)

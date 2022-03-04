@@ -20,7 +20,7 @@ public:
 		egn::chips initialStake,
 		const betSizes_t& betSizes,
 		const std::string& actionSeqIndexerName,
-		unsigned rngSeed = 0) :
+		unsigned rngSeed) :
 
 		abcInfo_t::AbstractInfoset(maxPlayers, ante, bigBlind, initialStake, betSizes, actionSeqIndexerName, rngSeed)
 	{
