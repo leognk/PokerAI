@@ -130,7 +130,7 @@ static void buildAndSaveHist(const unsigned nBins, const V& v, std::fstream& fil
 
 template<typename V>
 static void buildAndSaveHist(const unsigned nBins, const V& v, std::fstream& file,
-	const std::string& scale = "linear")
+	const std::string& scale)
 {
 	if (scale == "linear")
 		buildAndSaveHist<V, boost::histogram::axis::regular<>>(nBins, v, file);

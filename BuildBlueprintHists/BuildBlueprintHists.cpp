@@ -39,4 +39,29 @@ int main()
 	file.close();
 
 	opt::freeVectMem(blueprint.regrets);
+	blueprint.loadStrat();
+
+	// Histogram of all probas.
+	file = std::fstream(
+		histDir + std::format("AllProbasHist_{}_bins.bin", nBins),
+		std::ios::out | std::ios::binary);
+	opt::buildAndSaveHist(nBins, blueprint.strat, file, "linear");
+
+	// Histogram of probas for each round.
+	file = std::fstream(
+		histDir + std::format("RoundProbasHist_{}_bins.bin", nBins),
+		std::ios::out | std::ios::binary);
+	for (const auto& roundStrat : blueprint.strat)
+		opt::buildAndSaveHist(nBins, roundStrat, file, "linear");
+	file.close();
+
+	// Histogram of probas for each hand bucket.
+	file = std::fstream(
+		histDir + std::format("HandProbasHist_{}_bins.bin", nBins),
+		std::ios::out | std::ios::binary);
+	for (const auto& roundStrat : blueprint.strat) {
+		for (const auto& handStrat : roundStrat)
+			opt::buildAndSaveHist(nBins, handStrat, file, "linear");
+	}
+	file.close();
 }
