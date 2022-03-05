@@ -154,8 +154,7 @@ void BlueprintCalculator::applyDiscounting()
 	for (auto& roundRegrets : regrets) {
 		for (auto& handRegrets : roundRegrets) {
 			for (regret_t& regret : handRegrets)
-#pragma warning(suppress: 4244)
-				regret = std::round(regret * d);
+				regret = (regret_t)std::round(regret * d);
 		}
 	}
 }

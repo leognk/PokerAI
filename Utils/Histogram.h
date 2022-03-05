@@ -3,9 +3,17 @@
 
 #include <vector>
 #include <algorithm>
-#include "ioContainer.h"
+#include <boost/histogram.hpp>
 
 namespace opt {
+
+// Find the min and the max of a 1D vector.
+template<typename T>
+static std::pair<T, T> findMinMax(const std::vector<T>& v)
+{
+	const auto [min, max] = std::minmax_element(v.begin(), v.end());
+	return { *min, *max };
+}
 
 // Find the min and the max of a 2D vector.
 template<typename T>
@@ -14,9 +22,9 @@ static std::pair<T, T> findMinMax(const std::vector<std::vector<T>>& v)
 	T min = (std::numeric_limits<T>::max)();
 	T max = (std::numeric_limits<T>::min)();
 	for (const auto& w : v) {
-		const auto [min0, max0] = std::minmax_element(w.begin(), w.end());
-		if (*min0 < min) min = *min0;
-		if (*max0 > max) max = *max0;
+		const auto [min0, max0] = findMinMax(w);
+		if (min0 < min) min = min0;
+		if (max0 > max) max = max0;
 	}
 	return { min, max };
 }
@@ -29,142 +37,81 @@ static std::pair<T, T> findMinMax(const std::vector<std::vector<std::vector<T>>>
 	T max = (std::numeric_limits<T>::min)();
 	for (const auto& w1 : v) {
 		for (const auto& w2 : w1) {
-			const auto [min0, max0] = std::minmax_element(w2.begin(), w2.end());
-			if (*min0 < min) min = *min0;
-			if (*max0 > max) max = *max0;
+			const auto [min0, max0] = findMinMax(w2);
+			if (min0 < min) min = min0;
+			if (max0 > max) max = max0;
 		}
 	}
 	return { min, max };
 }
 
-// Modify xticks in-place and return the width and the extra left
-// due to the flooring approximation of the width.
+// Build the histogram from a 1D vector.
 template<typename T>
-static std::pair<T, T> calculateXTicks(std::vector<T>& xticks, const T min, const T max)
+static auto buildHist(
+	const unsigned nBins,
+	const std::vector<T>& v,
+	const double min, const double max)
 {
-	const size_t nBins = xticks.size() - 1;
-	const T width = (T)std::floor(((double)max - min) / nBins);
-	const T extra = (max - min) - (T)(nBins * width);
-
-	xticks[0] = min;
-	for (size_t i = 1; i < extra + 1; ++i)
-		xticks[i] = xticks[i - 1] + width + 1;
-	for (size_t i = extra + 1; i < nBins; ++i)
-		xticks[i] = xticks[i - 1] + width;
-	xticks[nBins] = max;
-
-	return { width, extra };
-}
-
-// Modify hist in-place. Its size has to be nBins.
-template<typename T>
-static void accHist(
-	const std::vector<T>& v, std::vector<uint64_t>& hist, const T min, const T width,
-	const T extra, const T endExtra)
-{
-	for (const T& x : v) {
-		size_t i;
-		if (x < endExtra)
-			i = (size_t)((x - min) / (width + 1));
-		else
-			i = (size_t)extra + (size_t)((x - endExtra) / width);
-		if (i == hist.size()) --i;
-		++hist[i];
-	}
-}
-
-// xticks is modified in-place. Its size has to be nBins + 1.
-template<typename T>
-static std::vector<uint64_t> buildHist(
-	const std::vector<T>& v, std::vector<T>& xticks, const T min, const T max)
-{
-	const auto [width, extra] = calculateXTicks(xticks, min, max);
-	std::vector<uint64_t> hist(xticks.size() - 1);
-	accHist(v, hist, min, width, extra, xticks[extra]);
+	auto hist = boost::histogram::make_histogram(
+		boost::histogram::axis::regular(nBins, min, max));
+	hist.fill(v);
 	return hist;
 }
 
+// Build the histogram from a 2D vector.
 template<typename T>
-static std::vector<uint64_t> buildHist(
-	const std::vector<T>& v, std::vector<T>& xticks)
+static auto buildHist(
+	const unsigned nBins,
+	const std::vector<std::vector<T>>& v,
+	const double min, const double max)
 {
-	const auto [min, max] = std::minmax_element(v.begin(), v.end());
-	return buildHist<T>(v, xticks, *min, *max);
-}
-
-template<typename T>
-static std::vector<uint64_t> buildHist(
-	const std::vector<std::vector<T>>& v, std::vector<T>& xticks, T min, T max)
-{
-	const auto [width, extra] = calculateXTicks(xticks, min, max);
-	std::vector<uint64_t> hist(xticks.size() - 1);
+	auto hist = boost::histogram::make_histogram(
+		boost::histogram::axis::regular(nBins, min, max));
 	for (const auto& w : v)
-		accHist(w, hist, min, width, extra, xticks[extra]);
+		hist.fill(w);
 	return hist;
 }
 
+// Build the histogram from a 3D vector.
 template<typename T>
-static std::vector<uint64_t> buildHist(
-	const std::vector<std::vector<T>>& v, std::vector<T>& xticks)
+static auto buildHist(
+	const unsigned nBins,
+	const std::vector<std::vector<std::vector<T>>>& v,
+	const double min, const double max)
 {
-	const auto [min, max] = findMinMax(v);
-	return buildHist<T>(v, xticks, min, max);
-}
-
-template<typename T>
-static std::vector<uint64_t> buildHist(
-	const std::vector<std::vector<std::vector<T>>>& v, std::vector<T>& xticks, T min, T max)
-{
-	const auto [width, extra] = calculateXTicks(xticks, min, max);
-	std::vector<uint64_t> hist(xticks.size() - 1);
+	auto hist = boost::histogram::make_histogram(
+		boost::histogram::axis::regular(nBins, min, max));
 	for (const auto& w1 : v) {
 		for (const auto& w2 : w1)
-			accHist(w2, hist, min, width, extra, xticks[extra]);
+			hist.fill(w2);
 	}
 	return hist;
-}
-
-template<typename T>
-static std::vector<uint64_t> buildHist(
-	const std::vector<std::vector<std::vector<T>>>& v, std::vector<T>& xticks)
-{
-	const auto [min, max] = findMinMax(v);
-	return buildHist<T>(v, xticks, min, max);
-}
-
-template<typename T, typename V>
-static void buildAndSaveHist(const V& v, const size_t nBins, std::fstream& file)
-{
-	std::vector<T> xticks(nBins + 1);
-	const std::vector<uint64_t> hist = buildHist(v, xticks);
-	save1DVector(hist, file);
-	save1DVector(xticks, file);
-}
-
-template<typename T>
-static void buildAndSaveHist(const std::vector<T>& v, const size_t nBins, std::fstream& file)
-{
-	buildAndSaveHist<T, std::vector<T>>(v, nBins, file);
-}
-
-template<typename T>
-static void buildAndSaveHist(const std::vector<std::vector<T>>& v, const size_t nBins, std::fstream& file)
-{
-	buildAndSaveHist<T, std::vector<std::vector<T>>>(v, nBins, file);
-}
-
-template<typename T>
-static void buildAndSaveHist(const std::vector<std::vector<std::vector<T>>>& v, const size_t nBins, std::fstream& file)
-{
-	buildAndSaveHist<T, std::vector<std::vector<std::vector<T>>>>(v, nBins, file);
 }
 
 template<typename V>
-static void buildAndSaveHist(const V& v, const size_t nBins, const std::string& filePath)
+static void buildAndSaveHist(const unsigned nBins, const V& v, const double min, const double max, std::fstream& file)
 {
-	auto file = std::fstream(filePath, std::ios::out | std::ios::binary);
-	buildAndSaveHist(v, nBins, file);
-	file.close();
+	const auto hist = buildHist(nBins, v, min, max);
+
+	// Save the xticks.
+	for (auto&& x : boost::histogram::indexed(hist)) {
+		const double xtick = x.bin().lower();
+		opt::saveVar(xtick, file);
+	}
+	opt::saveVar(max, file);
+
+	// Save the heights.
+	for (auto&& x : boost::histogram::indexed(hist)) {
+		const double h = *x;
+		opt::saveVar(h, file);
+	}
+}
+
+template<typename V>
+static void buildAndSaveHist(const unsigned nBins, const V& v, std::fstream& file)
+{
+	const auto [min, max] = findMinMax(v);
+	buildAndSaveHist(nBins, v, (double)min, (double)max, file);
 }
 
 } // opt
