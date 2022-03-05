@@ -63,12 +63,6 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 
 void BlueprintCalculator::buildStrategy()
 {
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	regret232EvolFile = std::fstream(blueprintDir() + "regret232.bin", std::ios::app | std::ios::binary);
-	regret1620EvolFile = std::fstream(blueprintDir() + "regret1620.bin", std::ios::app | std::ios::binary);
-	regret630EvolFile = std::fstream(blueprintDir() + "regret630.bin", std::ios::app | std::ios::binary);
-	regret233EvolFile = std::fstream(blueprintDir() + "regret233.bin", std::ios::app | std::ios::binary);
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	startTime = opt::getTime();
 
 	while (currIter < endIter) oneIter();
@@ -79,12 +73,6 @@ void BlueprintCalculator::buildStrategy()
 	averageSnapshots();
 
 	printFinalStats();
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	regret232EvolFile.close();
-	regret1620EvolFile.close();
-	regret630EvolFile.close();
-	regret233EvolFile.close();
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 void BlueprintCalculator::oneIter()
@@ -208,23 +196,6 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 
 				// The expected values of all children have been calculated and
 				// we can average them into the parent node's expected value.
-				//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-				//bool b = false;
-				//if (abcInfo.roundIdx() == 3 && abcInfo.handIdx() == 0) {
-				//	for (uint8_t a = 0; a < nActions(); ++a) {
-				//		b = abcInfo.actionSeqIds[a] == 232;
-				//		if (b) {
-				//			++trackCount;
-				//			break;
-				//		}
-				//	}
-				//}
-				//b = b && trackCount >= 87379;
-				//if (b)
-				//	std::cout
-				//		<< egn::Hand(abcInfo.state.hands[abcInfo.state.actingPlayer])
-				//		<< " | " << egn::Hand(abcInfo.state.boardCards) << "\n";
-				//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 				egn::dchips v = calculateExpectedValue();
 				// Update the regrets.
 				for (uint8_t a = 0; a < nActions(); ++a) {
@@ -235,50 +206,6 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 						throw std::runtime_error("Regret overflow");
 					expVals.pop_back();
 				}
-				//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-				//static uint64_t bTrueCount = 0;
-				//bool b = false;
-				//if (abcInfo.roundIdx() == 3 && abcInfo.handIdx() == 0) {
-				//	for (uint8_t a = 0; a < nActions(); ++a) {
-				//		b = abcInfo.actionSeqIds[a] == 232;
-				//		if (b) {
-				//			++bTrueCount;
-				//			break;
-				//		}
-				//	}
-				//}
-				//if (b && bTrueCount % 1 == 0) {
-				//	std::cout << "it: " << currIter << " | trav: " << std::to_string(traverser) << "\n";
-				//	for (uint8_t a = 0; a < nActions(); ++a) {
-				//		std::cout
-				//			<< std::setw(4) << abcInfo.actionSeqIds[a] << ": "
-				//			<< std::setw(6) << opt::prettyNumDg((int64_t)getRegret(a), 3) << "\n";
-				//	}
-				//	std::cout << "\n";
-				//}
-				// 
-				// 
-				if (abcInfo.roundIdx() == 3 && abcInfo.handIdx() == 0) {
-					for (uint8_t a = 0; a < nActions(); ++a) {
-						switch (abcInfo.actionSeqIds[a]) {
-						case 232:
-							opt::saveVar(getRegret(a), regret232EvolFile);
-							break;
-						case 1620:
-							opt::saveVar(getRegret(a), regret1620EvolFile);
-							break;
-						case 630:
-							opt::saveVar(getRegret(a), regret630EvolFile);
-							break;
-						case 233:
-							opt::saveVar(getRegret(a), regret233EvolFile);
-							break;
-						default:
-							break;
-						}
-					}
-				}
-				//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 				// All leafs visited and traverser's regrets updated: end of MCCFR traversal.
 				if (lastChild.empty()) return;
 				expVals.push_back(v);
@@ -363,23 +290,6 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 
 				// The expected values of all children have been calculated and
 				// we can average them into the parent node's expected value.
-				//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-				//bool b = false;
-				//if (abcInfo.roundIdx() == 3 && abcInfo.handIdx() == 0) {
-				//	for (uint8_t a = 0; a < nActions(); ++a) {
-				//		b = abcInfo.actionSeqIds[a] == 232;
-				//		if (b) {
-				//			++trackCount;
-				//			break;
-				//		}
-				//	}
-				//}
-				//b = b && trackCount >= 87379;
-				//if (b)
-				//	std::cout
-				//		<< egn::Hand(abcInfo.state.hands[abcInfo.state.actingPlayer])
-				//		<< " | " << egn::Hand(abcInfo.state.boardCards) << "\n";
-				//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 				egn::dchips v = calculateExpectedValueP();
 				// Update the regrets.
 				for (uint8_t a = 0; a < nActions(); ++a) {
@@ -392,50 +302,6 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 						expVals.pop_back();
 					}
 				}
-				//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-				//static uint64_t bTrueCount = 0;
-				//bool b = false;
-				//if (abcInfo.roundIdx() == 3 && abcInfo.handIdx() == 0) {
-				//	for (uint8_t a = 0; a < nActions(); ++a) {
-				//		b = abcInfo.actionSeqIds[a] == 232;
-				//		if (b) {
-				//			++bTrueCount;
-				//			break;
-				//		}
-				//	}
-				//}
-				//if (b && bTrueCount % 1 == 0) {
-				//	std::cout << "it: " << currIter << " | trav: " << std::to_string(traverser) << "\n";
-				//	for (uint8_t a = 0; a < nActions(); ++a) {
-				//		std::cout
-				//			<< std::setw(4) << abcInfo.actionSeqIds[a] << ": "
-				//			<< std::setw(6) << opt::prettyNumDg((int64_t)getRegret(a), 3) << "\n";
-				//	}
-				//	std::cout << "\n";
-				//}
-				// 
-				// 
-				if (abcInfo.roundIdx() == 3 && abcInfo.handIdx() == 0) {
-					for (uint8_t a = 0; a < nActions(); ++a) {
-						switch (abcInfo.actionSeqIds[a]) {
-						case 232:
-							opt::saveVar(getRegret(a), regret232EvolFile);
-							break;
-						case 1620:
-							opt::saveVar(getRegret(a), regret1620EvolFile);
-							break;
-						case 630:
-							opt::saveVar(getRegret(a), regret630EvolFile);
-							break;
-						case 233:
-							opt::saveVar(getRegret(a), regret233EvolFile);
-							break;
-						default:
-							break;
-						}
-					}
-				}
-				//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 				// All leafs visited and traverser's regrets updated: end of MCCFR traversal.
 				if (lastChild.empty()) return;
 				// Remove the last nActions elements.
@@ -780,9 +646,6 @@ void BlueprintCalculator::updateCheckpoint()
 
 	opt::saveVar(nodesCount, file);
 	opt::saveVar(nodesUniqueCount, file);
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	opt::saveVar(trackCount, file);
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	file.close();
 }
@@ -803,9 +666,6 @@ void BlueprintCalculator::loadCheckpoint(std::fstream& file)
 
 	opt::loadVar(nodesCount, file);
 	opt::loadVar(nodesUniqueCount, file);
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	opt::loadVar(trackCount, file);
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 void BlueprintCalculator::printProgress() const
