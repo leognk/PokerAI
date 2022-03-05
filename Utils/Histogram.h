@@ -7,6 +7,38 @@
 
 namespace opt {
 
+static const double base = 10.0;
+static const double linthresh = 2.0;
+static const double linscale = 1.0;
+static const double linscaleAdj = linscale / (1.0 - 1.0 / base);
+static const double invlinthresh = linthresh * linscaleAdj;
+
+template <typename T> int sign(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
+// SymLog transform for equidistant bins in log-space.
+struct symlog {
+
+	template <class T>
+	static T forward(T x) {
+		const T absX = std::abs(x);
+		if (absX <= linthresh)
+			return x * linscaleAdj;
+		else
+			return sign(x) * linthresh * (linscaleAdj + std::log10(absX / linthresh));
+	}
+
+	template <class T>
+	static T inverse(T x) {
+		const T absX = std::abs(x);
+		if (absX <= invlinthresh)
+			return x / linscaleAdj;
+		else
+			return sign(x) * linthresh * std::pow(base, absX / linthresh - linscaleAdj);
+	}
+};
+
 // Find the min and the max of a 1D vector.
 template<typename T>
 static std::pair<T, T> findMinMax(const std::vector<T>& v)
@@ -45,60 +77,49 @@ static std::pair<T, T> findMinMax(const std::vector<std::vector<std::vector<T>>>
 	return { min, max };
 }
 
-// Build the histogram from a 1D vector.
-template<typename T>
-static auto buildHist(
-	const unsigned nBins,
-	const std::vector<T>& v,
-	const double min, const double max)
+// Fill the histogram with a 1D vector.
+template<class H, typename T>
+static void fillHist(H& hist, const std::vector<T>& v)
 {
-	auto hist = boost::histogram::make_histogram(
-		boost::histogram::axis::regular(nBins, min, max));
 	hist.fill(v);
-	return hist;
 }
 
-// Build the histogram from a 2D vector.
-template<typename T>
-static auto buildHist(
-	const unsigned nBins,
-	const std::vector<std::vector<T>>& v,
-	const double min, const double max)
+// Fill the histogram with a 2D vector.
+template<class H, typename T>
+static void fillHist(H& hist, const std::vector<std::vector<T>>& v)
 {
-	auto hist = boost::histogram::make_histogram(
-		boost::histogram::axis::regular(nBins, min, max));
 	for (const auto& w : v)
 		hist.fill(w);
-	return hist;
 }
 
-// Build the histogram from a 3D vector.
-template<typename T>
-static auto buildHist(
-	const unsigned nBins,
-	const std::vector<std::vector<std::vector<T>>>& v,
-	const double min, const double max)
+// Fill the histogram with a 3D vector.
+template<class H, typename T>
+static void fillHist(H& hist, const std::vector<std::vector<std::vector<T>>>& v)
 {
-	auto hist = boost::histogram::make_histogram(
-		boost::histogram::axis::regular(nBins, min, max));
 	for (const auto& w1 : v) {
 		for (const auto& w2 : w1)
 			hist.fill(w2);
 	}
-	return hist;
 }
 
-template<typename V>
-static void buildAndSaveHist(const unsigned nBins, const V& v, const double min, const double max, std::fstream& file)
+template<typename V, class Axis>
+static void buildAndSaveHist(const unsigned nBins, const V& v, std::fstream& file)
 {
-	const auto hist = buildHist(nBins, v, min, max);
+	// Build the histogram.
+	const auto [min, max] = findMinMax(v);
+	auto hist = boost::histogram::make_histogram(Axis(nBins, min, max));
+	fillHist(hist, v);
 
 	// Save the xticks.
 	for (auto&& x : boost::histogram::indexed(hist)) {
 		const double xtick = x.bin().lower();
 		opt::saveVar(xtick, file);
+		// Save the last xtick.
+		if (x.index() == nBins - 1) {
+			const double xtick = x.bin().upper();
+			opt::saveVar(xtick, file);
+		}
 	}
-	opt::saveVar(max, file);
 
 	// Save the heights.
 	for (auto&& x : boost::histogram::indexed(hist)) {
@@ -108,10 +129,15 @@ static void buildAndSaveHist(const unsigned nBins, const V& v, const double min,
 }
 
 template<typename V>
-static void buildAndSaveHist(const unsigned nBins, const V& v, std::fstream& file)
+static void buildAndSaveHist(const unsigned nBins, const V& v, std::fstream& file,
+	const std::string& scale = "linear")
 {
-	const auto [min, max] = findMinMax(v);
-	buildAndSaveHist(nBins, v, (double)min, (double)max, file);
+	if (scale == "linear")
+		buildAndSaveHist<V, boost::histogram::axis::regular<>>(nBins, v, file);
+	else if (scale == "symlog")
+		buildAndSaveHist<V, boost::histogram::axis::regular<double, symlog>>(nBins, v, file);
+	else
+		throw std::runtime_error("Unknown scale option.");
 }
 
 } // opt
