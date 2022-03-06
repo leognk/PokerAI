@@ -60,7 +60,6 @@ public:
 		}
 	}
 
-private:
 	static abc::DKEM<bckSize_t, nBckPreflop, nBckFlop, nBckTurn> dkem;
 	static abc::KOC<bckSize_t, nBckRiver> koc;
 
