@@ -24,14 +24,17 @@ static const std::string preflopHSHistsPath = hsLutDir + "PREFLOP_HS_HISTS.bin";
 static const uint16_t N_BINS = 50;
 
 // Maximum sum of the heights of a histogram allowed (reached on the preflop's histograms).
-static const uint16_t MAX_TOTAL_WEIGHT = 1100; // binom(52 - 2, 5)
-// Sum of the heights of a histogram on the flop.
-static const uint16_t FLOP_HIST_SUM = 1081; // binom(52 - 5, 2) = 47 * 23
-// Sum of the heights of a histogram on the turn.
-static const uint16_t TURN_HIST_SUM = 46; // 52 - 6
+static const uint16_t MAX_TOTAL_WEIGHT = 1100;
+
+// Number of opponent's hand combinations on the preflop.
+static const uint64_t PREFLOP_N_COMB = 2118760; // binom(52 - 2, 5)
+// Number of opponent's hand combinations on the flop.
+static const uint16_t FLOP_N_COMB = 1081; // binom(52 - 5, 2) = 47 * 23
+// Number of opponent's hand combinations on the turn.
+static const uint16_t TURN_N_COMB = 46; // 52 - 6
 
 // Maximum equity score, which is 2 times the number of
-// possibilities of opponent's hole cards: 2 * binom(52-7, 2) = 1980
+// possibilities of opponent's hole cards: 2 * binom(52 - 7, 2) = 1980
 // win: +2 ; draw: +1 ; defeat: +0
 static const uint16_t MAX_HS = 1980;
 

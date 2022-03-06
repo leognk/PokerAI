@@ -231,7 +231,7 @@ uint16_t EquityCalculator::calculateTurnHS(uint8_t hand[])
 		equityAcc += RIV_HS_LUT[handIdx];
 	}
 
-	return (uint16_t)std::round((double)equityAcc / TURN_HIST_SUM);
+	return (uint16_t)std::round((double)equityAcc / TURN_N_COMB);
 }
 
 uint16_t EquityCalculator::calculateFlopHS(uint8_t hand[])
@@ -257,7 +257,7 @@ uint16_t EquityCalculator::calculateFlopHS(uint8_t hand[])
 		}
 	}
 
-	return (uint16_t)std::round((double)equityAcc / FLOP_HIST_SUM);
+	return (uint16_t)std::round((double)equityAcc / FLOP_N_COMB);
 }
 
 uint16_t EquityCalculator::calculatePreflopHS(uint8_t hand[])
@@ -291,7 +291,7 @@ uint16_t EquityCalculator::calculatePreflopHS(uint8_t hand[])
 			while (hand[movingIdx] ==
 				omp::CARD_COUNT - omp::RIVER_HAND + movingIdx) {
 				if (movingIdx == omp::HOLE_CARDS)
-					return (uint16_t)std::round((double)equityAcc / MAX_TOTAL_WEIGHT);
+					return (uint16_t)std::round((double)equityAcc / PREFLOP_N_COMB);
 				--movingIdx;
 			}
 			++hand[movingIdx];

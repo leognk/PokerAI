@@ -56,7 +56,7 @@ TEST_F(EquityCalculatorTest, VerifySomeTurnHSHist)
 		for (uint8_t j = 0; j < hsHist.size(); ++j)
 			EXPECT_EQ(hsHist[j], hsHistRef[j]);
 		uint8_t sum = std::accumulate(hsHist.begin(), hsHist.end(), uint8_t(0));
-		EXPECT_EQ(sum, abc::TURN_HIST_SUM);
+		EXPECT_EQ(sum, abc::TURN_N_COMB);
 	}
 }
 
@@ -78,7 +78,7 @@ TEST_F(EquityCalculatorTest, VerifySomeFlopHSHist)
 		for (uint8_t j = 0; j < hsHist.size(); ++j)
 			EXPECT_EQ(hsHist[j], hsHistRef[j]);
 		uint16_t sum = std::accumulate(hsHist.begin(), hsHist.end(), uint16_t(0));
-		EXPECT_EQ(sum, abc::FLOP_HIST_SUM);
+		EXPECT_EQ(sum, abc::FLOP_N_COMB);
 	}
 }
 
@@ -92,6 +92,6 @@ TEST_F(EquityCalculatorTest, VerifyPreflopHSHist)
 			EXPECT_EQ(eqt.PREFLOP_HS_HISTS[i][j], hsHistRef[i][j]);
 		uint32_t sum = std::accumulate(
 			eqt.PREFLOP_HS_HISTS[i].begin(), eqt.PREFLOP_HS_HISTS[i].end(), uint32_t(0));
-		EXPECT_EQ(sum, abc::MAX_TOTAL_WEIGHT); // (non-normalized sum is binom(52 - 2, 5))
+		EXPECT_EQ(sum, abc::MAX_TOTAL_WEIGHT);
 	}
 }
