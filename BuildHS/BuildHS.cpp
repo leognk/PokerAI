@@ -7,6 +7,15 @@ int main()
 	eqt.populateRivHSLUT();
 	eqt.saveRivHSLUT();
 
+	eqt.populateTurnHSLUT();
+	eqt.saveTurnHSLUT();
+
+	eqt.populateFlopHSLUT();
+	eqt.saveFlopHSLUT();
+
+	eqt.populatePreflopHSLUT();
+	eqt.savePreflopHSLUT();
+
 	eqt.populateTurnHSHists();
 	eqt.saveTurnHSHists();
 

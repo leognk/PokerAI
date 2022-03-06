@@ -23,7 +23,7 @@ protected:
 TEST_F(EquityCalculatorTest, EquityInRange)
 {
   for (uint16_t hs : eqt.RIV_HS_LUT)
-	  EXPECT_LE(hs, abc::MAX_RIV_HS);
+	  EXPECT_LE(hs, abc::MAX_HS);
 }
 
 TEST_F(EquityCalculatorTest, VerifySomeRivHS)
@@ -56,7 +56,7 @@ TEST_F(EquityCalculatorTest, VerifySomeTurnHSHist)
 		for (uint8_t j = 0; j < hsHist.size(); ++j)
 			EXPECT_EQ(hsHist[j], hsHistRef[j]);
 		uint8_t sum = std::accumulate(hsHist.begin(), hsHist.end(), uint8_t(0));
-		EXPECT_EQ(sum, 46); // 52 - 6
+		EXPECT_EQ(sum, abc::TURN_HIST_SUM);
 	}
 }
 
@@ -78,7 +78,7 @@ TEST_F(EquityCalculatorTest, VerifySomeFlopHSHist)
 		for (uint8_t j = 0; j < hsHist.size(); ++j)
 			EXPECT_EQ(hsHist[j], hsHistRef[j]);
 		uint16_t sum = std::accumulate(hsHist.begin(), hsHist.end(), uint16_t(0));
-		EXPECT_EQ(sum, 1081); // binom(52 - 5, 2) = 47 * 23
+		EXPECT_EQ(sum, abc::FLOP_HIST_SUM);
 	}
 }
 
