@@ -73,22 +73,33 @@ public:
 	// actionId must be between 0 and nActions() excluded.
 	void nextState(uint8_t actionId)
 	{
-		actionAbc.setAction(actionAbc.legalActions[actionId], state, nRaises);
-		roundActions.push_back(actionAbc.legalActions[actionId]);
+		setAction(actionId);
+		goNextState();
+	}
 
-		egn::Round oldRound = state.round;
-		state.nextState();
+	// Same as nextState but also return the amount of the bet corresponding to actionId.
+	egn::chips nextStateWithBet(uint8_t actionId)
+	{
+		setAction(actionId);
 
-		// New round.
-		if (state.round != oldRound) {
-			nRaises = 0;
-			nPlayers = state.nAlive;
-			roundActions.clear();
-			calculateHandsIds();
+		// Get the bet amount.
+		egn::chips bet;
+		switch (state.action) {
+		case egn::FOLD:
+			bet = 0;
+			break;
+		case egn::CALL:
+			bet = state.call;
+			break;
+		case egn::RAISE:
+			bet = state.bet;
+			break;
+		default:
+			throw std::runtime_error("Unknown action.");
 		}
 
-		actionAbc.calculateLegalActions(state, nRaises);
-		calculateActionSeqIds();
+		goNextState();
+		return bet;
 	}
 
 	// The pair composed of an abstract infoset and
@@ -134,6 +145,29 @@ public:
 	abc::ActionAbstraction actionAbc;
 
 protected:
+
+	void setAction(uint8_t actionId)
+	{
+		actionAbc.setAction(actionAbc.legalActions[actionId], state, nRaises);
+		roundActions.push_back(actionAbc.legalActions[actionId]);
+	}
+
+	void goNextState()
+	{
+		egn::Round oldRound = state.round;
+		state.nextState();
+
+		// New round.
+		if (state.round != oldRound) {
+			nRaises = 0;
+			nPlayers = state.nAlive;
+			roundActions.clear();
+			calculateHandsIds();
+		}
+
+		actionAbc.calculateLegalActions(state, nRaises);
+		calculateActionSeqIds();
+	}
 
 	void calculateHandsIds()
 	{
