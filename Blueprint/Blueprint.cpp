@@ -48,6 +48,11 @@ void Blueprint::loadRegrets()
 	file.close();
 }
 
+strat_t Blueprint::getProbaAction(const abcInfo_t& abcInfo, uint8_t action)
+{
+	return strat[abcInfo.roundIdx()][abcInfo.handIdx()][action];
+}
+
 strat_t Blueprint::getProba(const abcInfo_t& abcInfo, uint8_t actionId)
 {
 	return strat[abcInfo.roundIdx()][abcInfo.handIdx()][abcInfo.actionSeqIds[actionId]];
@@ -70,13 +75,6 @@ void Blueprint::calculateCumProbas(const abcInfo_t& abcInfo)
 		for (uint8_t i = 0; i < cumProbas.size(); ++i)
 			cumProbas[i] = i + 1;
 	}
-}
-
-void Blueprint::calculateProbas(const abcInfo_t& abcInfo)
-{
-	probas.resize(abcInfo.nActions());
-	for (uint8_t a = 0; a < cumProbas.size(); ++a)
-		probas[a] = (uint8_t)std::round(100.0 * getProba(abcInfo, a) / stratMax);
 }
 
 uint8_t Blueprint::chooseAction(const abcInfo_t& abcInfo)

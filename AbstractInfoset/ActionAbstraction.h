@@ -11,6 +11,16 @@ typedef std::vector<std::vector<std::vector<float>>> betSizes_t;
 // Legal actions ordered according to their respective indices in legalActions.
 enum AbcAction { FOLD, CALL, ALLIN, RAISE };
 
+inline std::string abcActionToStr(uint8_t a)
+{
+	switch (a) {
+	case FOLD: return "FOLD";
+	case CALL: return "CALL";
+	case ALLIN: return "ALLIN";
+	default: return "RAISE" + std::to_string(a - RAISE);
+	}
+}
+
 class ActionAbstraction
 {
 public:

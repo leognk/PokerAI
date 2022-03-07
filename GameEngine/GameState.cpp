@@ -88,6 +88,12 @@ void GameState::setHoleCards(uint8_t player, const Hand& hand)
     hands[player] = hand.getArr<omp::HOLE_CARDS>();
 }
 
+void GameState::setHoleCards(uint8_t player, const uint8_t hand[])
+{
+    hands[player][0] = hand[0];
+    hands[player][1] = hand[1];
+}
+
 void GameState::setRandomHoleCards(uint8_t player)
 {
     for (uint8_t i = 0; i < omp::HOLE_CARDS; ++i) {

@@ -11,23 +11,15 @@
 #include <fstream>
 #include <bitset>
 
-#include "../LossyAbstraction/LossyIndexer.h"
+int f(std::vector<int> v)
+{
+	std::sort(v.begin(), v.end());
+	return v[0];
+}
 
 int main()
 {
-	static const uint8_t nBckPreflop = 50;
-
-	static const std::string dir = "../data/AbstractionSaves/BCK_STRENGTHS/";
-	static const std::string preflopFilePath = dir + std::format("PREFLOP_{}_BCK_STRENGTHS.bin", nBckPreflop);
-
-	typedef abc::LossyIndexer<uint8_t, nBckPreflop, 50, 50, 50> indexer_t;
-	indexer_t::loadLUT();
-
-	abc::EquityCalculator eqt;
-	eqt.loadPreflopHSLUT();
-	//std::sort(eqt.PREFLOP_HS_LUT.begin(), eqt.PREFLOP_HS_LUT.end());
-	for (uint8_t i = 0; i < abc::PREFLOP_SIZE; ++i) {
-		const double equity = (double)eqt.PREFLOP_HS_LUT[i] / abc::MAX_HS;
-		std::cout << std::to_string(i) << ": " << equity << " | " << std::to_string(indexer_t::dkem.PREFLOP_BCK_LUT[i]) << "\n";
-	}
+	std::vector<int> v = { 3, 2, 1 };
+	int x = f(v);
+	std::cout << v[0] << "\n" << x << "\n";
 }

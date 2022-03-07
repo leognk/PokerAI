@@ -273,7 +273,7 @@ static_assert(discountEndIter <= snapshotBeginIter);
 #elif BLUEPRINT_BUILD_SIZE == TEST_BLUEPRINT_BUILD
 
 
-static const std::string BLUEPRINT_BUILD_NAME = "TEST_BUILD";
+static const std::string BLUEPRINT_BUILD_NAME = "TEST_BUILD_55";
 
 static const uint64_t nSnapshots = 1637; // 2.9e6 it -> 55 | 82e6 it -> 1637 // Pluribus: 54
 

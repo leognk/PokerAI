@@ -19,22 +19,19 @@ public:
 	void loadStrat();
 	void loadRegrets();
 
-	uint8_t chooseAction(const abcInfo_t& abcInfo);
+	strat_t getProbaAction(const abcInfo_t& abcInfo, uint8_t action);
+	strat_t getProba(const abcInfo_t& abcInfo, uint8_t actionId);
+	regret_t getRegret(const abcInfo_t& abcInfo, uint8_t actionId);
 
-	void calculateProbas(const abcInfo_t& abcInfo);
+	uint8_t chooseAction(const abcInfo_t& abcInfo);
 
 	static const strat_t stratMax = 1u << 15;
 
 	strats_t strat;
 	regrets_t regrets;
 
-	std::vector<uint8_t> probas;
-
 private:
 	typedef omp::XoroShiro128Plus Rng;
-
-	strat_t getProba(const abcInfo_t& abcInfo, uint8_t actionId);
-	regret_t getRegret(const abcInfo_t& abcInfo, uint8_t actionId);
 
 	void calculateCumProbas(const abcInfo_t& abcInfo);
 

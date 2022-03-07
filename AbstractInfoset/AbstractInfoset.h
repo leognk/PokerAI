@@ -55,18 +55,6 @@ public:
 		return *this;
 	}
 
-	// Call it BEFORE calling startNewHand.
-	void setHoleCards(uint8_t player, const egn::Hand& hand)
-	{
-
-	}
-
-	// Call it BEFORE calling startNewHand.
-	void setBoardCards(const egn::Hand& boardCards)
-	{
-
-	}
-
 	void startNewHand(uint8_t dealer0, bool dealRandomCards = true)
 	{
 		// Reset member variables.
@@ -96,7 +84,7 @@ public:
 	// actionId must be between 0 and nActions() excluded.
 	void nextState(uint8_t actionId)
 	{
-		nextStateAction(actionAbc.legalActions[actionId]);
+		nextStateWithAction(actionAbc.legalActions[actionId]);
 	}
 
 	// Same as nextState but also return the amount of the bet corresponding to actionId.

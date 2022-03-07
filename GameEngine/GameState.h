@@ -113,6 +113,7 @@ public:
 	// Call them BEFORE calling startNewHand.
 	void resetUsedCards(); // Call this before setting cards.
 	void setHoleCards(uint8_t player, const Hand& hand);
+	void setHoleCards(uint8_t player, const uint8_t hand[]);
 	void setRandomHoleCards(uint8_t player);
 	void setRandomHoleCards(); // Set random cards for every player.
 	void setBoardCards(const Hand& boardCards0);
