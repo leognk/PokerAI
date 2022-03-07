@@ -111,8 +111,12 @@ public:
 	void setBigBlind(chips bigBlind);
 
 	// Call them BEFORE calling startNewHand.
+	void resetUsedCards(); // Call this before setting cards.
 	void setHoleCards(uint8_t player, const Hand& hand);
+	void setRandomHoleCards(uint8_t player);
+	void setRandomHoleCards(); // Set random cards for every player.
 	void setBoardCards(const Hand& boardCards0);
+	void setRandomBoardCards();
 
 	// NB: The game could have finished if there was
 	// less than 2 acting players left after charging
@@ -184,8 +188,6 @@ protected:
 	typedef omp::FastUniformIntDistribution<unsigned, 16> CardDist;
 
 	void resetPlayers();
-	void dealHoleCards(uint64_t& usedCardsMask);
-	void dealBoardCards(uint64_t& usedCardsMask);
 	void chargeAnte();
 	void chargeBlinds();
 
@@ -207,6 +209,8 @@ protected:
 
 	Rng mRng;
 	CardDist mCardDist;
+
+	uint64_t usedCardsMask;
 
 	chips mAnte, mSB, mBB;
 

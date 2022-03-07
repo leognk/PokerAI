@@ -72,6 +72,13 @@ void Blueprint::calculateCumProbas(const abcInfo_t& abcInfo)
 	}
 }
 
+void Blueprint::calculateProbas(const abcInfo_t& abcInfo)
+{
+	probas.resize(abcInfo.nActions());
+	for (uint8_t a = 0; a < cumProbas.size(); ++a)
+		probas[a] = (uint8_t)std::round(100.0 * getProba(abcInfo, a) / stratMax);
+}
+
 uint8_t Blueprint::chooseAction(const abcInfo_t& abcInfo)
 {
 	calculateCumProbas(abcInfo);

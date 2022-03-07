@@ -55,7 +55,19 @@ public:
 		return *this;
 	}
 
-	void startNewHand()
+	// Call it BEFORE calling startNewHand.
+	void setHoleCards(uint8_t player, const egn::Hand& hand)
+	{
+
+	}
+
+	// Call it BEFORE calling startNewHand.
+	void setBoardCards(const egn::Hand& boardCards)
+	{
+
+	}
+
+	void startNewHand(uint8_t dealer0, bool dealRandomCards = true)
 	{
 		// Reset member variables.
 		nRaises = 0;
@@ -63,24 +75,34 @@ public:
 		roundActions.clear();
 
 		state.stakes = initialStakes;
-		state.startNewHand(dealer);
+		state.startNewHand(dealer0, dealRandomCards);
 
 		calculateHandsIds();
 		actionAbc.calculateLegalActions(state, nRaises);
 		calculateActionSeqIds();
 	}
 
+	void startNewHand(bool dealRandomCards = true)
+	{
+		startNewHand(dealer, dealRandomCards);
+	}
+
+	void nextStateWithAction(uint8_t action)
+	{
+		setAction(action);
+		goNextState();
+	}
+
 	// actionId must be between 0 and nActions() excluded.
 	void nextState(uint8_t actionId)
 	{
-		setAction(actionId);
-		goNextState();
+		nextStateAction(actionAbc.legalActions[actionId]);
 	}
 
 	// Same as nextState but also return the amount of the bet corresponding to actionId.
 	egn::chips nextStateWithBet(uint8_t actionId)
 	{
-		setAction(actionId);
+		setAction(actionAbc.legalActions[actionId]);
 
 		// Get the bet amount.
 		egn::chips bet;
@@ -146,10 +168,10 @@ public:
 
 protected:
 
-	void setAction(uint8_t actionId)
+	void setAction(uint8_t action)
 	{
-		actionAbc.setAction(actionAbc.legalActions[actionId], state, nRaises);
-		roundActions.push_back(actionAbc.legalActions[actionId]);
+		actionAbc.setAction(action, state, nRaises);
+		roundActions.push_back(action);
 	}
 
 	void goNextState()

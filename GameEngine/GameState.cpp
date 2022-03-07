@@ -44,9 +44,9 @@ void GameState::startNewHand(uint8_t dealerIdx, bool dealRandomCards)
 
     // Deal cards.
     if (dealRandomCards) {
-        uint64_t usedCardsMask = 0;
-        dealHoleCards(usedCardsMask);
-        dealBoardCards(usedCardsMask);
+        resetUsedCards();
+        setRandomHoleCards();
+        setRandomBoardCards();
     }
 
     // Charge antes and blinds.
@@ -78,25 +78,45 @@ void GameState::resetPlayers()
     mFirstActing = nextAlive(firstAlive);
 }
 
-void GameState::dealHoleCards(uint64_t& usedCardsMask)
+void GameState::resetUsedCards()
+{
+    usedCardsMask = 0;
+}
+
+void GameState::setHoleCards(uint8_t player, const Hand& hand)
+{
+    hands[player] = hand.getArr<omp::HOLE_CARDS>();
+}
+
+void GameState::setRandomHoleCards(uint8_t player)
+{
+    for (uint8_t i = 0; i < omp::HOLE_CARDS; ++i) {
+        uint8_t card;
+        uint64_t cardMask;
+        do {
+            card = mCardDist(mRng);
+            cardMask = 1ull << card;
+        } while (usedCardsMask & cardMask);
+        usedCardsMask |= cardMask;
+        hands[player][i] = card;
+    }
+}
+
+void GameState::setRandomHoleCards()
 {
     //ZoneScoped;
     uint8_t i = firstAlive;
     do {
-        for (uint8_t j = 0; j < omp::HOLE_CARDS; ++j) {
-            uint8_t card;
-            uint64_t cardMask;
-            do {
-                card = mCardDist(mRng);
-                cardMask = 1ull << card;
-            } while (usedCardsMask & cardMask);
-            usedCardsMask |= cardMask;
-            hands[i][j] = card;
-        }
+        setRandomHoleCards(i);
     } while (nextAlive(i) != firstAlive);
 }
 
-void GameState::dealBoardCards(uint64_t& usedCardsMask)
+void GameState::setBoardCards(const Hand& boardCards0)
+{
+    boardCards = boardCards0.getArr<omp::BOARD_CARDS>();
+}
+
+void GameState::setRandomBoardCards()
 {
     //ZoneScoped;
     for (uint8_t i = 0; i < omp::BOARD_CARDS; ++i) {
@@ -109,16 +129,6 @@ void GameState::dealBoardCards(uint64_t& usedCardsMask)
         usedCardsMask |= cardMask;
         boardCards[i] = card;
     }
-}
-
-void GameState::setHoleCards(uint8_t player, const Hand& hand)
-{
-    hands[player] = hand.getArr<omp::HOLE_CARDS>();
-}
-
-void GameState::setBoardCards(const Hand& boardCards0)
-{
-    boardCards = boardCards0.getArr<omp::BOARD_CARDS>();
 }
 
 void GameState::chargeAnte()

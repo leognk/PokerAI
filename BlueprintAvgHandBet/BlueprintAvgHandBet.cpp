@@ -2,7 +2,7 @@
 
 int main()
 {
-	const double endDuration = 2;
+	const double endDuration = 10;
 	const unsigned rngSeed = 1;
 	const std::string dir = "../data/Blueprint/Tests/AvgHandBet/";
 

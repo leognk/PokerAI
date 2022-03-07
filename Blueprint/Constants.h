@@ -12,22 +12,26 @@
 namespace bp {
 
 
-#define ORIGINAL_BLUEPRINT 2
-#define MEDIUM_BLUEPRINT 1
-#define SIMPLE_BLUEPRINT 0
+#define ORIGINAL_BLUEPRINT 3
+#define MEDIUM_BLUEPRINT 2
+#define SIMPLE_BLUEPRINT 1
+#define TEST_BLUEPRINT 0
 
-#define ORIGINAL_BLUEPRINT_BUILD 2
-#define MEDIUM_BLUEPRINT_BUILD 1
-#define SIMPLE_BLUEPRINT_BUILD 0
+#define ORIGINAL_BLUEPRINT_BUILD 3
+#define MEDIUM_BLUEPRINT_BUILD 2
+#define SIMPLE_BLUEPRINT_BUILD 1
+#define TEST_BLUEPRINT_BUILD 0
 
 
 //#define MACRO_BLUEPRINT_NAME ORIGINAL_BLUEPRINT
 //#define MACRO_BLUEPRINT_NAME MEDIUM_BLUEPRINT
-#define MACRO_BLUEPRINT_NAME SIMPLE_BLUEPRINT
+//#define MACRO_BLUEPRINT_NAME SIMPLE_BLUEPRINT
+#define MACRO_BLUEPRINT_NAME TEST_BLUEPRINT
 
 //#define BLUEPRINT_BUILD_SIZE ORIGINAL_BLUEPRINT_BUILD
-#define BLUEPRINT_BUILD_SIZE MEDIUM_BLUEPRINT_BUILD
+//#define BLUEPRINT_BUILD_SIZE MEDIUM_BLUEPRINT_BUILD
 //#define BLUEPRINT_BUILD_SIZE SIMPLE_BLUEPRINT_BUILD
+#define BLUEPRINT_BUILD_SIZE TEST_BLUEPRINT_BUILD
 
 
 #if MACRO_BLUEPRINT_NAME == ORIGINAL_BLUEPRINT
@@ -146,6 +150,39 @@ static const abc::betSizes_t BET_SIZES = {
 };
 
 
+#elif MACRO_BLUEPRINT_NAME == TEST_BLUEPRINT
+
+
+static const std::string BLUEPRINT_GAME_NAME = "TEST_BLUEPRINT";
+
+typedef uint8_t bckSize_t;
+static const bckSize_t N_BCK_PREFLOP = 169; // Pluribus: 169
+static const bckSize_t N_BCK_FLOP = 200; // Pluribus: 200
+static const bckSize_t N_BCK_TURN = 200; // Pluribus: 200
+static const bckSize_t N_BCK_RIVER = 200; // Pluribus: 200
+
+static const uint8_t MAX_PLAYERS = 2; // Pluribus: 6
+
+static const egn::chips ANTE = 0; // Pluribus: 0
+static const egn::chips BIG_BLIND = 100; // Pluribus: 100
+static const egn::chips INITIAL_STAKE = 10000; // Pluribus: 10e3
+
+static const abc::betSizes_t BET_SIZES = {
+	{
+		{ 1, 2, 3 }
+	},
+	{
+		{ 1, 2, 3 }
+	},
+	{
+		{ 1, 2, 3 }
+	},
+	{
+		{ 1, 2, 3 }
+	}
+};
+
+
 #endif // MACRO_BLUEPRINT_NAME
 
 
@@ -226,6 +263,34 @@ static const int32_t maxRegret = 100e6; // 100e6
 
 static const uint64_t checkpointPeriod = 50; // 1e8 (25 min)
 static const uint64_t printPeriod = 5; // 1e6 (15 s)
+
+static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotPeriod;
+
+// This is needed because the snapshots are not discounted.
+static_assert(discountEndIter <= snapshotBeginIter);
+
+
+#elif BLUEPRINT_BUILD_SIZE == TEST_BLUEPRINT_BUILD
+
+
+static const std::string BLUEPRINT_BUILD_NAME = "TEST_BUILD";
+
+static const uint64_t nSnapshots = 1637; // 2.9e6 it -> 55 | 82e6 it -> 1637 // Pluribus: 54
+
+static const uint64_t snapshotBeginIter = 200e3; // Pluribus: 3.2e9 (800 min)
+static const uint64_t snapshotPeriod = 50e3; // Pluribus: 800e6 (200 min)
+
+static const uint64_t discountEndIter = 100e3; // Pluribus: 1.6e9 (400 min)
+static const uint64_t discountPeriod = 2500; // Pluribus: 40e6 (10 min)
+
+static const uint64_t pruneBeginIter = 50e3; // Pluribus: 800e6 (200 min)
+static const uint8_t pruneProbaPerc = 95; // Pluribus: 95
+static const int32_t pruneThreshold = -300e6; // Pluribus: -300e6
+static const int32_t minRegret = -310e6; // Pluribus: -310e6
+static const int32_t maxRegret = 100e6; // 100e6
+
+static const uint64_t checkpointPeriod = 1e6; // 1e8 (25 min)
+static const uint64_t printPeriod = 100e3; // 1e6 (15 s)
 
 static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotPeriod;
 

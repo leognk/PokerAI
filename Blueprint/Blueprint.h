@@ -21,10 +21,14 @@ public:
 
 	uint8_t chooseAction(const abcInfo_t& abcInfo);
 
+	void calculateProbas(const abcInfo_t& abcInfo);
+
 	static const strat_t stratMax = 1u << 15;
 
 	strats_t strat;
 	regrets_t regrets;
+
+	std::vector<uint8_t> probas;
 
 private:
 	typedef omp::XoroShiro128Plus Rng;

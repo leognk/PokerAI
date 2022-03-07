@@ -11,50 +11,23 @@
 #include <fstream>
 #include <bitset>
 
-#include "../Blueprint/Blueprint.h"
-#include "../AbstractInfoset/GroupedActionSeqs.h"
+#include "../LossyAbstraction/LossyIndexer.h"
 
 int main()
 {
-	const unsigned rngSeed = 1;
+	static const uint8_t nBckPreflop = 50;
 
-	bp::Blueprint blueprint(bp::BLUEPRINT_GAME_NAME, bp::BLUEPRINT_BUILD_NAME, rngSeed);
-	blueprint.loadStrat();
+	static const std::string dir = "../data/AbstractionSaves/BCK_STRENGTHS/";
+	static const std::string preflopFilePath = dir + std::format("PREFLOP_{}_BCK_STRENGTHS.bin", nBckPreflop);
 
-	bp::abcInfo_t abcInfo(
-		bp::MAX_PLAYERS,
-		bp::ANTE,
-		bp::BIG_BLIND,
-		bp::INITIAL_STAKE,
-		bp::BET_SIZES,
-		bp::BLUEPRINT_GAME_NAME,
-		rngSeed);
+	typedef abc::LossyIndexer<uint8_t, nBckPreflop, 50, 50, 50> indexer_t;
+	indexer_t::loadLUT();
 
-	abcInfo.startNewHand();
-
-	abc::GroupedActionSeqs gpSeqs(bp::BLUEPRINT_GAME_NAME);
-	gpSeqs.load();
-
-	blueprint.loadStrat();
-	blueprint.loadRegrets();
-
-	const uint8_t round = 3;
-	const unsigned handIdx = 0;
-
-	abc::GroupedActionSeqs::seqIdx_t currSeq = 0;
-	for (const uint8_t nLegalActions : gpSeqs.lens[round]) {
-		for (uint8_t a = 0; a < nLegalActions; ++a) {
-			auto seqIdx = gpSeqs.seqs[round][currSeq];
-			const auto s = blueprint.strat[round][handIdx][seqIdx];
-			const auto r = blueprint.regrets[round][handIdx][seqIdx];
-			std::cout
-				<< std::setw(4) << currSeq
-				<< " | " << std::setw(5) << s
-				<< " | " << std::setw(4) << opt::prettyPerc(s, uint16_t(1u << 15))
-				<< " | " << r
-				<< " | " << seqIdx << "\n";
-			++currSeq;
-		}
-		std::cout << "\n";
+	abc::EquityCalculator eqt;
+	eqt.loadPreflopHSLUT();
+	//std::sort(eqt.PREFLOP_HS_LUT.begin(), eqt.PREFLOP_HS_LUT.end());
+	for (uint8_t i = 0; i < abc::PREFLOP_SIZE; ++i) {
+		const double equity = (double)eqt.PREFLOP_HS_LUT[i] / abc::MAX_HS;
+		std::cout << std::to_string(i) << ": " << equity << " | " << std::to_string(indexer_t::dkem.PREFLOP_BCK_LUT[i]) << "\n";
 	}
 }
