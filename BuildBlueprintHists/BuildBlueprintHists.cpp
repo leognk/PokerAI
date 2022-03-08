@@ -15,53 +15,55 @@ int main()
 	blueprint.loadRegrets();
 
 	// Histogram of all regrets.
-	auto file = std::fstream(
+	auto allRegretsFile = std::fstream(
 		histDir + std::format("AllRegretsHist_{}_bins.bin", nBins),
 		std::ios::out | std::ios::binary);
-	opt::buildAndSaveHist(nBins, blueprint.regrets, file, "symlog");
+	opt::buildAndSaveHist(nBins, blueprint.regrets, allRegretsFile, "symlog");
+	allRegretsFile.close();
 
 	// Histogram of regrets for each round.
-	file = std::fstream(
+	auto roundRegretsFile = std::fstream(
 		histDir + std::format("RoundRegretsHist_{}_bins.bin", nBins),
 		std::ios::out | std::ios::binary);
 	for (const auto& roundRegrets : blueprint.regrets)
-		opt::buildAndSaveHist(nBins, roundRegrets, file, "symlog");
-	file.close();
+		opt::buildAndSaveHist(nBins, roundRegrets, roundRegretsFile, "symlog");
+	roundRegretsFile.close();
 
 	// Histogram of regrets for each hand bucket.
-	file = std::fstream(
+	auto handRegretsFile = std::fstream(
 		histDir + std::format("HandRegretsHist_{}_bins.bin", nBins),
 		std::ios::out | std::ios::binary);
 	for (const auto& roundRegrets : blueprint.regrets) {
 		for (const auto& handRegrets : roundRegrets)
-			opt::buildAndSaveHist(nBins, handRegrets, file, "symlog");
+			opt::buildAndSaveHist(nBins, handRegrets, handRegretsFile, "symlog");
 	}
-	file.close();
+	handRegretsFile.close();
 
 	opt::freeVectMem(blueprint.regrets);
 	blueprint.loadStrat();
 
 	// Histogram of all probas.
-	auto file = std::fstream(
+	auto allProbasFile = std::fstream(
 		histDir + std::format("AllProbasHist_{}_bins.bin", nBins),
 		std::ios::out | std::ios::binary);
-	opt::buildAndSaveHist(nBins, blueprint.strat, file, "linear");
+	opt::buildAndSaveHist(nBins, blueprint.strat, allProbasFile, "linear");
+	allProbasFile.close();
 
 	// Histogram of probas for each round.
-	file = std::fstream(
+	auto roundProbasFile = std::fstream(
 		histDir + std::format("RoundProbasHist_{}_bins.bin", nBins),
 		std::ios::out | std::ios::binary);
 	for (const auto& roundStrat : blueprint.strat)
-		opt::buildAndSaveHist(nBins, roundStrat, file, "linear");
-	file.close();
+		opt::buildAndSaveHist(nBins, roundStrat, roundProbasFile, "linear");
+	roundProbasFile.close();
 
 	// Histogram of probas for each hand bucket.
-	file = std::fstream(
+	auto handProbasFile = std::fstream(
 		histDir + std::format("HandProbasHist_{}_bins.bin", nBins),
 		std::ios::out | std::ios::binary);
 	for (const auto& roundStrat : blueprint.strat) {
 		for (const auto& handStrat : roundStrat)
-			opt::buildAndSaveHist(nBins, handStrat, file, "linear");
+			opt::buildAndSaveHist(nBins, handStrat, handProbasFile, "linear");
 	}
-	file.close();
+	handProbasFile.close();
 }
