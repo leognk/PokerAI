@@ -24,8 +24,8 @@ namespace bp {
 
 
 //#define MACRO_BLUEPRINT_NAME ORIGINAL_BLUEPRINT
-//#define MACRO_BLUEPRINT_NAME MEDIUM_BLUEPRINT
-#define MACRO_BLUEPRINT_NAME SIMPLE_BLUEPRINT
+#define MACRO_BLUEPRINT_NAME MEDIUM_BLUEPRINT
+//#define MACRO_BLUEPRINT_NAME SIMPLE_BLUEPRINT
 //#define MACRO_BLUEPRINT_NAME TEST_BLUEPRINT
 
 //#define BLUEPRINT_BUILD_SIZE ORIGINAL_BLUEPRINT_BUILD
@@ -93,14 +93,14 @@ static const egn::chips INITIAL_STAKE = 10000; // Pluribus: 10e3
 
 static const abc::betSizes_t BET_SIZES = {
 	{
-		{ 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 6, 8, 15, 25 },
 		{ 0.5, 1, 1.5, 2, 4, 8, 15, 25 },
+		{ 0.5, 1, 2, 4, 8, 15, 25 },
 		{ 0.5, 1, 2 },
 		{ 1 }
 	},
 	{
-		{ 0.25, 0.5, 1, 2, 4 },
 		{ 0.5, 1, 2 },
+		{ 0.5, 1 },
 		{ 1 }
 	},
 	{
