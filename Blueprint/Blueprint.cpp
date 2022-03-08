@@ -48,11 +48,6 @@ void Blueprint::loadRegrets()
 	file.close();
 }
 
-strat_t Blueprint::getProbaAction(const abcInfo_t& abcInfo, uint8_t action)
-{
-	return strat[abcInfo.roundIdx()][abcInfo.handIdx()][action];
-}
-
 strat_t Blueprint::getProba(const abcInfo_t& abcInfo, uint8_t actionId)
 {
 	return strat[abcInfo.roundIdx()][abcInfo.handIdx()][abcInfo.actionSeqIds[actionId]];
@@ -61,6 +56,14 @@ strat_t Blueprint::getProba(const abcInfo_t& abcInfo, uint8_t actionId)
 regret_t Blueprint::getRegret(const abcInfo_t& abcInfo, uint8_t actionId)
 {
 	return regrets[abcInfo.roundIdx()][abcInfo.handIdx()][abcInfo.actionSeqIds[actionId]];
+}
+
+strat_t Blueprint::calculateSumProbas(const abcInfo_t& abcInfo)
+{
+	strat_t sum = 0;
+	for (uint8_t a = 0; a < abcInfo.nActions(); ++a)
+		sum += getProba(abcInfo, a);
+	return sum;
 }
 
 void Blueprint::calculateCumProbas(const abcInfo_t& abcInfo)

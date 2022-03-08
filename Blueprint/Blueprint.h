@@ -19,9 +19,10 @@ public:
 	void loadStrat();
 	void loadRegrets();
 
-	strat_t getProbaAction(const abcInfo_t& abcInfo, uint8_t action);
 	strat_t getProba(const abcInfo_t& abcInfo, uint8_t actionId);
 	regret_t getRegret(const abcInfo_t& abcInfo, uint8_t actionId);
+
+	strat_t calculateSumProbas(const abcInfo_t& abcInfo);
 
 	uint8_t chooseAction(const abcInfo_t& abcInfo);
 

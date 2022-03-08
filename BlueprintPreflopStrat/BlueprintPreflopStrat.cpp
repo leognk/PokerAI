@@ -93,6 +93,7 @@ int main()
 		{ abc::FOLD },
 		{ abc::CALL },
 		{ abc::ALLIN },
+		{ abc::RAISE + 0 },
 		{ abc::RAISE + 1 },
 		{ abc::RAISE + 2 },
 
@@ -100,10 +101,10 @@ int main()
 		{ abc::CALL, abc::RAISE + 0 },
 		{ abc::CALL, abc::RAISE + 1 },
 		{ abc::CALL, abc::RAISE + 2 },
-		{ abc::RAISE + 1, abc::FOLD },
-		{ abc::RAISE + 1, abc::RAISE + 0 },
-		{ abc::RAISE + 1, abc::RAISE + 1 },
-		{ abc::RAISE + 1, abc::RAISE + 2 }
+		{ abc::RAISE + 0, abc::FOLD },
+		{ abc::RAISE + 0, abc::RAISE + 0 },
+		{ abc::RAISE + 0, abc::RAISE + 1 },
+		{ abc::RAISE + 0, abc::RAISE + 2 }
 	};
 
 	static const std::string dir = "../data/Blueprint/Tests/PreflopStrat/" + bp::blueprintName() + "/";
@@ -129,11 +130,12 @@ int main()
 			omp::RANK_COUNT, std::vector<uint8_t>(omp::RANK_COUNT));
 
 		for (uint8_t handIdx = 0; handIdx < abc::PREFLOP_SIZE; ++handIdx) {
-				prepareAbcInfo(abcInfo, dealer, actionSeq, handIdx);
-				const auto p = blueprint.getProbaAction(abcInfo, actionSeq.back());
-				const auto i = handIdxToRow[handIdx];
-				const auto j = handIdxToCol[handIdx];
-				actionProbas[i][j] = (uint8_t)std::round(100.0 * p / blueprint.stratMax);
+			prepareAbcInfo(abcInfo, dealer, actionSeq, handIdx);
+			const auto i = handIdxToRow[handIdx];
+			const auto j = handIdxToCol[handIdx];
+			const auto proba = blueprint.getProba(abcInfo, abcInfo.getActionId(actionSeq.back()));
+			const auto sum = blueprint.calculateSumProbas(abcInfo);
+			actionProbas[i][j] = (uint8_t)std::round(100.0 * proba / sum);
 		}
 
 		opt::save2DVector(actionProbas, dir + actionSeqToStr(actionSeq) + ".bin");

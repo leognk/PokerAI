@@ -2,7 +2,7 @@
 
 int main()
 {
-	const uint8_t round = 3;
+	const uint8_t round = 0;
 	const unsigned handIdx = 0;
 
 	bp::Blueprint blueprint(bp::BLUEPRINT_GAME_NAME, bp::BLUEPRINT_BUILD_NAME);

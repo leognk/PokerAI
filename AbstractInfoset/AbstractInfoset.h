@@ -151,6 +151,15 @@ public:
 		}
 	}
 
+	uint8_t getActionId(uint8_t action) const
+	{
+		for (uint8_t i = 0; i < nActions(); ++i) {
+			if (actionAbc.legalActions[i] == action)
+				return i;
+		}
+		throw std::runtime_error("Action was not found in legalActions.");
+	}
+
 	egn::GameState state;
 	abc::ActionAbstraction actionAbc;
 
