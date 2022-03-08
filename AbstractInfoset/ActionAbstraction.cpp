@@ -20,7 +20,7 @@ void ActionAbstraction::setAction(
 	uint8_t action, egn::GameState& state, uint8_t& nRaises)
 {
 	// Fold or call
-	if (action < 2)
+	if (action < ALLIN)
 		state.action = egn::Action(action);
 
 	// Raise
@@ -28,10 +28,10 @@ void ActionAbstraction::setAction(
 		state.action = egn::RAISE;
 
 		// All-in
-		if (action == 2) state.bet = state.allin;
+		if (action == ALLIN) state.bet = state.allin;
 		// Regular raise
-		else state.bet = (egn::chips)std::round(
-			(*betSizes)[state.round][nRaises][action - 3] * state.pot);
+		else state.bet = betSizeToBet(
+			(*betSizes)[state.round][nRaises][action - RAISE], state);
 
 		if (nRaises != (*betSizes)[state.round].size() - 1) ++nRaises;
 	}
@@ -42,7 +42,7 @@ void ActionAbstraction::calculateLegalActions(
 {
 	if (state.legalCase == 0) {
 		// Fold & call
-		legalActions = { 0, 1 };
+		legalActions = { FOLD, CALL };
 		return;
 	}
 
@@ -56,29 +56,29 @@ void ActionAbstraction::calculateLegalActions(
 
 	// Find the minimum idx for which
 	// the corresponding bet value >= minRaise.
-	float minRaiseSize = (float)state.minRaise / state.pot;
+	const float minRaiseSize = betToBetSize(state.minRaise, state);
 	while ((*betSizes)[state.round][nRaises][beginRaiseId] < minRaiseSize)
 		if (++beginRaiseId == endRaiseId) break;
 
 	if (beginRaiseId != endRaiseId) {
 		// Find the maximum idx for which
 		// the previous corresponding bet value < allin.
-		float allinSize = (float)state.allin / state.pot;
+		const float allinSize = betToBetSize(state.allin, state);
 		while ((*betSizes)[state.round][nRaises][endRaiseId - 1] >= allinSize)
 			if (--endRaiseId == beginRaiseId) break;
 	}
 
 	// Build vector legalActions.
 
-	uint8_t nLegalRaises = endRaiseId - beginRaiseId;
+	const uint8_t nLegalRaises = endRaiseId - beginRaiseId;
 
 	if (state.legalCase == 1) {
 #pragma warning(suppress: 26451)
 		legalActions.resize(nLegalRaises + 2);
 		// Call
-		legalActions[0] = 1;
+		legalActions[0] = CALL;
 		// All-in
-		legalActions[1] = 2;
+		legalActions[1] = ALLIN;
 		// Legal raises
 		for (uint8_t i = 2; i < nLegalRaises + 2; ++i)
 			legalActions[i] = beginRaiseId + i + 1;
@@ -88,15 +88,34 @@ void ActionAbstraction::calculateLegalActions(
 #pragma warning(suppress: 26451)
 		legalActions.resize(nLegalRaises + 3);
 		// Fold
-		legalActions[0] = 0;
+		legalActions[0] = FOLD;
 		// Call
-		legalActions[1] = 1;
+		legalActions[1] = CALL;
 		// All-in
-		legalActions[2] = 2;
+		legalActions[2] = ALLIN;
 		// Legal raises
 		for (uint8_t i = 3; i < nLegalRaises + 3; ++i)
 			legalActions[i] = beginRaiseId + i;
 	}
 }
+
+egn::chips ActionAbstraction::betSizeToBet(
+	const float betSize, const egn::GameState& state) const
+{
+	// A x pot size raise is a raise by a proportion of x of the amount
+	// of the pot after that the acting player called. So the amount of
+	// chips bet by the acting player is bet = call + x * (call + pot).
+	// In this way, the opponent faces a (1+x):1 pot odds (at best).
+	return state.call + (egn::chips)std::round(betSize * (state.call + state.pot));
+}
+
+// Return the result of the inverse operation of betSizeToBet.
+float ActionAbstraction::betToBetSize(
+	const egn::chips bet, const egn::GameState& state) const
+{
+	return float(bet - state.call) / (state.pot + state.call);
+}
+
+
 
 } // abc

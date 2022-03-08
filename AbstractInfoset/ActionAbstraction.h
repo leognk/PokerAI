@@ -45,6 +45,9 @@ public:
 	std::vector<uint8_t> legalActions;
 
 private:
+	egn::chips betSizeToBet(const float betSize, const egn::GameState& state) const;
+	float betToBetSize(const egn::chips bet, const egn::GameState& state) const;
+
 	const betSizes_t* betSizes;
 
 }; // ActionAbstraction
