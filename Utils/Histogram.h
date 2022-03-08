@@ -106,7 +106,8 @@ template<typename V, class Axis>
 static void buildAndSaveHist(const unsigned nBins, const V& v, std::fstream& file)
 {
 	// Build the histogram.
-	const auto [min, max] = findMinMax(v);
+	auto [min, max] = findMinMax(v);
+	if (max == min) ++max;
 	auto hist = boost::histogram::make_histogram(Axis(nBins, min, max));
 	fillHist(hist, v);
 
