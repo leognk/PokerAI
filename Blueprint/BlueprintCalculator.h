@@ -20,7 +20,7 @@ typedef uint8_t strat_t;
 typedef uint32_t sumStrat_t;
 typedef abc::AbstractInfoset<bckSize_t, N_BCK_PREFLOP, N_BCK_FLOP, N_BCK_TURN, N_BCK_RIVER> abcInfo_t;
 
-static const strat_t maxStrat = (std::numeric_limits<strat_t>::max)();
+static const strat_t sumStrat = (std::numeric_limits<strat_t>::max)();
 
 class BlueprintCalculator
 {

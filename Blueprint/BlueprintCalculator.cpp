@@ -466,7 +466,7 @@ void BlueprintCalculator::takeSnapshot()
 				}
 
 				// Normalize the regrets and write them in the file.
-				cumWeightsRescaler.rescaleCumWeights(cumRegrets, maxStrat);
+				cumWeightsRescaler.rescaleCumWeights(cumRegrets, sumStrat);
 				strat_t strat = (strat_t)cumRegrets[0];
 				opt::saveVar(strat, file);
 				for (uint8_t i = 1; i < nLegalActions; ++i) {
