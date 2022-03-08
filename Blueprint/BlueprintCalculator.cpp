@@ -6,7 +6,7 @@ const std::string BlueprintCalculator::printSep(20, '_');
 
 opt::FastRandomChoice<7> BlueprintCalculator::pruneRandChoice;
 opt::FastRandomChoiceRNGRescale<16> BlueprintCalculator::actionRandChoice;
-const opt::FastRandomChoice<15> BlueprintCalculator::cumWeightsRescaler;
+const opt::FastRandomChoice<> BlueprintCalculator::cumWeightsRescaler;
 
 BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 
@@ -466,7 +466,7 @@ void BlueprintCalculator::takeSnapshot()
 				}
 
 				// Normalize the regrets and write them in the file.
-				cumWeightsRescaler.rescaleCumWeights(cumRegrets);
+				cumWeightsRescaler.rescaleCumWeights(cumRegrets, maxStrat);
 				strat_t strat = (strat_t)cumRegrets[0];
 				opt::saveVar(strat, file);
 				for (uint8_t i = 1; i < nLegalActions; ++i) {

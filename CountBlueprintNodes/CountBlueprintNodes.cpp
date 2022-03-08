@@ -19,11 +19,13 @@ int main()
 		+ bp::N_BCK_RIVER * actionSeqs[egn::RIVER].size();
 
 	// Memory for the regrets.
-	uint64_t ram = nNodes * sizeof(int32_t);
+	typedef int32_t regret_t;
+	uint64_t ram = nNodes * sizeof(regret_t);
 
 	// Memory for the snapshots and the checkpoint stored to the disk.
-	uint64_t stratHdd = nNodes * sizeof(uint16_t);
-	uint64_t hdd = bp::nSnapshots * nNodes * sizeof(uint16_t) + ram + stratHdd;
+	typedef uint8_t strat_t;
+	uint64_t stratHdd = nNodes * sizeof(strat_t);
+	uint64_t hdd = (bp::nSnapshots + 1) * stratHdd + ram;
 
 	const std::string duration = opt::prettyDuration(startTime);
 

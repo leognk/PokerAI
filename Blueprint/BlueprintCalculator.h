@@ -16,9 +16,11 @@ namespace bp {
 
 typedef int32_t regret_t;
 typedef std::vector<std::vector<std::vector<regret_t>>> regrets_t;
-typedef uint16_t strat_t;
+typedef uint8_t strat_t;
 typedef uint32_t sumStrat_t;
 typedef abc::AbstractInfoset<bckSize_t, N_BCK_PREFLOP, N_BCK_FLOP, N_BCK_TURN, N_BCK_RIVER> abcInfo_t;
+
+static const strat_t maxStrat = (std::numeric_limits<strat_t>::max)();
 
 class BlueprintCalculator
 {
@@ -91,7 +93,7 @@ private:
 	Rng rng;
 	static opt::FastRandomChoice<7> pruneRandChoice;
 	static opt::FastRandomChoiceRNGRescale<16> actionRandChoice;
-	static const opt::FastRandomChoice<15> cumWeightsRescaler;
+	static const opt::FastRandomChoice<> cumWeightsRescaler;
 	const std::array<uint8_t, 2> pruneCumWeights;
 	std::vector<uint64_t> cumRegrets;
 

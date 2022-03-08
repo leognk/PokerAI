@@ -23,7 +23,7 @@ int main()
 			std::cout
 				<< std::setw(4) << currSeq
 				<< " | seq: " << std::setw(4) << seqIdx
-				<< " | p: " << std::setw(4) << opt::prettyPerc(p, bp::Blueprint::stratMax)
+				<< " | p: " << std::setw(4) << opt::prettyPerc(p, bp::maxStrat)
 				<< " | r: " << opt::prettyNumDg((int64_t)r, 3) << "\n";
 			++currSeq;
 		}
