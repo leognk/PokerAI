@@ -102,10 +102,10 @@ void ActionAbstraction::calculateLegalActions(
 egn::chips ActionAbstraction::betSizeToBet(
 	const float betSize, const egn::GameState& state) const
 {
-	// A x pot size raise is a raise by a proportion of x of the amount
+	// A x pot size raise is a raise by a fraction x of the size
 	// of the pot after that the acting player called. So the amount of
 	// chips bet by the acting player is bet = call + x * (call + pot).
-	// In this way, the opponent faces a (1+x):1 pot odds (at best).
+	// This way, the opponent faces a (1+x):1 pot odds (at best).
 	return state.call + (egn::chips)std::round(betSize * (state.call + state.pot));
 }
 

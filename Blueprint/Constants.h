@@ -25,13 +25,13 @@ namespace bp {
 
 //#define MACRO_BLUEPRINT_NAME ORIGINAL_BLUEPRINT
 //#define MACRO_BLUEPRINT_NAME MEDIUM_BLUEPRINT
-#define MACRO_BLUEPRINT_NAME SIMPLE_BLUEPRINT
-//#define MACRO_BLUEPRINT_NAME TEST_BLUEPRINT
+//#define MACRO_BLUEPRINT_NAME SIMPLE_BLUEPRINT
+#define MACRO_BLUEPRINT_NAME TEST_BLUEPRINT
 
 //#define BLUEPRINT_BUILD_SIZE ORIGINAL_BLUEPRINT_BUILD
 //#define BLUEPRINT_BUILD_SIZE MEDIUM_BLUEPRINT_BUILD
-#define BLUEPRINT_BUILD_SIZE SIMPLE_BLUEPRINT_BUILD
-//#define BLUEPRINT_BUILD_SIZE TEST_BLUEPRINT_BUILD
+//#define BLUEPRINT_BUILD_SIZE SIMPLE_BLUEPRINT_BUILD
+#define BLUEPRINT_BUILD_SIZE TEST_BLUEPRINT_BUILD
 
 
 #if MACRO_BLUEPRINT_NAME == ORIGINAL_BLUEPRINT
@@ -53,8 +53,8 @@ static const egn::chips INITIAL_STAKE = 10000; // Pluribus: 10e3
 
 static const abc::betSizes_t BET_SIZES = {
 	{
-		{ 1, 1.25, 1.5, 1.75, 2, 3, 4, 6, 8, 15, 25, 35, 50 },
-		{ 0.5, 1, 2, 4, 8, 15, 25, 50 },
+		{ 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 6, 8, 15, 25 },
+		{ 0.5, 1, 1.5, 2, 4, 8, 15, 25 },
 		{ 0.5, 1, 2 },
 		{ 1 }
 	},
@@ -93,12 +93,13 @@ static const egn::chips INITIAL_STAKE = 10000; // Pluribus: 10e3
 
 static const abc::betSizes_t BET_SIZES = {
 	{
-		{ 2, 4, 6, 8, 15, 25, 35 },
-		{ 0.5, 1, 2, 4, 8, 15, 25 },
+		{ 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 6, 8, 15, 25 },
+		{ 0.5, 1, 1.5, 2, 4, 8, 15, 25 },
 		{ 0.5, 1, 2 },
 		{ 1 }
 	},
 	{
+		{ 0.25, 0.5, 1, 2, 4 },
 		{ 0.5, 1, 2 },
 		{ 1 }
 	},
@@ -156,7 +157,7 @@ static const abc::betSizes_t BET_SIZES = {
 static const std::string BLUEPRINT_GAME_NAME = "TEST_BLUEPRINT";
 
 typedef uint8_t bckSize_t;
-static const bckSize_t N_BCK_PREFLOP = 169; // Pluribus: 169
+static const bckSize_t N_BCK_PREFLOP = abc::PREFLOP_SIZE; // Pluribus: 169
 static const bckSize_t N_BCK_FLOP = 200; // Pluribus: 200
 static const bckSize_t N_BCK_TURN = 200; // Pluribus: 200
 static const bckSize_t N_BCK_RIVER = 200; // Pluribus: 200
@@ -184,6 +185,13 @@ static const abc::betSizes_t BET_SIZES = {
 
 
 #endif // MACRO_BLUEPRINT_NAME
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 #if BLUEPRINT_BUILD_SIZE == ORIGINAL_BLUEPRINT_BUILD
