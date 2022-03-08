@@ -42,7 +42,7 @@ int main()
 	blueprint.loadStrat();
 
 	// Histogram of all probas.
-	file = std::fstream(
+	auto file = std::fstream(
 		histDir + std::format("AllProbasHist_{}_bins.bin", nBins),
 		std::ios::out | std::ios::binary);
 	opt::buildAndSaveHist(nBins, blueprint.strat, file, "linear");

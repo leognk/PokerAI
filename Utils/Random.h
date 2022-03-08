@@ -32,16 +32,16 @@ public:
 
     // Rescale each cumulated weight.
     // After applying this function, the total sum is guaranteed to be
-    // rigorously equal to RANGE.
+    // rigorously equal to total.
     template<class C>
-    static void rescaleCumWeights(C& cumWeights)
+    static void rescaleCumWeights(C& cumWeights, uint64_t total = RANGE)
     {
-        double rescaleFactor = (double)RANGE / cumWeights.back();
-        for (unsigned i = 0; i < cumWeights.size(); ++i) 
+        double rescaleFactor = (double)total / cumWeights.back();
+        for (size_t i = 0; i < cumWeights.size(); ++i) 
 #pragma warning(suppress: 4244)
             cumWeights[i] = round(rescaleFactor * cumWeights[i]);
-        if (cumWeights.back() != RANGE)
-            throw std::runtime_error("Sum of weights not equal to RANGE.");
+        if (cumWeights.back() != total)
+            throw std::runtime_error("Sum of weights not equal to total.");
     }
 
     template<class C, class TRng>

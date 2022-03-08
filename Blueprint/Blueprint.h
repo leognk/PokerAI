@@ -40,7 +40,7 @@ private:
 	const std::string bpName;
 
 	Rng rng;
-	opt::FastRandomChoiceRNGRescale<15> actionRandChoice;
+	opt::FastRandomChoiceRNGRescale<16> actionRandChoice;
 	std::vector<strat_t> cumProbas;
 
 }; // Blueprint
