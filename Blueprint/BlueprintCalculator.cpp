@@ -51,7 +51,7 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 	std::filesystem::create_directory(blueprintTmpDir());
 
 	// If a checkpoint file is found, resume from it.
-	auto checkpointFile = std::fstream(checkpointPath(), std::ios::in | std::ios::binary);
+	auto checkpointFile = opt::fstream(checkpointPath(), std::ios::in | std::ios::binary);
 	if (checkpointFile) {
 		// Verify that the constants are the same as the ones used in the checkpoint.
 		verifyConstants();
@@ -431,7 +431,7 @@ void BlueprintCalculator::takeSnapshot()
 	for (uint8_t r = 0; r < egn::N_ROUNDS; ++r) {
 
 		// Open the file.
-		auto file = std::fstream(
+		auto file = opt::fstream(
 			snapshotPath(nextSnapshotId, r), std::ios::out | std::ios::binary);
 
 		// Write in the file.
@@ -496,7 +496,7 @@ void BlueprintCalculator::averageSnapshots()
 		for (unsigned snapshotId = 1; snapshotId <= nSnapshots; ++snapshotId) {
 
 			// Open the snapshot.
-			auto snapshotFile = std::fstream(
+			auto snapshotFile = opt::fstream(
 				snapshotPath(snapshotId, r), std::ios::in | std::ios::binary);
 
 			// Add the snapshot's strategy to the total sum.
@@ -518,7 +518,7 @@ void BlueprintCalculator::averageSnapshots()
 		}
 
 		// Open the file.
-		auto file = std::fstream(stratPath(r), std::ios::out | std::ios::binary);
+		auto file = opt::fstream(stratPath(r), std::ios::out | std::ios::binary);
 
 		// Write the average of the snapshots' strategies.
 		for (bckSize_t handIdx = 0; handIdx < strats.size(); ++handIdx) {
@@ -628,7 +628,7 @@ void BlueprintCalculator::updateCheckpoint()
 {
 	lastCheckpointIter = currIter;
 
-	auto file = std::fstream(checkpointPath(), std::ios::out | std::ios::binary);
+	auto file = opt::fstream(checkpointPath(), std::ios::out | std::ios::binary);
 
 	opt::save3DVector(regrets, file);
 

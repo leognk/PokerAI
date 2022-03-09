@@ -23,6 +23,7 @@
     <ClInclude Include="FastVector.h" />
     <ClInclude Include="Hash.h" />
     <ClInclude Include="Histogram.h" />
+    <ClInclude Include="io.h" />
     <ClInclude Include="ioVar.h" />
     <ClInclude Include="Progression.h" />
     <ClInclude Include="ioContainer.h" />

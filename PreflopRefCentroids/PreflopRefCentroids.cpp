@@ -47,7 +47,7 @@ int main()
 	// Write clusters' centers.
 	opt::saveArray(refCenters, vizDir + "PREFLOP_8_CENTERS_REF.bin");
 	// Write inertia and min weight.
-	auto file = std::fstream(
+	auto file = opt::fstream(
 		vizDir + std::format("PREFLOP_8_BCK_REF - inertia={}, min_weight={}", inertia, minWeight),
 		std::ios::out);
 	file.close();

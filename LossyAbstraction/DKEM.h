@@ -61,7 +61,7 @@ public:
 		opt::saveArray(PREFLOP_CENTERS,
 			bckLutDir + std::format("PREFLOP_{}_CENTERS.bin", nBckPreflop));
 		// Write inertia and min weight.
-		auto file = std::fstream(
+		auto file = opt::fstream(
 			bckLutDir + std::format("PREFLOP_{}_BCK - inertia={}, min_weight={}",
 				nBckPreflop, preflopInertia, preflopMinWeight),
 			std::ios::out);
@@ -76,7 +76,7 @@ public:
 		opt::saveArray(FLOP_CENTERS,
 			bckLutDir + std::format("FLOP_{}_CENTERS.bin", nBckFlop));
 		// Write inertia and min weight.
-		auto file = std::fstream(
+		auto file = opt::fstream(
 			bckLutDir + std::format("FLOP_{}_BCK - inertia={}, min_weight={}",
 				nBckFlop, flopInertia, flopMinWeight),
 			std::ios::out);
@@ -91,7 +91,7 @@ public:
 		opt::saveArray(TURN_CENTERS,
 			bckLutDir + std::format("TURN_{}_CENTERS.bin", nBckTurn));
 		// Write inertia and min weight.
-		auto file = std::fstream(
+		auto file = opt::fstream(
 			bckLutDir + std::format("TURN_{}_BCK - inertia={}, min_weight={}",
 				nBckTurn, turnInertia, turnMinWeight),
 			std::ios::out);

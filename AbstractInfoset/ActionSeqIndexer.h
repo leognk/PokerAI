@@ -4,6 +4,7 @@
 #include "TreeTraverser.h"
 #include "../Utils/Hash.h"
 #include "../Utils/Hash.h"
+#include "../Utils/io.h"
 #include "../BBHash/BooPHF.h"
 
 namespace abc {

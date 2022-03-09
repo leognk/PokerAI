@@ -36,6 +36,8 @@ public:
 	void setAction(uint8_t action, egn::GameState& state, uint8_t& nRaises);
 	void calculateLegalActions(const egn::GameState& state, uint8_t nRaises);
 
+	uint8_t mapActionToAbcAction(const egn::GameState& state) const;
+
 	// Actions are indexed using the following order:
 	// 0: fold
 	// 1: call

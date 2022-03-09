@@ -38,7 +38,7 @@ public:
 		opt::saveArray(RIV_CENTERS,
 			bckLutDir + std::format("RIV_{}_CENTERS.bin", nBckRiver));
 		// Write inertia and min weight.
-		auto file = std::fstream(
+		auto file = opt::fstream(
 			bckLutDir + std::format("RIV_{}_BCK - inertia={}, min_weight={}",
 				nBckRiver, rivInertia, rivMinWeight),
 			std::ios::out);

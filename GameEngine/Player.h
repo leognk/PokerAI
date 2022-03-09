@@ -9,8 +9,8 @@ namespace egn {
 class Player
 {
 public:
-	// Set GameState's action and bet member variables
-	// (bet set only for a raise).
+	// Set GameState's action and bet member variables.
+	// (bet need to be set only for a raise)
 	virtual void act(GameState& state) = 0;
 };
 

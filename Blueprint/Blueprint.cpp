@@ -43,7 +43,7 @@ void Blueprint::loadRegrets()
 	};
 
 	// Load the regrets from the checkpoint file.
-	auto file = std::fstream(BlueprintCalculator::checkpointPath(bpName), std::ios::in | std::ios::binary);
+	auto file = opt::fstream(BlueprintCalculator::checkpointPath(bpName), std::ios::in | std::ios::binary);
 	opt::load3DVector(regrets, file);
 	file.close();
 }

@@ -71,35 +71,35 @@ void ActionSeqIndexer::loadMPHF()
 
 void ActionSeqIndexer::savePreflopMPHF() const
 {
-	auto file = std::fstream(preflopMPHFPath, std::ios::out | std::ios::binary);
+	auto file = opt::fstream(preflopMPHFPath, std::ios::out | std::ios::binary);
 	preflopMPHF.save(file);
 	file.close();
 }
 
 void ActionSeqIndexer::saveFlopMPHF() const
 {
-	auto file = std::fstream(flopMPHFPath, std::ios::out | std::ios::binary);
+	auto file = opt::fstream(flopMPHFPath, std::ios::out | std::ios::binary);
 	flopMPHF.save(file);
 	file.close();
 }
 
 void ActionSeqIndexer::saveTurnMPHF() const
 {
-	auto file = std::fstream(turnMPHFPath, std::ios::out | std::ios::binary);
+	auto file = opt::fstream(turnMPHFPath, std::ios::out | std::ios::binary);
 	turnMPHF.save(file);
 	file.close();
 }
 
 void ActionSeqIndexer::saveRiverMPHF() const
 {
-	auto file = std::fstream(riverMPHFPath, std::ios::out | std::ios::binary);
+	auto file = opt::fstream(riverMPHFPath, std::ios::out | std::ios::binary);
 	riverMPHF.save(file);
 	file.close();
 }
 
 void ActionSeqIndexer::saveSizes() const
 {
-	auto file = std::fstream(sizesPath, std::ios::out | std::ios::binary);
+	auto file = opt::fstream(sizesPath, std::ios::out | std::ios::binary);
 	opt::saveVar(preflopMPHF.nbKeys(), file);
 	opt::saveVar(flopMPHF.nbKeys(), file);
 	opt::saveVar(turnMPHF.nbKeys(), file);
@@ -109,28 +109,28 @@ void ActionSeqIndexer::saveSizes() const
 
 void ActionSeqIndexer::loadPreflopMPHF()
 {
-	auto file = std::fstream(preflopMPHFPath, std::ios::in | std::ios::binary);
+	auto file = opt::fstream(preflopMPHFPath, std::ios::in | std::ios::binary);
 	preflopMPHF.load(file);
 	file.close();
 }
 
 void ActionSeqIndexer::loadFlopMPHF()
 {
-	auto file = std::fstream(flopMPHFPath, std::ios::in | std::ios::binary);
+	auto file = opt::fstream(flopMPHFPath, std::ios::in | std::ios::binary);
 	flopMPHF.load(file);
 	file.close();
 }
 
 void ActionSeqIndexer::loadTurnMPHF()
 {
-	auto file = std::fstream(turnMPHFPath, std::ios::in | std::ios::binary);
+	auto file = opt::fstream(turnMPHFPath, std::ios::in | std::ios::binary);
 	turnMPHF.load(file);
 	file.close();
 }
 
 void ActionSeqIndexer::loadRiverMPHF()
 {
-	auto file = std::fstream(riverMPHFPath, std::ios::in | std::ios::binary);
+	auto file = opt::fstream(riverMPHFPath, std::ios::in | std::ios::binary);
 	riverMPHF.load(file);
 	file.close();
 }

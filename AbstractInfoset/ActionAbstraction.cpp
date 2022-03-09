@@ -116,6 +116,21 @@ float ActionAbstraction::betToBetSize(
 	return float(bet - state.call) / (state.pot + state.call);
 }
 
+// Map the last action done in the given game state to an abstract action
+// assuming that 
+uint8_t ActionAbstraction::mapActionToAbcAction(const egn::GameState& state) const
+{
+	switch (state.action) {
 
+	case egn::FOLD:
+		return FOLD;
+
+	case egn::CALL:
+		return CALL;
+
+	case egn::RAISE:
+		return RAISE;
+	}
+}
 
 } // abc

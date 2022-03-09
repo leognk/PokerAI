@@ -71,7 +71,7 @@ void GroupedActionSeqs::build(
 
 void GroupedActionSeqs::save()
 {
-	auto file = std::fstream(filePath, std::ios::out | std::ios::binary);
+	auto file = opt::fstream(filePath, std::ios::out | std::ios::binary);
 
 	// Save the sizes of the vectors in seqs.
 	std::vector<size_t> seqsSizes;
@@ -98,7 +98,7 @@ void GroupedActionSeqs::save()
 
 void GroupedActionSeqs::load()
 {
-	auto file = std::fstream(filePath, std::ios::in | std::ios::binary);
+	auto file = opt::fstream(filePath, std::ios::in | std::ios::binary);
 
 	// Allocate memory for seqs.
 	std::vector<size_t> seqsSizes(egn::N_ROUNDS);

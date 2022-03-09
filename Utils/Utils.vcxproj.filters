@@ -51,6 +51,9 @@
     <ClInclude Include="VectorMemory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="io.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
