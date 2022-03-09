@@ -500,11 +500,11 @@ void BlueprintCalculator::averageSnapshots()
 				snapshotPath(snapshotId, r), std::ios::in | std::ios::binary);
 
 			// Add the snapshot's strategy to the total sum.
-			for (bckSize_t handIdx = 0; handIdx < strats.size(); ++handIdx) {
-				for (size_t seqIdx = 0; seqIdx < strats[0].size(); ++seqIdx) {
+			for (auto& handStrats : strats) {
+				for (auto& accStrat : handStrats) {
 					strat_t strat;
 					opt::loadVar(strat, snapshotFile);
-					strats[handIdx][seqIdx] += strat;
+					accStrat += strat;
 				}
 			}
 
@@ -522,7 +522,7 @@ void BlueprintCalculator::averageSnapshots()
 					handStrats[i] += handStrats[i - 1];
 				for (size_t i = seqIdx; i < seqIdx + nLegalActions; ++i)
 					handStrats[i] = (sumStrat_t)std::round((double)handStrats[i] / nSnapshots);
-				for (size_t i = seqIdx + 1; i < seqIdx + nLegalActions; ++i)
+				for (size_t i = seqIdx + nLegalActions - 1; i > seqIdx; --i)
 					handStrats[i] -= handStrats[i - 1];
 				seqIdx += nLegalActions;
 			}
@@ -532,9 +532,9 @@ void BlueprintCalculator::averageSnapshots()
 		auto file = opt::fstream(stratPath(r), std::ios::out | std::ios::binary);
 
 		// Write the average of the snapshots' strategies.
-		for (bckSize_t handIdx = 0; handIdx < strats.size(); ++handIdx) {
-			for (size_t seqIdx = 0; seqIdx < strats[0].size(); ++seqIdx) {
-				strat_t strat = (strat_t)strats[handIdx][gpSeqsInv.invSeqs[r][seqIdx]];
+		for (auto& handStrats : strats) {
+			for (size_t seqIdx = 0; seqIdx < handStrats.size(); ++seqIdx) {
+				strat_t strat = (strat_t)handStrats[gpSeqsInv.invSeqs[r][seqIdx]];
 				opt::saveVar(strat, file);
 			}
 		}
