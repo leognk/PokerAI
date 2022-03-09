@@ -133,9 +133,8 @@ int main()
 			prepareAbcInfo(abcInfo, dealer, actionSeq, handIdx);
 			const auto i = handIdxToRow[handIdx];
 			const auto j = handIdxToCol[handIdx];
-			const auto proba = blueprint.getProba(abcInfo, abcInfo.getActionId(actionSeq.back()));
-			const auto sum = blueprint.calculateSumProbas(abcInfo);
-			actionProbas[i][j] = (uint8_t)std::round(100.0 * proba / sum);
+			const auto probas = blueprint.calculateProbasPerc(abcInfo);
+			actionProbas[i][j] = probas[abcInfo.getActionId(actionSeq.back())];
 		}
 
 		opt::save2DVector(actionProbas, dir + actionSeqToStr(actionSeq) + ".bin");

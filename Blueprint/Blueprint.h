@@ -19,10 +19,10 @@ public:
 	void loadStrat();
 	void loadRegrets();
 
-	strat_t getProba(const abcInfo_t& abcInfo, uint8_t actionId);
-	regret_t getRegret(const abcInfo_t& abcInfo, uint8_t actionId);
+	strat_t getProba(const abcInfo_t& abcInfo, uint8_t actionId) const;
+	regret_t getRegret(const abcInfo_t& abcInfo, uint8_t actionId) const;
 
-	strat_t calculateSumProbas(const abcInfo_t& abcInfo);
+	std::vector<uint8_t> calculateProbasPerc(const abcInfo_t& abcInfo) const;
 
 	uint8_t chooseAction(const abcInfo_t& abcInfo);
 

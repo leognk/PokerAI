@@ -48,22 +48,14 @@ void Blueprint::loadRegrets()
 	file.close();
 }
 
-strat_t Blueprint::getProba(const abcInfo_t& abcInfo, uint8_t actionId)
+strat_t Blueprint::getProba(const abcInfo_t& abcInfo, uint8_t actionId) const
 {
 	return strat[abcInfo.roundIdx()][abcInfo.handIdx()][abcInfo.actionSeqIds[actionId]];
 }
 
-regret_t Blueprint::getRegret(const abcInfo_t& abcInfo, uint8_t actionId)
+regret_t Blueprint::getRegret(const abcInfo_t& abcInfo, uint8_t actionId) const
 {
 	return regrets[abcInfo.roundIdx()][abcInfo.handIdx()][abcInfo.actionSeqIds[actionId]];
-}
-
-strat_t Blueprint::calculateSumProbas(const abcInfo_t& abcInfo)
-{
-	strat_t sum = 0;
-	for (uint8_t a = 0; a < abcInfo.nActions(); ++a)
-		sum += getProba(abcInfo, a);
-	return sum;
 }
 
 void Blueprint::calculateCumProbas(const abcInfo_t& abcInfo)
@@ -72,12 +64,23 @@ void Blueprint::calculateCumProbas(const abcInfo_t& abcInfo)
 	cumProbas[0] = getProba(abcInfo, 0);
 	for (uint8_t a = 1; a < cumProbas.size(); ++a)
 		cumProbas[a] = cumProbas[a - 1] + getProba(abcInfo, a);
+}
 
-	// If all probas are null, the random choice will be uniformly distributed.
-	if (cumProbas.back() == 0) {
-		for (uint8_t i = 0; i < cumProbas.size(); ++i)
-			cumProbas[i] = i + 1;
-	}
+
+std::vector<uint8_t> Blueprint::calculateProbasPerc(const abcInfo_t& abcInfo) const
+{
+	// We apply the following weird procedure so that the sum of
+	// the probas will be exactly equal to 100, getting around
+	// rounding issues.
+	std::vector<uint8_t> probas(abcInfo.nActions());
+	probas[0] = getProba(abcInfo, 0);
+	for (uint8_t a = 1; a < probas.size(); ++a)
+		probas[a] = probas[a - 1] + getProba(abcInfo, a);
+	for (uint8_t a = 0; a < probas.size(); ++a)
+		probas[a] = (uint8_t)std::round(100.0 * probas[a] / probas.back());
+	for (uint8_t a = (uint8_t)probas.size() - 1; a > 0; --a)
+		probas[a] -= probas[a - 1];
+	return probas;
 }
 
 uint8_t Blueprint::chooseAction(const abcInfo_t& abcInfo)
