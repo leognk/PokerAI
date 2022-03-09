@@ -25,13 +25,13 @@ namespace bp {
 
 //#define MACRO_BLUEPRINT_NAME ORIGINAL_BLUEPRINT
 //#define MACRO_BLUEPRINT_NAME MEDIUM_BLUEPRINT
-//#define MACRO_BLUEPRINT_NAME SIMPLE_BLUEPRINT
-#define MACRO_BLUEPRINT_NAME TEST_BLUEPRINT
+#define MACRO_BLUEPRINT_NAME SIMPLE_BLUEPRINT
+//#define MACRO_BLUEPRINT_NAME TEST_BLUEPRINT
 
 //#define BLUEPRINT_BUILD_SIZE ORIGINAL_BLUEPRINT_BUILD
 //#define BLUEPRINT_BUILD_SIZE MEDIUM_BLUEPRINT_BUILD
-//#define BLUEPRINT_BUILD_SIZE SIMPLE_BLUEPRINT_BUILD
-#define BLUEPRINT_BUILD_SIZE TEST_BLUEPRINT_BUILD
+#define BLUEPRINT_BUILD_SIZE SIMPLE_BLUEPRINT_BUILD
+//#define BLUEPRINT_BUILD_SIZE TEST_BLUEPRINT_BUILD
 
 
 #if MACRO_BLUEPRINT_NAME == ORIGINAL_BLUEPRINT
@@ -281,9 +281,9 @@ static_assert(discountEndIter <= snapshotBeginIter);
 #elif BLUEPRINT_BUILD_SIZE == TEST_BLUEPRINT_BUILD
 
 
-static const std::string BLUEPRINT_BUILD_NAME = "TEST_BUILD_1637";
+static const std::string BLUEPRINT_BUILD_NAME = "TEST_BUILD_55";
 
-static const uint64_t nSnapshots = 1637; // 2.9e6 it -> 55 | 82e6 it -> 1637 // Pluribus: 54
+static const uint64_t nSnapshots = 55; // 2.9e6 it -> 55 | 82e6 it -> 1637 // Pluribus: 54
 
 static const uint64_t snapshotBeginIter = 200e3; // Pluribus: 3.2e9 (800 min)
 static const uint64_t snapshotPeriod = 50e3; // Pluribus: 800e6 (200 min)

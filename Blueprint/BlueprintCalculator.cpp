@@ -51,7 +51,7 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 	std::filesystem::create_directory(blueprintTmpDir());
 
 	// If a checkpoint file is found, resume from it.
-	auto checkpointFile = opt::fstream(checkpointPath(), std::ios::in | std::ios::binary);
+	auto checkpointFile = std::fstream(checkpointPath(), std::ios::in | std::ios::binary);
 	if (checkpointFile) {
 		// Verify that the constants are the same as the ones used in the checkpoint.
 		verifyConstants();
@@ -511,10 +511,21 @@ void BlueprintCalculator::averageSnapshots()
 			snapshotFile.close();
 		}
 
-		// Normalize the snapshots' strategies.
+		// Normalize the snapshots' strategies by dividing by nSnapshots.
+		// We apply the following weird procedure so that the sum of
+		// the strategy values will be exactly equal to sumStrat, getting around
+		// rounding issues.
 		for (auto& handStrats : strats) {
-			for (sumStrat_t& strat : handStrats)
-				strat = (sumStrat_t)std::round((double)strat / nSnapshots);
+			abc::GroupedActionSeqs::seqIdx_t seqIdx = 0;
+			for (const uint8_t nLegalActions : gpSeqs.lens[r]) {
+				for (size_t i = seqIdx + 1; i < seqIdx + nLegalActions; ++i)
+					handStrats[i] += handStrats[i - 1];
+				for (size_t i = seqIdx; i < seqIdx + nLegalActions; ++i)
+					handStrats[i] = (sumStrat_t)std::round((double)handStrats[i] / nSnapshots);
+				for (size_t i = seqIdx + 1; i < seqIdx + nLegalActions; ++i)
+					handStrats[i] -= handStrats[i - 1];
+				seqIdx += nLegalActions;
+			}
 		}
 
 		// Open the file.
