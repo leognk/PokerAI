@@ -36,7 +36,13 @@ public:
 	void setAction(uint8_t action, egn::GameState& state, uint8_t& nRaises);
 	void calculateLegalActions(const egn::GameState& state, uint8_t nRaises);
 
-	uint8_t mapActionToAbcAction(const egn::GameState& state) const;
+	template<class Rng>
+	uint8_t mapActionToAbcAction(
+		const egn::GameState& state,
+		const std::vector<float>& currBetSizes,
+		uint8_t beginRaiseId, uint8_t endRaiseId,
+		const float allinSize,
+		Rng& rng);
 
 	// Actions are indexed using the following order:
 	// 0: fold
@@ -50,7 +56,12 @@ private:
 	egn::chips betSizeToBet(const float betSize, const egn::GameState& state) const;
 	float betToBetSize(const egn::chips bet, const egn::GameState& state) const;
 
+	static float actionMappingFunction(const float a, const float b, const float x);
+
 	const betSizes_t* betSizes;
+
+	static opt::FastRandomChoice<8> betSizeRandChoice;
+	std::array<uint16_t, 2> betSizesCumWeights;
 
 }; // ActionAbstraction
 

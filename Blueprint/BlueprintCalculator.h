@@ -57,7 +57,7 @@ private:
 
 	typedef omp::XoroShiro128Plus Rng;
 
-	std::array<uint8_t, 2> buildPruneCumWeights();
+	std::array<uint16_t, 2> buildPruneCumWeights();
 
 	uint8_t nActions() const;
 	regret_t& getRegret(uint8_t actionId);
@@ -91,10 +91,10 @@ private:
 	bool verbose;
 
 	Rng rng;
-	static opt::FastRandomChoice<7> pruneRandChoice;
+	static opt::FastRandomChoice<8> pruneRandChoice;
 	static opt::FastRandomChoiceRNGRescale<16> actionRandChoice;
 	static const opt::FastRandomChoice<> cumWeightsRescaler;
-	const std::array<uint8_t, 2> pruneCumWeights;
+	const std::array<uint16_t, 2> pruneCumWeights;
 	std::vector<uint64_t> cumRegrets;
 
 	regrets_t regrets;

@@ -4,7 +4,7 @@ namespace bp {
 
 const std::string BlueprintCalculator::printSep(20, '_');
 
-opt::FastRandomChoice<7> BlueprintCalculator::pruneRandChoice;
+opt::FastRandomChoice<8> BlueprintCalculator::pruneRandChoice;
 opt::FastRandomChoiceRNGRescale<16> BlueprintCalculator::actionRandChoice;
 const opt::FastRandomChoice<> BlueprintCalculator::cumWeightsRescaler;
 
@@ -97,9 +97,9 @@ void BlueprintCalculator::oneIter()
 		printProgress();
 }
 
-std::array<uint8_t, 2> BlueprintCalculator::buildPruneCumWeights()
+std::array<uint16_t, 2> BlueprintCalculator::buildPruneCumWeights()
 {
-	std::array<uint8_t, 2> res = { pruneProbaPerc, 100 };
+	std::array<uint16_t, 2> res = { pruneProbaPerc, 100 };
 	pruneRandChoice.rescaleCumWeights(res);
 	return res;
 }

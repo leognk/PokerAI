@@ -2,9 +2,12 @@
 
 namespace abc {
 
+opt::FastRandomChoice<8> ActionAbstraction::betSizeRandChoice;
+
 ActionAbstraction::ActionAbstraction(
 	const betSizes_t& betSizes) :
-	betSizes(&betSizes)
+	betSizes(&betSizes),
+	betSizesCumWeights{ { 0, betSizeRandChoice.RANGE } }
 {
 }
 
@@ -116,9 +119,16 @@ float ActionAbstraction::betToBetSize(
 	return float(bet - state.call) / (state.pot + state.call);
 }
 
-// Map the last action done in the given game state to an abstract action
-// assuming that 
-uint8_t ActionAbstraction::mapActionToAbcAction(const egn::GameState& state) const
+// Map the last action done in the given game state to an abstract action.
+// Call it AFTER setting state's action and bet variables
+// and BEFORE calling state.nextState().
+template<class Rng>
+uint8_t ActionAbstraction::mapActionToAbcAction(
+	const egn::GameState& state,
+	const std::vector<float>& currBetSizes,
+	uint8_t beginRaiseId, uint8_t endRaiseId,
+	const float allinSize,
+	Rng& rng)
 {
 	switch (state.action) {
 
@@ -129,8 +139,44 @@ uint8_t ActionAbstraction::mapActionToAbcAction(const egn::GameState& state) con
 		return CALL;
 
 	case egn::RAISE:
-		return RAISE;
+
+		// Find the bet sizes sizeA and sizeB which frame sizeX.
+
+		const float sizeX = betToBetSize(state.bet, state);
+		float sizeA = currBetSizes[beginRaiseId];
+
+		if (sizeX <= sizeA) return RAISE + beginRaiseId;
+		else if (sizeX == allinSize) return ALLIN;
+
+		float sizeB;
+		uint8_t sizeBId = beginRaiseId + 1;
+		while (sizeBId < endRaiseId) {
+			sizeB = currBetSizes[sizeBId];
+			if (sizeX == sizeB) return RAISE + sizeBId;
+			else if (sizeX < sizeB) break;
+			sizeA = sizeB;
+			++sizeBId;
+		}
+		if (sizeBId == endRaiseId) sizeB = allinSize;
+
+		// Pick either sizeA or sizeB using the action mapping function
+		// which gives the probability of picking sizeA.
+
+		betSizesCumWeights[0] = (uint16_t)std::round(
+			actionMappingFunction(sizeA, sizeB, sizeX) * betSizeRandChoice.RANGE);
+
+		if (betSizeRandChoice(betSizesCumWeights, rng) == 0)
+			return RAISE + sizeBId - 1;
+		else if (sizeBId == endRaiseId)
+			return ALLIN;
+		else
+			return RAISE + sizeBId;
 	}
+}
+
+float ActionAbstraction::actionMappingFunction(const float a, const float b, const float x)
+{
+	return ((b - x) * (1 + a)) / ((b - a) * (1 + x));
 }
 
 } // abc
