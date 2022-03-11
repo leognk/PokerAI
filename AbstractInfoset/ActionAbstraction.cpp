@@ -132,11 +132,9 @@ uint8_t ActionAbstraction::mapActionToAbcAction(
 {
 	switch (state.action) {
 
-	case egn::FOLD:
-		return FOLD;
+	case egn::FOLD: return FOLD;
 
-	case egn::CALL:
-		return CALL;
+	case egn::CALL: return CALL;
 
 	case egn::RAISE:
 

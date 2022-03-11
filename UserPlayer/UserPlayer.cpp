@@ -4,7 +4,7 @@
 
 namespace opt {
 
-UserPlayer::UserPlayer(std::string separatorLine) :
+UserPlayer::UserPlayer(const std::string& separatorLine) :
 	mSeparatorLine(separatorLine)
 {
 }

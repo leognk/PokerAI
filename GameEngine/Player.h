@@ -12,6 +12,11 @@ public:
 	// Set GameState's action and bet member variables.
 	// (bet need to be set only for a raise)
 	virtual void act(GameState& state) = 0;
+
+	// Inform the player about the last action made by an opponent.
+	// Call it AFTER calling the opponent's act method and
+	// BEFORE calling state.nextState().
+	virtual void update(const GameState& state) {}
 };
 
 } // egn

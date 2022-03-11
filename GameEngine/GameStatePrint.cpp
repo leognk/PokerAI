@@ -105,7 +105,7 @@ uint8_t& GameStatePrint::nextActiveInGame(uint8_t& i) const
 
 std::ostream& GameStatePrint::printState(std::ostream& os) const
 {
-    os << "Round: " << round;
+    os << round;
     os << " | Board: " << Hand(boardCards);
     os << " | Pot: " << pot << std::endl << std::endl;
 

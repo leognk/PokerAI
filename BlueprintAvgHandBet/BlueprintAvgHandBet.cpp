@@ -41,12 +41,13 @@ int main()
 	double currDuration = 0;
 	uint64_t gameCount = 0;
 	while (currDuration < endDuration) {
-		abcInfo.startNewHand();
+		abcInfo.resetStakes();
+		abcInfo.startNewHand(true);
 		while (!abcInfo.state.finished) {
 			const auto round = abcInfo.roundIdx();
 			const auto handIdx = abcInfo.handIdx();
 			const uint8_t a = blueprint.chooseAction(abcInfo);
-			const egn::chips bet = abcInfo.nextStateWithBet(a);
+			const egn::chips bet = abcInfo.nextStateWithBet(a, true);
 			avgHandBet[round][handIdx] += (double)bet;
 			++updatesCount[round][handIdx];
 		}

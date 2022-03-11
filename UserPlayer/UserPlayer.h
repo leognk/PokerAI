@@ -10,7 +10,7 @@ namespace opt {
 class UserPlayer : public egn::Player
 {
 public:
-	UserPlayer(std::string separtorLine = "");
+	UserPlayer(const std::string& separatorLine = "");
 	void act(egn::GameState& state) override;
 
 private:
@@ -20,7 +20,7 @@ private:
 	egn::chips getInputRaise(egn::chips minRaise, egn::chips allin) const;
 	egn::chips getInputBet(const egn::GameState& state) const;
 
-	std::string mSeparatorLine;
+	const std::string mSeparatorLine;
 
 }; // UserPlayer
 

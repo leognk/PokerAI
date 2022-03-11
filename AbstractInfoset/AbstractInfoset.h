@@ -55,40 +55,46 @@ public:
 		return *this;
 	}
 
-	void startNewHand(uint8_t dealer0, bool dealRandomCards = true)
+	void resetStakes()
+	{
+		state.stakes = initialStakes;
+	}
+
+	void startNewHand(uint8_t dealer0, bool calculateStateId, bool dealRandomCards = true)
 	{
 		// Reset member variables.
 		nRaises = 0;
 		nPlayers = egn::MAX_PLAYERS;
 		roundActions.clear();
 
-		state.stakes = initialStakes;
 		state.startNewHand(dealer0, dealRandomCards);
 
-		calculateHandsIds();
 		actionAbc.calculateLegalActions(state, nRaises);
-		calculateActionSeqIds();
+		if (calculateStateId) {
+			calculateHandsIds();
+			calculateActionSeqIds();
+		}
 	}
 
-	void startNewHand(bool dealRandomCards = true)
+	void startNewHand(bool calculateStateId, bool dealRandomCards = true)
 	{
-		startNewHand(dealer, dealRandomCards);
+		startNewHand(dealer, calculateStateId, dealRandomCards);
 	}
 
-	void nextStateWithAction(uint8_t action)
+	void nextStateWithAction(uint8_t action, bool calculateStateId)
 	{
 		setAction(action);
-		goNextState();
+		goNextState(calculateStateId);
 	}
 
 	// actionId must be between 0 and nActions() excluded.
-	void nextState(uint8_t actionId)
+	void nextState(uint8_t actionId, bool calculateStateId)
 	{
-		nextStateWithAction(actionAbc.legalActions[actionId]);
+		nextStateWithAction(actionAbc.legalActions[actionId], calculateStateId);
 	}
 
 	// Same as nextState but also return the amount of the bet corresponding to actionId.
-	egn::chips nextStateWithBet(uint8_t actionId)
+	egn::chips nextStateWithBet(uint8_t actionId, bool calculateStateId)
 	{
 		setAction(actionAbc.legalActions[actionId]);
 
@@ -108,7 +114,7 @@ public:
 			throw std::runtime_error("Unknown action.");
 		}
 
-		goNextState();
+		goNextState(calculateStateId);
 		return bet;
 	}
 
@@ -171,7 +177,7 @@ protected:
 		roundActions.push_back(action);
 	}
 
-	void goNextState()
+	void goNextState(bool calculateStateId)
 	{
 		egn::Round oldRound = state.round;
 		state.nextState();
@@ -181,11 +187,11 @@ protected:
 			nRaises = 0;
 			nPlayers = state.nAlive;
 			roundActions.clear();
-			calculateHandsIds();
+			if (calculateStateId) calculateHandsIds();
 		}
 
 		actionAbc.calculateLegalActions(state, nRaises);
-		calculateActionSeqIds();
+		if (calculateStateId) calculateActionSeqIds();
 	}
 
 	void calculateHandsIds()

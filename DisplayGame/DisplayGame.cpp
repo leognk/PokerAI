@@ -1,48 +1,39 @@
 #include "../GameEngine/GameStatePrint.h"
 #include "../RandomAI/RandomAI.h"
 #include "../UserPlayer/UserPlayer.h"
-#include <iostream>
+#include "../Blueprint/BlueprintAI.h"
 
 int main()
 {
-    // Constants
+    const egn::chips ante = 0;
+    const egn::chips bigBlind = 100;
+
+    const uint8_t firstDealer = 0;
     const unsigned rngSeed = 1;
-    const egn::chips ante = 1, bigBlind = 10;
-    const egn::chips stake = 1000;
-    uint8_t dealer = 0;
-    const double foldProba = 1. / 8;
-    const double callProba = 6. / 8;
-    const bool playToEnd = false;
 
+    const std::string separatorLine = std::string(50, '_') + "\n\n";
+    
+    // Stakes
+    std::array<egn::chips, egn::MAX_PLAYERS> stakes = { 10000, 10000, 10000 };
 
-    // Define game variables.
-    std::array<egn::chips, egn::MAX_PLAYERS> stakes{
-        stake, stake, stake, stake, stake, stake };
-    std::string separatorLine = std::string(50, '_') + "\n\n";
+    // Random AI
+    opt::RandomAI randomAI(1.0 / 8, 6.0 / 8, rngSeed);
+
+    // Blueprint AI
+    
+
+    // User player
     opt::UserPlayer user(separatorLine);
-    opt::RandomAI randomAI(foldProba, callProba, rngSeed);
-    std::array<egn::Player*, egn::MAX_PLAYERS> players{
-        &user, &randomAI, &randomAI, &randomAI, &randomAI, &randomAI };
-    egn::GameStatePrint state(ante, bigBlind, stakes, rngSeed, separatorLine);
+
+    // All players
+    std::vector<egn::Player*> players = { &randomAI, &randomAI, &user };
+
 
     // Play until only one player remains.
-    if (playToEnd) {
-        uint8_t prevDealer = 0;
-        do {
-            state.startNewHand(dealer);
-            state.printState(std::cout);
-            while (!state.finished) {
-                players[state.actingPlayer]->act(state);
-                state.nextState();
-                state.printState(std::cout);
-            }
-            state.printRewards(std::cout);
-            prevDealer = dealer;
-        } while (prevDealer != state.nextActive(dealer));
-    }
-
-    // Play one hand.
-    else {
+    egn::GameStatePrint state(ante, bigBlind, stakes, rngSeed, separatorLine);
+    uint8_t dealer = firstDealer;
+    uint8_t prevDealer;
+    do {
         state.startNewHand(dealer);
         state.printState(std::cout);
         while (!state.finished) {
@@ -51,5 +42,6 @@ int main()
             state.printState(std::cout);
         }
         state.printRewards(std::cout);
-    }
+        prevDealer = dealer;
+    } while (prevDealer != state.nextActive(dealer));
 }

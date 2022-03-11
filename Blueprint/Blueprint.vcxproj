@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BlueprintAI.h" />
     <ClInclude Include="BlueprintCalculator.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Blueprint.h" />

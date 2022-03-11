@@ -168,7 +168,8 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 	lastChild.clear();
 	expVals.clear();
 
-	abcInfo.startNewHand();
+	abcInfo.resetStakes();
+	abcInfo.startNewHand(true);
 
 	// Do a DFS.
 	while (true) {
@@ -219,7 +220,7 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 			// Go to the next node.
 			const uint8_t a = stack.back();
 			incrNodesCount(a);
-			abcInfo.nextState(a);
+			abcInfo.nextState(a, true);
 			stack.pop_back();
 			lastChild.push_back(a == 0);
 		}
@@ -233,7 +234,7 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 				// Go to the next node.
 				const uint8_t a = nActions() - 1;
 				incrNodesCount(a);
-				abcInfo.nextState(a);
+				abcInfo.nextState(a, true);
 				// There will always be at least two legal actions, so this is never the last.
 				lastChild.push_back(false);
 			}
@@ -242,7 +243,7 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 				calculateCumRegrets();
 #pragma warning(suppress: 4244)
 				// Go to the next node.
-				abcInfo.nextState(actionRandChoice(cumRegrets, rng));
+				abcInfo.nextState(actionRandChoice(cumRegrets, rng), true);
 			}
 		}
 	}
@@ -262,7 +263,8 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 	// visited will only deal with children of nodes where traverser plays.
 	visited.clear();
 
-	abcInfo.startNewHand();
+	abcInfo.resetStakes();
+	abcInfo.startNewHand(true);
 
 	// Do a DFS.
 	while (true) {
@@ -317,7 +319,7 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 			// Go to the next node.
 			const uint8_t a = stack.back();
 			incrNodesCount(a);
-			abcInfo.nextState(a);
+			abcInfo.nextState(a, true);
 			stack.pop_back();
 			lastChild.push_back(firstAction.back());
 			firstAction.pop_back();
@@ -345,7 +347,7 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 				// Go to the next node.
 				const uint8_t a = stack.back();
 				incrNodesCount(a);
-				abcInfo.nextState(a);
+				abcInfo.nextState(a, true);
 				stack.pop_back();
 				lastChild.push_back(firstAction.back());
 				firstAction.pop_back();
@@ -355,7 +357,7 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 				calculateCumRegrets();
 #pragma warning(suppress: 4244)
 				// Go to the next node.
-				abcInfo.nextState(actionRandChoice(cumRegrets, rng));
+				abcInfo.nextState(actionRandChoice(cumRegrets, rng), true);
 			}
 		}
 	}
