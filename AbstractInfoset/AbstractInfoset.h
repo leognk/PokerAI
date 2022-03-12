@@ -118,6 +118,20 @@ public:
 		return bet;
 	}
 
+	void updateStateIds()
+	{
+		calculateHandIdx(state.actingPlayer);
+		calculateActionSeqIds();
+	}
+
+	// Map the last action done in the given game state to an abstract action
+	// and return it (not the idx).
+	uint8_t mapActionToAbcAction(
+		const egn::GameState& state, ActionAbstraction::Rng& rng)
+	{
+		return actionAbc.mapActionToAbcAction(state, nRaises, rng);
+	}
+
 	// The pair composed of an abstract infoset and
 	// one of its legal action is identified by:
 	// - the current round.
@@ -198,9 +212,14 @@ protected:
 	{
 		uint8_t i = state.firstAlive;
 		do {
-			handsIds[i] = handIndexer.handIndex(
-				state.round, state.hands[i].data(), state.boardCards.data());
+			calculateHandIdx(i);
 		} while (state.nextAlive(i) != state.firstAlive);
+	}
+
+	void calculateHandIdx(const uint8_t player)
+	{
+		handsIds[player] = handIndexer.handIndex(
+			state.round, state.hands[player].data(), state.boardCards.data());
 	}
 
 	void calculateActionSeqIds()

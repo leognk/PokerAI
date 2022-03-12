@@ -12,29 +12,18 @@
 namespace bp {
 
 
-#define ORIGINAL_BLUEPRINT 3
-#define MEDIUM_BLUEPRINT 2
-#define SIMPLE_BLUEPRINT 1
-#define TEST_BLUEPRINT 0
+//#define BP_GAME_NAMESPACE original
+//#define BP_GAME_NAMESPACE medium
+#define BP_GAME_NAMESPACE simple
+//#define BP_GAME_NAMESPACE test
 
-#define ORIGINAL_BLUEPRINT_BUILD 3
-#define MEDIUM_BLUEPRINT_BUILD 2
-#define SIMPLE_BLUEPRINT_BUILD 1
-#define TEST_BLUEPRINT_BUILD 0
-
-
-//#define MACRO_BLUEPRINT_NAME ORIGINAL_BLUEPRINT
-//#define MACRO_BLUEPRINT_NAME MEDIUM_BLUEPRINT
-#define MACRO_BLUEPRINT_NAME SIMPLE_BLUEPRINT
-//#define MACRO_BLUEPRINT_NAME TEST_BLUEPRINT
-
-//#define BLUEPRINT_BUILD_SIZE ORIGINAL_BLUEPRINT_BUILD
-//#define BLUEPRINT_BUILD_SIZE MEDIUM_BLUEPRINT_BUILD
-#define BLUEPRINT_BUILD_SIZE SIMPLE_BLUEPRINT_BUILD
-//#define BLUEPRINT_BUILD_SIZE TEST_BLUEPRINT_BUILD
+//#define BP_BUILD_NAMESPACE original
+//#define BP_BUILD_NAMESPACE medium
+#define BP_BUILD_NAMESPACE simple
+//#define BP_BUILD_NAMESPACE test
 
 
-#if MACRO_BLUEPRINT_NAME == ORIGINAL_BLUEPRINT
+namespace original {
 
 
 static const std::string BLUEPRINT_GAME_NAME = "ORIGINAL_BLUEPRINT";
@@ -74,7 +63,10 @@ static const abc::betSizes_t BET_SIZES = {
 };
 
 
-#elif MACRO_BLUEPRINT_NAME == MEDIUM_BLUEPRINT
+} // original
+
+
+namespace medium {
 
 
 static const std::string BLUEPRINT_GAME_NAME = "MEDIUM_BLUEPRINT";
@@ -114,7 +106,10 @@ static const abc::betSizes_t BET_SIZES = {
 };
 
 
-#elif MACRO_BLUEPRINT_NAME == SIMPLE_BLUEPRINT
+} // medium
+
+
+namespace simple {
 
 
 static const std::string BLUEPRINT_GAME_NAME = "SIMPLE_BLUEPRINT";
@@ -151,7 +146,10 @@ static const abc::betSizes_t BET_SIZES = {
 };
 
 
-#elif MACRO_BLUEPRINT_NAME == TEST_BLUEPRINT
+} // simple
+
+
+namespace test {
 
 
 static const std::string BLUEPRINT_GAME_NAME = "TEST_BLUEPRINT";
@@ -184,7 +182,7 @@ static const abc::betSizes_t BET_SIZES = {
 };
 
 
-#endif // MACRO_BLUEPRINT_NAME
+} // test
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -192,7 +190,7 @@ static const abc::betSizes_t BET_SIZES = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-#if BLUEPRINT_BUILD_SIZE == ORIGINAL_BLUEPRINT_BUILD
+namespace original {
 
 
 static const std::string BLUEPRINT_BUILD_NAME = "ORIGINAL_BUILD";
@@ -220,7 +218,10 @@ static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotP
 static_assert(discountEndIter <= snapshotBeginIter);
 
 
-#elif BLUEPRINT_BUILD_SIZE == MEDIUM_BLUEPRINT_BUILD
+} // original
+
+
+namespace medium {
 
 
 static const std::string BLUEPRINT_BUILD_NAME = "MEDIUM_BUILD";
@@ -248,7 +249,10 @@ static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotP
 static_assert(discountEndIter <= snapshotBeginIter);
 
 
-#elif BLUEPRINT_BUILD_SIZE == SIMPLE_BLUEPRINT_BUILD
+} // medium
+
+
+namespace simple {
 
 
 static const std::string BLUEPRINT_BUILD_NAME = "SIMPLE_BUILD";
@@ -276,7 +280,10 @@ static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotP
 static_assert(discountEndIter <= snapshotBeginIter);
 
 
-#elif BLUEPRINT_BUILD_SIZE == TEST_BLUEPRINT_BUILD
+} // simple
+
+
+namespace test {
 
 
 static const std::string BLUEPRINT_BUILD_NAME = "TEST_BUILD";
@@ -304,7 +311,51 @@ static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotP
 static_assert(discountEndIter <= snapshotBeginIter);
 
 
-#endif // BLUEPRINT_BUILD_SIZE
+} // test
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+static const std::string BLUEPRINT_GAME_NAME = BP_GAME_NAMESPACE::BLUEPRINT_GAME_NAME;
+
+typedef bckSize_t bckSize_t;
+static const bckSize_t N_BCK_PREFLOP = BP_GAME_NAMESPACE::N_BCK_PREFLOP;
+static const bckSize_t N_BCK_FLOP = BP_GAME_NAMESPACE::N_BCK_FLOP;
+static const bckSize_t N_BCK_TURN = BP_GAME_NAMESPACE::N_BCK_TURN;
+static const bckSize_t N_BCK_RIVER = BP_GAME_NAMESPACE::N_BCK_RIVER;
+
+static const uint8_t MAX_PLAYERS = BP_GAME_NAMESPACE::MAX_PLAYERS;
+
+static const egn::chips ANTE = BP_GAME_NAMESPACE::ANTE;
+static const egn::chips BIG_BLIND = BP_GAME_NAMESPACE::BIG_BLIND;
+static const egn::chips INITIAL_STAKE = BP_GAME_NAMESPACE::INITIAL_STAKE;
+
+static const abc::betSizes_t BET_SIZES = BP_GAME_NAMESPACE::BET_SIZES;
+
+
+static const std::string BLUEPRINT_BUILD_NAME = BP_BUILD_NAMESPACE::BLUEPRINT_BUILD_NAME;
+
+static const uint64_t nSnapshots = BP_BUILD_NAMESPACE::nSnapshots;
+
+static const uint64_t snapshotBeginIter = BP_BUILD_NAMESPACE::snapshotBeginIter;
+static const uint64_t snapshotPeriod = BP_BUILD_NAMESPACE::snapshotPeriod;
+
+static const uint64_t discountEndIter = BP_BUILD_NAMESPACE::discountEndIter;
+static const uint64_t discountPeriod = BP_BUILD_NAMESPACE::discountPeriod;
+
+static const uint64_t pruneBeginIter = BP_BUILD_NAMESPACE::pruneBeginIter;
+static const uint8_t pruneProbaPerc = BP_BUILD_NAMESPACE::pruneProbaPerc;
+static const int32_t pruneThreshold = BP_BUILD_NAMESPACE::pruneThreshold;
+static const int32_t minRegret = BP_BUILD_NAMESPACE::minRegret;
+static const int32_t maxRegret = BP_BUILD_NAMESPACE::maxRegret;
+
+static const uint64_t checkpointPeriod = BP_BUILD_NAMESPACE::checkpointPeriod;
+static const uint64_t printPeriod = BP_BUILD_NAMESPACE::printPeriod;
+
+static const uint64_t endIter = BP_BUILD_NAMESPACE::endIter;
 
 
 static std::string blueprintName(const std::string& blueprintGameName, const std::string& blueprintBuildName)
@@ -318,7 +369,8 @@ static std::string blueprintName()
 }
 
 
-}
+} // bp
+
 
 #pragma warning(pop)
 

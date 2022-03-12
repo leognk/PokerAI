@@ -49,25 +49,26 @@ void ActionAbstraction::calculateLegalActions(
 		return;
 	}
 
+	const std::vector<float>& currBetSizes = (*betSizes)[state.round][nRaises];
+
 	// Calculate beginRaiseId and endRaiseId.
 	// Legal bet size ids will be between
 	// beginRaiseId included and endRaiseId excluded.
 
-	uint8_t beginRaiseId = 0;
-#pragma warning (suppress: 4267)
-	uint8_t endRaiseId = (*betSizes)[state.round][nRaises].size();
+	beginRaiseId = 0;
+	endRaiseId = (uint8_t)currBetSizes.size();
 
 	// Find the minimum idx for which
 	// the corresponding bet value >= minRaise.
-	const float minRaiseSize = betToBetSize(state.minRaise, state);
-	while ((*betSizes)[state.round][nRaises][beginRaiseId] < minRaiseSize)
+	minRaiseSize = betToBetSize(state.minRaise, state);
+	while (currBetSizes[beginRaiseId] < minRaiseSize)
 		if (++beginRaiseId == endRaiseId) break;
 
 	if (beginRaiseId != endRaiseId) {
 		// Find the maximum idx for which
 		// the previous corresponding bet value < allin.
-		const float allinSize = betToBetSize(state.allin, state);
-		while ((*betSizes)[state.round][nRaises][endRaiseId - 1] >= allinSize)
+		allinSize = betToBetSize(state.allin, state);
+		while (currBetSizes[endRaiseId - 1] >= allinSize)
 			if (--endRaiseId == beginRaiseId) break;
 	}
 
@@ -120,15 +121,10 @@ float ActionAbstraction::betToBetSize(
 }
 
 // Map the last action done in the given game state to an abstract action.
-// Call it AFTER setting state's action and bet variables
-// and BEFORE calling state.nextState().
-template<class Rng>
+// Call it AFTER calling calculateLegalActions and setting state's action
+// and bet variables and BEFORE calling state.nextState().
 uint8_t ActionAbstraction::mapActionToAbcAction(
-	const egn::GameState& state,
-	const std::vector<float>& currBetSizes,
-	uint8_t beginRaiseId, uint8_t endRaiseId,
-	const float allinSize,
-	Rng& rng)
+	const egn::GameState& state, uint8_t nRaises, Rng& rng)
 {
 	switch (state.action) {
 
@@ -137,6 +133,8 @@ uint8_t ActionAbstraction::mapActionToAbcAction(
 	case egn::CALL: return CALL;
 
 	case egn::RAISE:
+
+		const std::vector<float>& currBetSizes = (*betSizes)[state.round][nRaises];
 
 		// Find the bet sizes sizeA and sizeB which frame sizeX.
 

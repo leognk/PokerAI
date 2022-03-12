@@ -24,6 +24,9 @@ inline std::string abcActionToStr(uint8_t a)
 class ActionAbstraction
 {
 public:
+
+	typedef omp::XoroShiro128Plus Rng;
+
 	// betSizes is the available bet sizes with action abstraction
 	// expressed in terms of fraction of the pot.
 	// shape: n_rounds x n_raises_in_round x n_possible_bet_sizes
@@ -36,13 +39,8 @@ public:
 	void setAction(uint8_t action, egn::GameState& state, uint8_t& nRaises);
 	void calculateLegalActions(const egn::GameState& state, uint8_t nRaises);
 
-	template<class Rng>
 	uint8_t mapActionToAbcAction(
-		const egn::GameState& state,
-		const std::vector<float>& currBetSizes,
-		uint8_t beginRaiseId, uint8_t endRaiseId,
-		const float allinSize,
-		Rng& rng);
+		const egn::GameState& state, uint8_t nRaises, Rng& rng);
 
 	// Actions are indexed using the following order:
 	// 0: fold
@@ -53,12 +51,16 @@ public:
 	std::vector<uint8_t> legalActions;
 
 private:
+
 	egn::chips betSizeToBet(const float betSize, const egn::GameState& state) const;
 	float betToBetSize(const egn::chips bet, const egn::GameState& state) const;
 
 	static float actionMappingFunction(const float a, const float b, const float x);
 
 	const betSizes_t* betSizes;
+
+	uint8_t beginRaiseId, endRaiseId;
+	float minRaiseSize, allinSize;
 
 	static opt::FastRandomChoice<8> betSizeRandChoice;
 	std::array<uint16_t, 2> betSizesCumWeights;

@@ -9,6 +9,10 @@ namespace egn {
 class Player
 {
 public:
+	// Inform the player that a new hand will start.
+	// Call it AFTER calling state.startNewHand().
+	virtual void reset(const GameState& state) {}
+
 	// Set GameState's action and bet member variables.
 	// (bet need to be set only for a raise)
 	virtual void act(GameState& state) = 0;

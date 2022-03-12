@@ -5,6 +5,8 @@
 
 int main()
 {
+    const uint8_t maxPlayers = 3;
+
     const egn::chips ante = 0;
     const egn::chips bigBlind = 100;
 
@@ -20,12 +22,16 @@ int main()
     opt::RandomAI randomAI(1.0 / 8, 6.0 / 8, rngSeed);
 
     // Blueprint AI
-    
+    bp::Blueprint blueprint("SIMPLE_BLUEPRINT", "MEDIUM_BUILD", rngSeed);
+    blueprint.loadStrat();
+    bp::BlueprintAI<uint8_t, 5, 5, 5, 5>(
+        maxPlayers, ante, bigBlind, 10000, , "SIMPLE_BLUEPRINT", &blueprint, rngSeed);
 
     // User player
     opt::UserPlayer user(separatorLine);
 
     // All players
+    std::vector<egn::Player*> uniquePlayers = { &randomAI, &user };
     std::vector<egn::Player*> players = { &randomAI, &randomAI, &user };
 
 
@@ -35,9 +41,15 @@ int main()
     uint8_t prevDealer;
     do {
         state.startNewHand(dealer);
+        for (const auto& p : uniquePlayers)
+            p->reset(state);
         state.printState(std::cout);
         while (!state.finished) {
             players[state.actingPlayer]->act(state);
+            for (const auto& p : uniquePlayers) {
+                if (p != players[state.actingPlayer])
+                    p->update(state);
+            }
             state.nextState();
             state.printState(std::cout);
         }
