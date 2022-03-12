@@ -11,7 +11,7 @@ int main()
     const egn::chips bigBlind = 100;
 
     const uint8_t firstDealer = 0;
-    const unsigned rngSeed = 1;
+    const unsigned rngSeed = 3;
 
     const std::string separatorLine = std::string(50, '_') + "\n\n";
     
@@ -35,8 +35,8 @@ int main()
     opt::UserPlayer user(separatorLine);
 
     // All players
-    const std::vector<egn::Player*> uniquePlayers = { &randomAI, &user };
-    const std::vector<egn::Player*> players = { &randomAI, &randomAI, &user };
+    const std::vector<egn::Player*> uniquePlayers = { &randomAI, &blueprintAI, &user };
+    const std::vector<egn::Player*> players = { &randomAI, &blueprintAI, &user };
 
 
     // Play until only one player remains.

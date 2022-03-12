@@ -122,6 +122,12 @@ void GameState::setBoardCards(const Hand& boardCards0)
     boardCards = boardCards0.getArr<omp::BOARD_CARDS>();
 }
 
+void GameState::setBoardCards(const uint8_t boardCards0[])
+{
+    for (uint8_t i = 0; i < omp::BOARD_CARDS; ++i)
+        boardCards[i] = boardCards0[i];
+}
+
 void GameState::setRandomBoardCards()
 {
     //ZoneScoped;

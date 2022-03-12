@@ -29,7 +29,7 @@ public:
 		egn::chips initialStake,
 		const abc::betSizes_t& betSizes,
 		const std::string& blueprintGameName,
-		const Blueprint* blueprint,
+		Blueprint* blueprint,
 		unsigned rngSeed = 0) :
 
 		abcInfo(
@@ -43,7 +43,7 @@ public:
 
 		blueprint(blueprint),
 
-		rng{ (!rngSeed) ? std::random_device{}() : rngSeed },
+		rng{ (!rngSeed) ? std::random_device{}() : rngSeed }
 	{
 	}
 
@@ -76,7 +76,7 @@ public:
 
 	void update(const egn::GameState& state) override
 	{
-		const uint8_t actionId = abcInfo.actionAbc.mapActionToAbcAction(state, rng);
+		const uint8_t actionId = abcInfo.mapActionToAbcAction(state, rng);
 		abcInfo.nextStateWithAction(actionId, false);
 	}
 

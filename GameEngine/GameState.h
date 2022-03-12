@@ -117,6 +117,7 @@ public:
 	void setRandomHoleCards(uint8_t player);
 	void setRandomHoleCards(); // Set random cards for every player.
 	void setBoardCards(const Hand& boardCards0);
+	void setBoardCards(const uint8_t boardCards0[]);
 	void setRandomBoardCards();
 
 	// NB: The game could have finished if there was
