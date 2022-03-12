@@ -141,6 +141,8 @@ public:
 	void saveRng(std::fstream& file) const;
 	void loadRng(std::fstream& file);
 
+	// Stakes at the beginning of the hand.
+	std::array<chips, MAX_PLAYERS> initialStakes{};
 	std::array<chips, MAX_PLAYERS> stakes{};
 	std::array<std::array<uint8_t, omp::HOLE_CARDS>,
 		MAX_PLAYERS> hands;
@@ -217,9 +219,7 @@ protected:
 	uint64_t usedCardsMask;
 
 	chips mAnte, mSB, mBB;
-
-	// Stakes at the beginning of the hand.
-	std::array<chips, MAX_PLAYERS> mInitialStakes{};
+	
 	// Acted on the current round.
 	std::array<bool, MAX_PLAYERS> mActed{};
 

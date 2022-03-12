@@ -142,7 +142,7 @@ uint8_t ActionAbstraction::mapActionToAbcAction(
 		float sizeA = currBetSizes[beginRaiseId];
 
 		if (sizeX <= sizeA) return RAISE + beginRaiseId;
-		else if (sizeX == allinSize) return ALLIN;
+		else if (sizeX >= allinSize) return ALLIN;
 
 		float sizeB;
 		uint8_t sizeBId = beginRaiseId + 1;

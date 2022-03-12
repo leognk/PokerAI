@@ -7,12 +7,12 @@
 namespace bp {
 
 #define BLUEPRINT_AI_BUILDER(bpGameName, bpBuildName, \
-	maxPlayers, ante, bigBlind, initialStake, blueprint, rngSeed) \
+	ante, bigBlind, initialStake, blueprint, rngSeed) \
 	bp::BlueprintAI< \
 		bpGameName::bckSize_t, \
 		bpGameName::N_BCK_PREFLOP,bpGameName::N_BCK_FLOP, \
 		bpGameName::N_BCK_TURN, bpGameName::N_BCK_RIVER>( \
-			maxPlayers, ante, bigBlind, initialStake, \
+			bpGameName::MAX_PLAYERS, ante, bigBlind, initialStake, \
 			bpGameName::BET_SIZES, bpGameName::BLUEPRINT_GAME_NAME, \
 			blueprint, rngSeed)
 
@@ -57,9 +57,15 @@ public:
 		abcInfo.state.setBoardCards(state.boardCards.data());
 
 		// Set abcInfo's stakes.
-		abcInfo.state.stakes = state.stakes;
+		abcInfo.state.stakes = state.initialStakes;
 
 		abcInfo.startNewHand(state.dealer, false, false);
+
+		// Set abcInfo to a state with nAlive players.
+		if (abcInfo.maxPlayers < state.nAlive)
+			throw std::runtime_error("Number of players greater than the maximum.");
+		for (uint8_t i = state.nAlive; i < abcInfo.maxPlayers; ++i)
+			abcInfo.nextStateWithAction(abc::FOLD, false);
 	}
 
 	void act(egn::GameState& state) override
@@ -70,14 +76,22 @@ public:
 		
 		// Set state's action.
 		state.action = abcInfo.state.action;
-		if (state.action == egn::RAISE)
-			state.bet = abcInfo.state.bet;
+		if (state.action == egn::RAISE) {
+			// We clip the bet between minRaise and allin.
+			// It might have gone out of the limits because
+			// the state in abcInfo is different than the real
+			// game state.
+			egn::chips bet = abcInfo.state.bet;
+			if (bet < state.minRaise) bet = state.minRaise;
+			else if (bet > state.allin) bet = state.allin;
+			state.bet = bet;
+		}
 	}
 
 	void update(const egn::GameState& state) override
 	{
-		const uint8_t actionId = abcInfo.mapActionToAbcAction(state, rng);
-		abcInfo.nextStateWithAction(actionId, false);
+		const uint8_t action = abcInfo.mapActionToAbcAction(state, rng);
+		abcInfo.nextStateWithAction(action, false);
 	}
 
 private:

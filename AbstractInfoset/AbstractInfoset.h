@@ -28,6 +28,7 @@ public:
 		const std::string& actionSeqIndexerName,
 		unsigned rngSeed) :
 
+		maxPlayers(maxPlayers),
 		dealer(maxPlayers - 1),
 		state(ante, bigBlind, {}, rngSeed),
 		actionAbc(betSizes),
@@ -179,6 +180,7 @@ public:
 		throw std::runtime_error("Action was not found in legalActions.");
 	}
 
+	const uint8_t maxPlayers;
 	egn::GameState state;
 	abc::ActionAbstraction actionAbc;
 

@@ -56,7 +56,7 @@ void GameState::startNewHand(uint8_t dealerIdx, bool dealRandomCards)
 
 void GameState::resetPlayers()
 {
-    mInitialStakes = stakes;
+    initialStakes = stakes;
 
     mAlive = 0;
     mActing = 0;
@@ -653,7 +653,7 @@ omp::Hand GameState::getPlayerHand(uint8_t i) const
 
 dchips GameState::reward(uint8_t i) const
 {
-    return dchips(stakes[i]) - dchips(mInitialStakes[i]);
+    return dchips(stakes[i]) - dchips(initialStakes[i]);
 }
 
 void GameState::saveRng(std::fstream& file) const
