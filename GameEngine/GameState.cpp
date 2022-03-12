@@ -36,7 +36,7 @@ void GameState::setBigBlind(chips bigBlind)
 
 void GameState::startNewHand(uint8_t dealerIdx, bool dealRandomCards)
 {
-    mDealer = dealerIdx;
+    dealer = dealerIdx;
     round = PREFLOP;
     finished = false;
     pot = 0;
@@ -74,7 +74,7 @@ void GameState::resetPlayers()
 
     // The first acting player after the preflop is always
     // the player following the dealer.
-    firstAlive = mDealer;
+    firstAlive = dealer;
     mFirstActing = nextAlive(firstAlive);
 }
 

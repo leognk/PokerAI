@@ -180,6 +180,8 @@ public:
 	// Whether the hand is finished.
 	bool finished;
 
+	uint8_t dealer;
+
 	// To loop over alive players, ie. players who were dealt cards and did not fold.
 	uint8_t firstAlive;
 	uint8_t nAlive;
@@ -236,7 +238,6 @@ protected:
 	uint8_t mFirstActing;
 	uint8_t mNActing;
 
-	uint8_t mDealer;
 	// Current number of chips to call (counting from the start of the hand)
 	chips mToCall;
 	// Similar to mToCall, but it can be different at the beginning

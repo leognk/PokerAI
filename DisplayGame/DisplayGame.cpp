@@ -16,23 +16,27 @@ int main()
     const std::string separatorLine = std::string(50, '_') + "\n\n";
     
     // Stakes
-    std::array<egn::chips, egn::MAX_PLAYERS> stakes = { 10000, 10000, 10000 };
+    const std::array<egn::chips, egn::MAX_PLAYERS> stakes = { 10000, 10000, 10000 };
 
     // Random AI
     opt::RandomAI randomAI(1.0 / 8, 6.0 / 8, rngSeed);
 
     // Blueprint AI
-    bp::Blueprint blueprint("SIMPLE_BLUEPRINT", "MEDIUM_BUILD", rngSeed);
+    bp::Blueprint blueprint(
+        bp::simple::BLUEPRINT_GAME_NAME,
+        bp::medium::BLUEPRINT_BUILD_NAME,
+        rngSeed);
     blueprint.loadStrat();
-    bp::BlueprintAI<uint8_t, 5, 5, 5, 5>(
-        maxPlayers, ante, bigBlind, 10000, , "SIMPLE_BLUEPRINT", &blueprint, rngSeed);
+    auto blueprintAI = BLUEPRINT_AI_BUILDER(
+        bp::simple, bp::medium,
+        maxPlayers, ante, bigBlind, 10000, &blueprint, rngSeed);
 
     // User player
     opt::UserPlayer user(separatorLine);
 
     // All players
-    std::vector<egn::Player*> uniquePlayers = { &randomAI, &user };
-    std::vector<egn::Player*> players = { &randomAI, &randomAI, &user };
+    const std::vector<egn::Player*> uniquePlayers = { &randomAI, &user };
+    const std::vector<egn::Player*> players = { &randomAI, &randomAI, &user };
 
 
     // Play until only one player remains.
@@ -40,6 +44,7 @@ int main()
     uint8_t dealer = firstDealer;
     uint8_t prevDealer;
     do {
+        state.stakes = stakes;
         state.startNewHand(dealer);
         for (const auto& p : uniquePlayers)
             p->reset(state);

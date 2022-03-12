@@ -6,6 +6,16 @@
 
 namespace bp {
 
+#define BLUEPRINT_AI_BUILDER(bpGameName, bpBuildName, \
+	maxPlayers, ante, bigBlind, initialStake, blueprint, rngSeed) \
+	bp::BlueprintAI< \
+		bpGameName::bckSize_t, \
+		bpGameName::N_BCK_PREFLOP,bpGameName::N_BCK_FLOP, \
+		bpGameName::N_BCK_TURN, bpGameName::N_BCK_RIVER>( \
+			maxPlayers, ante, bigBlind, initialStake, \
+			bpGameName::BET_SIZES, bpGameName::BLUEPRINT_GAME_NAME, \
+			blueprint, rngSeed)
+
 template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
 class BlueprintAI : public egn::Player
 {
@@ -39,7 +49,17 @@ public:
 
 	void reset(const egn::GameState& state) override
 	{
+		// Set abcInfo's cards.
+		uint8_t i = state.firstAlive;
+		do {
+			abcInfo.state.setHoleCards(i, state.hands[i].data());
+		} while (state.nextAlive(i) != state.firstAlive);
+		abcInfo.state.setBoardCards(state.boardCards.data());
 
+		// Set abcInfo's stakes.
+		abcInfo.state.stakes = state.stakes;
+
+		abcInfo.startNewHand(state.dealer, false, false);
 	}
 
 	void act(egn::GameState& state) override

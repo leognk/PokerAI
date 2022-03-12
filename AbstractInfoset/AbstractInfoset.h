@@ -64,7 +64,6 @@ public:
 	{
 		// Reset member variables.
 		nRaises = 0;
-		nPlayers = egn::MAX_PLAYERS;
 		roundActions.clear();
 
 		state.startNewHand(dealer0, dealRandomCards);
