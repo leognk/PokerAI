@@ -168,7 +168,6 @@ void BlueprintCalculator::traverseMCCFR(uint8_t traverser)
 	lastChild.clear();
 	expVals.clear();
 
-	abcInfo.resetStakes();
 	abcInfo.startNewHand(true);
 
 	// Do a DFS.
@@ -263,7 +262,6 @@ void BlueprintCalculator::traverseMCCFRP(uint8_t traverser)
 	// visited will only deal with children of nodes where traverser plays.
 	visited.clear();
 
-	abcInfo.resetStakes();
 	abcInfo.startNewHand(true);
 
 	// Do a DFS.

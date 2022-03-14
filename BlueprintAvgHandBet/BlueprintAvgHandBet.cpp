@@ -41,7 +41,6 @@ int main()
 	double currDuration = 0;
 	uint64_t gameCount = 0;
 	while (currDuration < endDuration) {
-		abcInfo.resetStakes();
 		abcInfo.startNewHand(true);
 		while (!abcInfo.state.finished) {
 			const auto round = abcInfo.roundIdx();

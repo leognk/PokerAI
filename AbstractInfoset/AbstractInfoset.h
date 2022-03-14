@@ -56,17 +56,13 @@ public:
 		return *this;
 	}
 
-	void resetStakes()
-	{
-		state.stakes = initialStakes;
-	}
-
 	void startNewHand(uint8_t dealer0, bool calculateStateId, bool dealRandomCards = true)
 	{
 		// Reset member variables.
 		nRaises = 0;
 		roundActions.clear();
 
+		state.stakes = initialStakes;
 		state.startNewHand(dealer0, dealRandomCards);
 
 		actionAbc.calculateLegalActions(state, nRaises);

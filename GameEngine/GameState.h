@@ -106,7 +106,7 @@ public:
 		const std::array<chips, MAX_PLAYERS>& stakes,
 		unsigned rngSeed);
 
-	void setAnte(chips ante);
+	void setAnte(chips ante0);
 	// Small blind is set to half the big blind.
 	void setBigBlind(chips bigBlind);
 
@@ -174,6 +174,8 @@ public:
 		{ true, true, true }
 	} };
 
+	chips ante, sb, bb;
+
 	// Current round.
 	Round round;
 	// Sum of all pots
@@ -217,8 +219,6 @@ protected:
 	CardDist mCardDist;
 
 	uint64_t usedCardsMask;
-
-	chips mAnte, mSB, mBB;
 	
 	// Acted on the current round.
 	std::array<bool, MAX_PLAYERS> mActed{};

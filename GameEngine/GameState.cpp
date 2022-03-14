@@ -23,15 +23,15 @@ GameState::GameState(
     setBigBlind(bigBlind);
 }
 
-void GameState::setAnte(chips ante)
+void GameState::setAnte(chips ante0)
 {
-    mAnte = ante;
+    ante = ante0;
 }
 
 void GameState::setBigBlind(chips bigBlind)
 {
-    mBB = bigBlind;
-    mSB = mBB / 2;
+    bb = bigBlind;
+    sb = bb / 2;
 }
 
 void GameState::startNewHand(uint8_t dealerIdx, bool dealRandomCards)
@@ -146,12 +146,12 @@ void GameState::setRandomBoardCards()
 void GameState::chargeAnte()
 {
     //ZoneScoped;
-    if (mAnte == 0) return;
+    if (ante == 0) return;
 
     uint8_t i = firstAlive;
     do {
         // The player must all-in on the ante.
-        if (stakes[i] <= mAnte) {
+        if (stakes[i] <= ante) {
             pot += stakes[i];
             bets[i] += stakes[i];
             stakes[i] = 0;
@@ -165,9 +165,9 @@ void GameState::chargeAnte()
             }
         }
         else {
-            pot += mAnte;
-            bets[i] += mAnte;
-            stakes[i] -= mAnte;
+            pot += ante;
+            bets[i] += ante;
+            stakes[i] -= ante;
         }
     } while (nextAlive(i) != firstAlive);
 
@@ -196,16 +196,16 @@ void GameState::chargeBlinds()
     // Verify that the sb did not all-in on the ante.
     if (isActing(sbPlayer)) {
         // The player must all-in on the sb.
-        if (stakes[sbPlayer] <= mSB) {
+        if (stakes[sbPlayer] <= sb) {
             pot += stakes[sbPlayer];
             bets[sbPlayer] += stakes[sbPlayer];
             stakes[sbPlayer] = 0;
             eraseActing(sbPlayer);
         }
         else {
-            pot += mSB;
-            bets[sbPlayer] += mSB;
-            stakes[sbPlayer] -= mSB;
+            pot += sb;
+            bets[sbPlayer] += sb;
+            stakes[sbPlayer] -= sb;
         }
     }
 
@@ -213,16 +213,16 @@ void GameState::chargeBlinds()
     // Verify that the bb did not all-in on the ante.
     if (isActing(bbPlayer)) {
         // The player must all-in on the bb.
-        if (stakes[bbPlayer] <= mBB) {
+        if (stakes[bbPlayer] <= bb) {
             pot += stakes[bbPlayer];
             bets[bbPlayer] += stakes[bbPlayer];
             stakes[bbPlayer] = 0;
             eraseActing(bbPlayer);
         }
         else {
-            pot += mBB;
-            bets[bbPlayer] += mBB;
-            stakes[bbPlayer] -= mBB;
+            pot += bb;
+            bets[bbPlayer] += bb;
+            stakes[bbPlayer] -= bb;
         }
     }
 
@@ -234,9 +234,9 @@ void GameState::chargeBlinds()
 
     // Even if the bb was incomplete, the amount
     // to call is still the bb.
-    mToCall = mAnte + mBB;
-    mLargestRaise = mBB;
-    mMaxBet = std::max(std::max(bets[sbPlayer], bets[bbPlayer]), mAnte);
+    mToCall = ante + bb;
+    mLargestRaise = bb;
+    mMaxBet = std::max(std::max(bets[sbPlayer], bets[bbPlayer]), ante);
 
     // Everybody went all-in but one.
     if (mNActing == 1 && bets[mFirstActing] == mMaxBet) {
@@ -399,7 +399,7 @@ void GameState::nextState()
             // Go to the next round.
             else {
                 ++round;
-                mLargestRaise = mBB;
+                mLargestRaise = bb;
                 uint8_t i = mFirstActing;
                 do {
                     mActed[i] = false;

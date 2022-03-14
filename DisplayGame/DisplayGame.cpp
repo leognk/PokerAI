@@ -28,15 +28,14 @@ int main()
         rngSeed);
     blueprint.loadStrat();
     auto blueprintAI = BLUEPRINT_AI_BUILDER(
-        bp::simple, bp::medium,
-        ante, bigBlind, 10000, &blueprint, rngSeed);
+        bp::simple, bp::medium, &blueprint, rngSeed);
 
     // User player
     opt::UserPlayer user(separatorLine);
 
     // All players
     const std::vector<egn::Player*> uniquePlayers = { &randomAI, &blueprintAI, &user };
-    const std::vector<egn::Player*> players = { &randomAI, &blueprintAI, &user };
+    const std::vector<egn::Player*> players = { &blueprintAI, &blueprintAI, &user };
 
 
     // Play until only one player remains.

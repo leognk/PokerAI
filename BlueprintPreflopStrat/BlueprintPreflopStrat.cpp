@@ -40,7 +40,6 @@ uint8_t getActingPlayer(
 	const std::vector<uint8_t>& actionSeq,
 	bp::abcInfo_t abcInfo, uint8_t dealer)
 {
-	abcInfo.resetStakes();
 	abcInfo.startNewHand(dealer, true);
 	for (uint8_t i = 0; i < actionSeq.size() - 1; ++i)
 		abcInfo.nextStateWithAction(actionSeq[i], true);
@@ -71,7 +70,6 @@ void prepareAbcInfo(
 	abcInfo.state.setRandomBoardCards();
 
 	// Go to the state after doing the actions in actionSeq except the last.
-	abcInfo.resetStakes();
 	abcInfo.startNewHand(dealer, true, false);
 	for (uint8_t i = 0; i < actionSeq.size() - 1; ++i)
 		abcInfo.nextStateWithAction(actionSeq[i], true);

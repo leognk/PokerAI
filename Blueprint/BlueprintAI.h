@@ -6,15 +6,19 @@
 
 namespace bp {
 
-#define BLUEPRINT_AI_BUILDER(bpGameName, bpBuildName, \
-	ante, bigBlind, initialStake, blueprint, rngSeed) \
+#define BLUEPRINT_AI_BUILDER(bpGameName, bpBuildName, blueprint, rngSeed) \
 	bp::BlueprintAI< \
 		bpGameName::bckSize_t, \
 		bpGameName::N_BCK_PREFLOP,bpGameName::N_BCK_FLOP, \
 		bpGameName::N_BCK_TURN, bpGameName::N_BCK_RIVER>( \
-			bpGameName::MAX_PLAYERS, ante, bigBlind, initialStake, \
-			bpGameName::BET_SIZES, bpGameName::BLUEPRINT_GAME_NAME, \
-			blueprint, rngSeed)
+			bpGameName::MAX_PLAYERS, \
+			bpGameName::ANTE, \
+			bpGameName::BIG_BLIND, \
+			bpGameName::INITIAL_STAKE, \
+			bpGameName::BET_SIZES, \
+			bpGameName::BLUEPRINT_GAME_NAME, \
+			blueprint, \
+			rngSeed)
 
 template<typename bckSize_t, bckSize_t nBckPreflop, bckSize_t nBckFlop, bckSize_t nBckTurn, bckSize_t nBckRiver>
 class BlueprintAI : public egn::Player
@@ -56,9 +60,6 @@ public:
 		} while (state.nextAlive(i) != state.firstAlive);
 		abcInfo.state.setBoardCards(state.boardCards.data());
 
-		// Set abcInfo's stakes.
-		abcInfo.state.stakes = state.initialStakes;
-
 		abcInfo.startNewHand(state.dealer, false, false);
 
 		// Set abcInfo to a state with nAlive players.
@@ -79,11 +80,11 @@ public:
 		if (state.action == egn::RAISE) {
 			// We clip the bet between minRaise and allin.
 			// It might have gone out of the limits because
-			// the state in abcInfo is different than the real
+			// the state in abcInfo is different from the real
 			// game state.
 			egn::chips bet = abcInfo.state.bet;
-			if (bet < state.minRaise) bet = state.minRaise;
-			else if (bet > state.allin) bet = state.allin;
+			if (bet > state.allin) bet = state.allin;
+			else if (bet < state.minRaise) bet = state.minRaise;
 			state.bet = bet;
 		}
 	}

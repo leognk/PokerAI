@@ -31,8 +31,8 @@ void GameStatePrint::startNewHand(uint8_t dealerIdx)
 
     // Initialize mRoundBets.
     for (uint8_t i = 0; i < MAX_PLAYERS; ++i) {
-        if (bets[i] > mAnte)
-            mRoundBets[i] = bets[i] - mAnte;
+        if (bets[i] > ante)
+            mRoundBets[i] = bets[i] - ante;
         else
             mRoundBets[i] = 0;
     }

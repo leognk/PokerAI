@@ -134,6 +134,8 @@ uint8_t ActionAbstraction::mapActionToAbcAction(
 
 	case egn::RAISE:
 
+		if (state.bet == state.allin) return ALLIN;
+
 		const std::vector<float>& currBetSizes = (*betSizes)[state.round][nRaises];
 
 		// Find the bet sizes sizeA and sizeB which frame sizeX.
@@ -142,7 +144,6 @@ uint8_t ActionAbstraction::mapActionToAbcAction(
 		float sizeA = currBetSizes[beginRaiseId];
 
 		if (sizeX <= sizeA) return RAISE + beginRaiseId;
-		else if (sizeX >= allinSize) return ALLIN;
 
 		float sizeB;
 		uint8_t sizeBId = beginRaiseId + 1;
@@ -153,7 +154,8 @@ uint8_t ActionAbstraction::mapActionToAbcAction(
 			sizeA = sizeB;
 			++sizeBId;
 		}
-		if (sizeBId == endRaiseId) sizeB = allinSize;
+
+		if (sizeBId == endRaiseId) return RAISE + endRaiseId - 1;
 
 		// Pick either sizeA or sizeB using the action mapping function
 		// which gives the probability of picking sizeA.
@@ -163,8 +165,6 @@ uint8_t ActionAbstraction::mapActionToAbcAction(
 
 		if (betSizeRandChoice(betSizesCumWeights, rng) == 0)
 			return RAISE + sizeBId - 1;
-		else if (sizeBId == endRaiseId)
-			return ALLIN;
 		else
 			return RAISE + sizeBId;
 	}
