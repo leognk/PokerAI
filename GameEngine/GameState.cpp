@@ -67,9 +67,13 @@ void GameState::resetPlayers()
         if (stakes[i]) {
             addAlive(i);
             addActing(i);
-            bets[i] = 0;
             mActed[i] = false;
         }
+        // Reset bets for all players because it might have not
+        // been cleaned-up in showdown if only one pot was used
+        // and the bets of all players are used in showdown for
+        // multiple pots.
+        bets[i] = 0;
     }
 
     // The first acting player after the preflop is always
@@ -381,7 +385,7 @@ void GameState::nextState()
     // Max bet is matched.
     if (bets[actingPlayer] == mMaxBet) {
 
-        // Everybody folded but one.
+        // Everybody went all-in but one.
         if (nActing == 1) {
             endGame();
             return;
