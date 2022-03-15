@@ -21,7 +21,7 @@ ActionAbstraction& ActionAbstraction::operator=(const ActionAbstraction& other)
 
 void ActionAbstraction::setAction(
 	uint8_t action, egn::GameState& state,
-	uint8_t& nRaises, bool incrNRaises = true)
+	uint8_t& nRaises, bool incrNRaises)
 {
 	// Fold or call
 	if (action < ALLIN)
