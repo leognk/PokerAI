@@ -80,7 +80,7 @@ public:
 		if (abcInfo.maxPlayers < state.nAlive)
 			throw std::runtime_error("Number of players greater than the maximum.");
 		for (uint8_t i = state.nAlive; i < abcInfo.maxPlayers; ++i)
-			abcInfo.nextStateWithAction(abc::FOLD, false);
+			abcInfo.addFold();
 
 		isAllIn.fill(false);
 		allinExists = false;

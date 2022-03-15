@@ -64,8 +64,10 @@ public:
 
 	void resetStakes(std::array<egn::chips, egn::MAX_PLAYERS> stakes)
 	{
-		for (uint8_t i = 0; i < egn::MAX_PLAYERS; ++i)
+		for (uint8_t i = 0; i < egn::MAX_PLAYERS; ++i) {
 			if (stakes[i]) state.stakes[i] = initialStake;
+			else state.stakes[i] = 0;
+		}
 	}
 
 	void startNewHand(uint8_t dealer0, bool calculateStateId, bool dealRandomCards = true)
@@ -190,6 +192,11 @@ public:
 	void setStateAction(uint8_t action)
 	{
 		actionAbc.setAction(action, state, nRaises, false);
+	}
+
+	void addFold()
+	{
+		roundActions.push_back(FOLD);
 	}
 
 	const uint8_t maxPlayers;

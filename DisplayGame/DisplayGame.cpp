@@ -44,8 +44,7 @@ int main()
     do {
         //state.stakes = initialStakes;
         state.startNewHand(dealer);
-        for (const auto& p : uniquePlayers)
-            p->reset(state);
+        for (const auto& p : uniquePlayers) p->reset(state);
         state.printState(std::cout);
         while (!state.finished) {
             players[state.actingPlayer]->act(state);
