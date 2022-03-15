@@ -43,17 +43,14 @@ int main()
     uint8_t dealer = firstDealer;
     uint8_t prevDealer;
     do {
-        state.stakes = initialStakes;
+        //state.stakes = initialStakes;
         state.startNewHand(dealer);
         for (const auto& p : uniquePlayers)
             p->reset(state);
         state.printState(std::cout);
         while (!state.finished) {
             players[state.actingPlayer]->act(state);
-            for (const auto& p : uniquePlayers) {
-                if (p != players[state.actingPlayer])
-                    p->update(state);
-            }
+            for (const auto& p : uniquePlayers) p->update(state);
             state.nextState();
             state.printState(std::cout);
         }

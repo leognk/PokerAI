@@ -61,7 +61,7 @@ void GameState::resetPlayers()
     mAlive = 0;
     mActing = 0;
     nAlive = 0;
-    mNActing = 0;
+    nActing = 0;
     for (uint8_t i = 0; i < MAX_PLAYERS; ++i) {
         // Ignore inactive players.
         if (stakes[i]) {
@@ -75,7 +75,7 @@ void GameState::resetPlayers()
     // The first acting player after the preflop is always
     // the player following the dealer.
     firstAlive = dealer;
-    mFirstActing = nextAlive(firstAlive);
+    firstActing = nextAlive(firstAlive);
 }
 
 void GameState::resetUsedCards()
@@ -159,7 +159,7 @@ void GameState::chargeAnte()
             // Everybody went all-in.
             // We deal with this case here to
             // avoid infinite loop.
-            if (!mNActing) {
+            if (!nActing) {
                 endGame();
                 return;
             }
@@ -172,7 +172,7 @@ void GameState::chargeAnte()
     } while (nextAlive(i) != firstAlive);
 
     // Only one player did not went all-in on the ante.
-    if (mNActing == 1) endGame();
+    if (nActing == 1) endGame();
 }
 
 void GameState::chargeBlinds()
@@ -227,7 +227,7 @@ void GameState::chargeBlinds()
     }
 
     // Everybody went all-in.
-    if (!mNActing) {
+    if (!nActing) {
         endGame();
         return;
     }
@@ -239,7 +239,7 @@ void GameState::chargeBlinds()
     mMaxBet = std::max(std::max(bets[sbPlayer], bets[bbPlayer]), ante);
 
     // Everybody went all-in but one.
-    if (mNActing == 1 && bets[mFirstActing] == mMaxBet) {
+    if (nActing == 1 && bets[firstActing] == mMaxBet) {
         endGame();
         return;
     }
@@ -300,7 +300,7 @@ void GameState::addAlive(uint8_t i)
 void GameState::addActing(uint8_t i)
 {
     opt::setBit(mActing, i);
-    ++mNActing;
+    ++nActing;
 }
 
 void GameState::eraseAlive(uint8_t i)
@@ -314,9 +314,9 @@ void GameState::eraseAlive(uint8_t i)
 void GameState::eraseActing(uint8_t i)
 {
     opt::toggleBit(mActing, i);
-    --mNActing;
-    if (i == mFirstActing)
-        nextActing(mFirstActing);
+    --nActing;
+    if (i == firstActing)
+        nextActing(firstActing);
 }
 
 void GameState::nextState()
@@ -370,7 +370,7 @@ void GameState::nextState()
     }
 
     // Everybody went all-in.
-    if (!mNActing) {
+    if (!nActing) {
         endGame();
         return;
     }
@@ -382,7 +382,7 @@ void GameState::nextState()
     if (bets[actingPlayer] == mMaxBet) {
 
         // Everybody folded but one.
-        if (mNActing == 1) {
+        if (nActing == 1) {
             endGame();
             return;
         }
@@ -400,11 +400,11 @@ void GameState::nextState()
             else {
                 ++round;
                 mLargestRaise = bb;
-                uint8_t i = mFirstActing;
+                uint8_t i = firstActing;
                 do {
                     mActed[i] = false;
-                } while (nextActing(i) != mFirstActing);
-                actingPlayer = mFirstActing;
+                } while (nextActing(i) != firstActing);
+                actingPlayer = firstActing;
             }
         }
     }

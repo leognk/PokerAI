@@ -17,9 +17,9 @@ public:
 	// (bet need to be set only for a raise)
 	virtual void act(GameState& state) = 0;
 
-	// Inform the player about the last action made by an opponent.
-	// Call it AFTER calling the opponent's act method and
-	// BEFORE calling state.nextState().
+	// Inform the player about the last action made (by an opponent
+	// or the player himself). Call it AFTER calling the act method
+	// and BEFORE calling state.nextState().
 	virtual void update(const GameState& state) {}
 };
 

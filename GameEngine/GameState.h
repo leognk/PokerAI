@@ -126,15 +126,18 @@ public:
 	void startNewHand(uint8_t dealerIdx, bool dealRandomCards = true);
 	void nextState();
 
-	// To loop over alive players.
-	uint8_t& nextAlive(uint8_t& i) const;
-
 	bool isAlive(uint8_t i) const;
 	bool isActing(uint8_t i) const;
 	// Next active player, ie. non-zero stake player
 	// (to set the dealer of the next hand).
 	// Do NOT use it when a hand is running (because of all-in players).
 	uint8_t& nextActive(uint8_t& i) const;
+	uint8_t& nextAlive(uint8_t& i) const;
+	uint8_t& nextActing(uint8_t& i) const;
+	void addAlive(uint8_t i);
+	void addActing(uint8_t i);
+	void eraseAlive(uint8_t i);
+	void eraseActing(uint8_t i);
 
 	dchips reward(uint8_t i) const;
 
@@ -191,6 +194,10 @@ public:
 	uint8_t firstAlive;
 	uint8_t nAlive;
 
+	// To loop over acting players, ie. alive players who did not go all-in yet.
+	uint8_t firstActing;
+	uint8_t nActing;
+
 protected:
 	typedef omp::XoroShiro128Plus Rng;
 	typedef omp::FastUniformIntDistribution<unsigned, 16> CardDist;
@@ -200,12 +207,6 @@ protected:
 	void chargeBlinds();
 
 	static void populateNextLookup();
-
-	uint8_t& nextActing(uint8_t& i) const;
-	void addAlive(uint8_t i);
-	void addActing(uint8_t i);
-	void eraseAlive(uint8_t i);
-	void eraseActing(uint8_t i);
 
 	void setLegalActions();
 
@@ -232,12 +233,8 @@ protected:
 
 	// Mask of alive players, ie. players who were dealt cards and did not fold.
 	uint16_t mAlive;
-
-	// Alive and did not go all-in yet.
-	// Mask of acting players.
+	// Mask of acting players, ie. alive players who did not go all-in yet.
 	uint16_t mActing;
-	uint8_t mFirstActing;
-	uint8_t mNActing;
 
 	// Current number of chips to call (counting from the start of the hand)
 	chips mToCall;

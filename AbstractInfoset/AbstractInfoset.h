@@ -176,9 +176,17 @@ public:
 		throw std::runtime_error("Action was not found in legalActions.");
 	}
 
+	void setStateAction(uint8_t action)
+	{
+		actionAbc.setAction(action, state, nRaises);
+	}
+
 	const uint8_t maxPlayers;
 	egn::GameState state;
 	abc::ActionAbstraction actionAbc;
+
+	// Number of players playing at the beginning of the current round.
+	uint8_t nPlayers;
 
 protected:
 
@@ -251,8 +259,6 @@ protected:
 	// Number of raises done in the current round.
 	uint8_t nRaises;
 
-	// Number of players playing at the beginning of the current round.
-	uint8_t nPlayers;
 	// History of actions made in the current round stored in a compressed format.
 	StdActionSeq roundActions;
 
