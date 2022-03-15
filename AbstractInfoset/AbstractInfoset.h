@@ -29,6 +29,7 @@ public:
 		unsigned rngSeed) :
 
 		maxPlayers(maxPlayers),
+		initialStake(initialStake),
 		dealer(maxPlayers - 1),
 		state(ante, bigBlind, {}, rngSeed),
 		actionAbc(betSizes),
@@ -56,13 +57,23 @@ public:
 		return *this;
 	}
 
+	void resetStakes()
+	{
+		state.stakes = initialStakes;
+	}
+
+	void resetStakes(std::array<egn::chips, egn::MAX_PLAYERS> stakes)
+	{
+		for (uint8_t i = 0; i < egn::MAX_PLAYERS; ++i)
+			if (stakes[i]) state.stakes[i] = initialStake;
+	}
+
 	void startNewHand(uint8_t dealer0, bool calculateStateId, bool dealRandomCards = true)
 	{
 		// Reset member variables.
 		nRaises = 0;
 		roundActions.clear();
 
-		state.stakes = initialStakes;
 		state.startNewHand(dealer0, dealRandomCards);
 
 		actionAbc.calculateLegalActions(state, nRaises);
@@ -254,6 +265,7 @@ protected:
 	}
 
 	const uint8_t dealer;
+	egn::chips initialStake;
 	std::array<egn::chips, egn::MAX_PLAYERS> initialStakes{};
 
 	// Number of raises done in the current round.

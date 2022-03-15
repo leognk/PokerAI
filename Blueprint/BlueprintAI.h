@@ -63,6 +63,9 @@ public:
 
 	void reset(const egn::GameState& state) override
 	{
+		// Set abcInfo's stakes.
+		abcInfo.resetStakes(state.stakes);
+
 		// Set abcInfo's cards.
 		uint8_t i = state.firstAlive;
 		do {

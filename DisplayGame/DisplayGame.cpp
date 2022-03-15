@@ -34,8 +34,8 @@ int main()
     opt::UserPlayer user(separatorLine);
 
     // All players
-    const std::vector<egn::Player*> uniquePlayers = { &blueprintAI, &user };
-    const std::vector<egn::Player*> players = { &blueprintAI, &blueprintAI, &user };
+    const std::vector<egn::Player*> uniquePlayers = { &randomAI, &blueprintAI, &user };
+    const std::vector<egn::Player*> players = { &randomAI, &blueprintAI, &randomAI };
 
 
     // Play until only one player remains.
