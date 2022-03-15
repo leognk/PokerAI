@@ -20,7 +20,8 @@ ActionAbstraction& ActionAbstraction::operator=(const ActionAbstraction& other)
 }
 
 void ActionAbstraction::setAction(
-	uint8_t action, egn::GameState& state, uint8_t& nRaises)
+	uint8_t action, egn::GameState& state,
+	uint8_t& nRaises, bool incrNRaises = true)
 {
 	// Fold or call
 	if (action < ALLIN)
@@ -36,7 +37,8 @@ void ActionAbstraction::setAction(
 		else state.bet = betSizeToBet(
 			(*betSizes)[state.round][nRaises][action - RAISE], state);
 
-		if (nRaises != (*betSizes)[state.round].size() - 1) ++nRaises;
+		if (incrNRaises && nRaises != (*betSizes)[state.round].size() - 1)
+			++nRaises;
 	}
 }
 

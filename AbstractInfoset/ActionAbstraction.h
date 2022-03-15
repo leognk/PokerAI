@@ -36,7 +36,9 @@ public:
 	ActionAbstraction& operator=(const ActionAbstraction& other);
 
 	// action must be an element of the vector legalActions.
-	void setAction(uint8_t action, egn::GameState& state, uint8_t& nRaises);
+	void setAction(
+		uint8_t action, egn::GameState& state,
+		uint8_t& nRaises, bool incrNRaises = true);
 	void calculateLegalActions(const egn::GameState& state, uint8_t nRaises);
 
 	uint8_t mapActionToAbcAction(

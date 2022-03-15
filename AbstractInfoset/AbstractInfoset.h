@@ -178,7 +178,7 @@ public:
 
 	void setStateAction(uint8_t action)
 	{
-		actionAbc.setAction(action, state, nRaises);
+		actionAbc.setAction(action, state, nRaises, false);
 	}
 
 	const uint8_t maxPlayers;

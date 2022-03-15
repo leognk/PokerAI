@@ -59,7 +59,6 @@ public:
 	void setBB(const egn::chips bb)
 	{
 		realOverAbcBB = (float)bb / abcInfo.state.bb;
-		abcOverRealBB = (float)abcInfo.state.bb / bb;
 	}
 
 	void reset(const egn::GameState& state) override
@@ -116,7 +115,7 @@ public:
 		egn::Round oldRound = state.round;
 
 		// No need to convert the state's chips because of different bb in abcInfo,
-		// because only the bet size is used and it is independent of the bb.
+		// because only the bet size is used and it is independent from the bb.
 		const uint8_t action = abcInfo.mapActionToAbcAction(state, rng);
 		abcInfo.nextStateWithAction(action, false);
 
@@ -149,12 +148,6 @@ public:
 		return (egn::chips)std::round(x * realOverAbcBB);
 	}
 
-	// Invert operation of abcToRealChips.
-	egn::chips abcToRealChips(const egn::chips x)
-	{
-		return (egn::chips)std::round(x * abcOverRealBB);
-	}
-
 	// Return if the acting player goes all-in.
 	// Call it BEFORE calling state.nextState.
 	bool goAllIn(const egn::GameState& state)
@@ -173,7 +166,7 @@ private:
 	Blueprint* blueprint;
 	abc::ActionAbstraction::Rng rng;
 
-	float realOverAbcBB, abcOverRealBB;
+	float realOverAbcBB;
 
 	std::array<bool, egn::MAX_PLAYERS> isAllIn;
 	bool allinExists;

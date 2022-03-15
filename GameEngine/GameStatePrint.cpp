@@ -189,7 +189,7 @@ std::string GameStatePrint::handCategory(uint8_t player) const
     case 1: return "High card";
     case 2: return "Pair";
     case 3: return "Two pair";
-    case 4: return "Three of a king";
+    case 4: return "Three of a kind";
     case 5: return "Straight";
     case 6: return "Flush";
     case 7: return "Full house";
