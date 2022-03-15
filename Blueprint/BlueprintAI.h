@@ -92,22 +92,56 @@ public:
 		abcInfo.setStateAction(action);
 		
 		// Set state's action.
+
 		state.action = abcInfo.state.action;
-		if (state.action == egn::RAISE) {
-			// We clip the bet between minRaise and allin.
-			// It might have gone out of the limits because
-			// the state in abcInfo is different from the real
-			// game state, plus the initial stakes of all players
-			// in abcInfo are set to a static const.
-			egn::chips bet = abcToRealChips(abcInfo.state.bet);
-			if (bet >= state.allin) bet = state.allin;
-			else if (bet < state.minRaise) bet = state.minRaise;
-			state.bet = bet;
+
+		switch (state.action) {
+
+		case egn::FOLD:
+			break;
+
+		case egn::CALL:
+			// If the call chosen by the blueprint in the abcInfo is a response
+			// to an all-in but the actual call in the real state is not, we
+			// have to ensure if becomes a real all-in.
+			if (abcInfo.state.call == abcInfo.state.allin
+				&& state.call != state.allin) {
+				state.action = egn::RAISE;
+				state.bet = state.allin;
+			}
+			break;
+
+		case egn::RAISE:
+			// The abcInfo's all-in is limited to the abcInfo's static const initial
+			// stake of players, but if the chosen action is all-in, we bet all the
+			// player's stake anyway.
+			if (action == abc::ALLIN)
+				state.bet = state.allin;
+			else {
+				// We clip the bet between minRaise and allin.
+				// It might have gone out of the limits because
+				// the state in abcInfo is different from the real
+				// game state, plus the initial stakes of all players
+				// in abcInfo are set to a static const.
+				egn::chips bet = abcToRealChips(abcInfo.state.bet);
+				if (bet >= state.allin) bet = state.allin;
+				else if (bet < state.minRaise) bet = state.minRaise;
+				state.bet = bet;
+			}
+			break;
+
+		default:
+			throw std::runtime_error("Unknown action.");
 		}
 	}
 
 	void update(const egn::GameState& state) override
 	{
+		// abcInfo would have been finished before the real state
+		// if the blueprint AI went all-in by calling an all-in which
+		// was not one in the real state but was mapped to it anyway.
+		if (abcInfo.state.finished) return;
+
 		if (goAllIn(state)) {
 			isAllIn[abcInfo.state.actingPlayer] = true;
 			allinExists = true;

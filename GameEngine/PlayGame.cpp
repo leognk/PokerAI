@@ -24,11 +24,10 @@ void PlayGame::playToEnd()
 	// remains (the winner).
 	// We use the forward-moving button rule:
 	// the button is moved clockwise.
-	uint8_t prevDealer = 0;
 	do {
 		playOneHand();
-		prevDealer = mDealer;
-	} while (prevDealer != mState.nextActive(mDealer));
+		mState.nextActive(mDealer);
+	} while (mState.foundActivePlayers());
 }
 
 void PlayGame::playAndReset()

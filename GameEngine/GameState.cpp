@@ -323,6 +323,18 @@ void GameState::eraseActing(uint8_t i)
         nextActing(firstActing);
 }
 
+bool GameState::foundActivePlayers() const
+{
+    bool foundOne = false;
+    for (uint8_t i = 0; i < MAX_PLAYERS; ++i) {
+        if (stakes[i]) {
+            if (foundOne) return true;
+            foundOne = true;
+        }
+    }
+    return false;
+}
+
 void GameState::nextState()
 {
     //ZoneScoped;

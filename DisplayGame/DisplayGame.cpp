@@ -34,14 +34,13 @@ int main()
     opt::UserPlayer user(separatorLine);
 
     // All players
-    const std::vector<egn::Player*> uniquePlayers = { &randomAI, &blueprintAI, &user };
+    const std::vector<egn::Player*> uniquePlayers = { &blueprintAI, &user };
     const std::vector<egn::Player*> players = { &blueprintAI, &blueprintAI, &user };
 
 
     // Play until only one player remains.
     egn::GameStatePrint state(ante, bigBlind, initialStakes, rngSeed, separatorLine);
     uint8_t dealer = firstDealer;
-    uint8_t prevDealer;
     do {
         //state.stakes = initialStakes;
         state.startNewHand(dealer);
@@ -55,6 +54,6 @@ int main()
             state.printState(std::cout);
         }
         state.printRewards(std::cout);
-        prevDealer = dealer;
-    } while (prevDealer != state.nextActive(dealer));
+        state.nextActive(dealer);
+    } while (state.foundActivePlayers());
 }

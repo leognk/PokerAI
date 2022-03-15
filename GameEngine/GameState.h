@@ -139,6 +139,8 @@ public:
 	void eraseAlive(uint8_t i);
 	void eraseActing(uint8_t i);
 
+	bool foundActivePlayers() const;
+
 	dchips reward(uint8_t i) const;
 
 	void saveRng(std::fstream& file) const;
