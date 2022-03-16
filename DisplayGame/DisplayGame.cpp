@@ -33,7 +33,7 @@ int main()
 
     // All players
     const std::vector<egn::Player*> uniquePlayers = { &randomAI, &blueprintAI, &user };
-    const std::vector<egn::Player*> players = { &randomAI, &blueprintAI, &randomAI, &randomAI, &randomAI, &randomAI };
+    const std::vector<egn::Player*> players = { &randomAI, &blueprintAI, &blueprintAI, &randomAI, &randomAI, &randomAI };
 
 
     // Play until only one player remains.

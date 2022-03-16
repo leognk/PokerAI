@@ -40,11 +40,18 @@ public:
 		uint8_t action, egn::GameState& state,
 		uint8_t& nRaises, bool incrNRaises = true);
 	void calculateLegalActions(const egn::GameState& state, uint8_t nRaises);
+	// Return all the possible actions without taking
+	// into account minRaise and maxRaise.
+	std::vector<uint8_t> calculateAllLegalActions(
+		const egn::GameState& state, uint8_t nRaises) const;
 
 	uint8_t mapActionToAbcAction(
 		const egn::GameState& state, uint8_t nRaises, Rng& rng);
 	uint8_t mapActionToFoldCall(
 		const egn::GameState& state, uint8_t nRaises, Rng& rng);
+
+	egn::chips actionToBet(
+		uint8_t action, const egn::GameState& state, uint8_t nRaises) const;
 
 	// Actions are indexed using the following order:
 	// 0: fold
@@ -56,8 +63,8 @@ public:
 
 private:
 
-	egn::chips betSizeToBet(const float betSize, const egn::GameState& state) const;
-	float betToBetSize(const egn::chips bet, const egn::GameState& state) const;
+	static egn::chips betSizeToBet(const float betSize, const egn::GameState& state);
+	static float betToBetSize(const egn::chips bet, const egn::GameState& state);
 
 	static float actionMappingFunction(const float a, const float b, const float x);
 

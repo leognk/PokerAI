@@ -105,8 +105,39 @@ void ActionAbstraction::calculateLegalActions(
 	}
 }
 
+std::vector<uint8_t> ActionAbstraction::calculateAllLegalActions(
+	const egn::GameState& state, uint8_t nRaises) const
+{
+	if (state.legalCase == 0) return { FOLD, CALL };
+
+	std::vector<uint8_t> allLegalActions;
+	const std::vector<float>& currBetSizes = (*betSizes)[state.round][nRaises];
+	const uint8_t nLegalRaises = (uint8_t)currBetSizes.size();
+
+	if (state.legalCase == 1) {
+#pragma warning(suppress: 26451)
+		allLegalActions.resize(nLegalRaises + 2);
+		allLegalActions[0] = CALL;
+		allLegalActions[1] = ALLIN;
+		for (uint8_t i = 2; i < nLegalRaises + 2; ++i)
+			allLegalActions[i] = i + 1;
+	}
+
+	else {
+#pragma warning(suppress: 26451)
+		allLegalActions.resize(nLegalRaises + 3);
+		allLegalActions[0] = FOLD;
+		allLegalActions[1] = CALL;
+		allLegalActions[2] = ALLIN;
+		for (uint8_t i = 3; i < nLegalRaises + 3; ++i)
+			allLegalActions[i] = i;
+	}
+
+	return allLegalActions;
+}
+
 egn::chips ActionAbstraction::betSizeToBet(
-	const float betSize, const egn::GameState& state) const
+	const float betSize, const egn::GameState& state)
 {
 	// A x pot size raise is a raise by a fraction x of the size
 	// of the pot after that the acting player called. So the amount of
@@ -117,9 +148,22 @@ egn::chips ActionAbstraction::betSizeToBet(
 
 // Return the result of the inverse operation of betSizeToBet.
 float ActionAbstraction::betToBetSize(
-	const egn::chips bet, const egn::GameState& state) const
+	const egn::chips bet, const egn::GameState& state)
 {
 	return float(bet - state.call) / (state.pot + state.call);
+}
+
+egn::chips ActionAbstraction::actionToBet(
+	uint8_t action, const egn::GameState& state, uint8_t nRaises) const
+{
+	switch (action) {
+	case FOLD: return 0;
+	case CALL: return state.call;
+	case ALLIN: return state.allin;
+	// RAISE
+	default: return betSizeToBet(
+		(*betSizes)[state.round][nRaises][action - RAISE], state);
+	}
 }
 
 // Map the last action done in the given game state to an abstract action.

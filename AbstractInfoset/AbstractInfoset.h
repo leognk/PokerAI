@@ -205,6 +205,40 @@ public:
 		roundActions.push_back(FOLD);
 	}
 
+	// Return the action seq ids of all the possible actions without
+	// taking into account minRaise and maxRaise.
+	void calculateAllActionSeqIds(
+		std::vector<uint8_t>& allLegalActions,
+		std::vector<uint64_t>& allActionSeqIds)
+	{
+		allLegalActions = actionAbc.calculateAllLegalActions(state, nRaises);
+
+		if (state.round == egn::PREFLOP) {
+			for (uint8_t a : allLegalActions) {
+				roundActions.push_back(a);
+				allActionSeqIds.push_back(
+					actionSeqIndexer.index(state.round, roundActions));
+				roundActions.pop_back();
+			}
+		}
+
+		else {
+			for (uint8_t a : allLegalActions) {
+				roundActions.push_back(a);
+				roundActions.push_back(nPlayers);
+				allActionSeqIds.push_back(
+					actionSeqIndexer.index(state.round, roundActions));
+				roundActions.pop_back();
+				roundActions.pop_back();
+			}
+		}
+	}
+
+	egn::chips actionToBet(uint8_t action) const
+	{
+		return actionAbc.actionToBet(action, state, nRaises);
+	}
+
 	const uint8_t maxPlayers;
 	egn::GameState state;
 	abc::ActionAbstraction actionAbc;
