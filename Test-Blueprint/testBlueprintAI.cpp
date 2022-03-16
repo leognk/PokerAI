@@ -1,22 +1,9 @@
-#include <iostream>
-#include <iomanip>
-#include <numeric>
-#include <string>
-#include <vector>
-#include <array>
-#include <algorithm>
-#include <random>
-#include <chrono>
-#include <filesystem>
-#include <fstream>
-#include <bitset>
-
+#include "pch.h"
 #include "../Blueprint/BlueprintAI.h"
 #include "../RandomAI/RandomAI.h"
-#include "../GameEngine/GameStatePrint.h"
 
-int main()
-{
+TEST(BlueprintAITest, test) {
+
     const unsigned rngSeed = 1;
 
     const uint64_t endIter = 1000;
@@ -63,9 +50,6 @@ int main()
     // Simulate random games.
 
     for (uint64_t currIter = 0; currIter < endIter; ++currIter) {
-        ////////////////////////////////////////////////////////////////
-        std::cout << "Count: " << currIter << "\n";
-        ////////////////////////////////////////////////////////////////
 
         // Ante
         const egn::chips ante = anteDist(rng);
@@ -131,24 +115,16 @@ int main()
         }
 
         // Play until only one player remains.
-        const std::string separatorLine = std::string(50, '_') + "\n\n";
-        egn::GameStatePrint state(ante, bigBlind, initialStakes, (unsigned)rng(), separatorLine);
+        egn::GameState state(ante, bigBlind, initialStakes, (unsigned)rng());
         uint8_t dealer = firstDealer;
         do {
-            //state.stakes = initialStakes;
             state.startNewHand(dealer);
             for (const auto& p : updatePlayers) p->reset(state);
-            //if (currIter == 2) state.printState(std::cout);
             while (!state.finished) {
-                //////////////////////////////////////////
-                const bool b = state.stakes[3] == 6774 && state.stakes[0] == 46054;
-                //////////////////////////////////////////
                 players[state.actingPlayer]->act(state);
                 for (const auto& p : updatePlayers) p->update(state);
                 state.nextState();
-                //if (currIter == 2) state.printState(std::cout);
             }
-            //if (currIter == 2) state.printRewards(std::cout);
             // Eliminate players who have a stake smaller than a BB.
             for (egn::chips& x : state.stakes) {
                 if (x < bigBlind) x = 0;

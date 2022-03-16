@@ -180,6 +180,8 @@ uint8_t ActionAbstraction::mapActionToAbcAction(
 
 	case egn::RAISE:
 
+		if (beginRaiseId == endRaiseId) return ALLIN;
+
 		const std::vector<float>& currBetSizes = (*betSizes)[state.round][nRaises];
 
 		// Find the bet sizes sizeA and sizeB which frame sizeX.

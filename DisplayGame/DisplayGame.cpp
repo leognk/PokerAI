@@ -5,7 +5,7 @@
 
 int main()
 {
-    const egn::chips ante = 0;
+    const egn::chips ante = 20;
     const egn::chips bigBlind = 100;
 
     const uint8_t firstDealer = 0;
@@ -32,7 +32,7 @@ int main()
     opt::UserPlayer user(separatorLine);
 
     // All players
-    const std::vector<egn::Player*> uniquePlayers = { &randomAI, &blueprintAI, &user };
+    const std::vector<egn::Player*> updatePlayers = { &blueprintAI };
     const std::vector<egn::Player*> players = { &randomAI, &blueprintAI, &blueprintAI, &randomAI, &randomAI, &randomAI };
 
 
@@ -42,11 +42,11 @@ int main()
     do {
         //state.stakes = initialStakes;
         state.startNewHand(dealer);
-        for (const auto& p : uniquePlayers) p->reset(state);
+        for (const auto& p : updatePlayers) p->reset(state);
         state.printState(std::cout);
         while (!state.finished) {
             players[state.actingPlayer]->act(state);
-            for (const auto& p : uniquePlayers) p->update(state);
+            for (const auto& p : updatePlayers) p->update(state);
             state.nextState();
             state.printState(std::cout);
         }

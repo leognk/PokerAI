@@ -89,6 +89,19 @@ public:
 
 	void act(egn::GameState& state) override
 	{
+		// The blueprintAI can be in an all-in state in abcInfo while
+		// not in the real state if its own action was mapped to an all-in
+		// while it was not, and it can have to act again after a raise.
+		if (!abcInfo.state.isActing(state.actingPlayer)) {
+			if (state.call == state.allin)
+				state.action = egn::CALL;
+			else {
+				state.action = egn::RAISE;
+				state.bet = state.allin;
+			}
+			return;
+		}
+
 		// Choose an action.
 		abcInfo.updateStateIds();
 		const uint8_t action = abcInfo.actionAbc.legalActions[
@@ -99,15 +112,15 @@ public:
 
 		state.action = abcInfo.state.action;
 
-		switch (state.action) {
+		switch (action) {
 
-		case egn::FOLD:
+		case abc::FOLD:
 			break;
 
-		case egn::CALL:
+		case abc::CALL:
 			// If the call chosen by the blueprint in the abcInfo is a response
 			// to an all-in but the actual call in the real state is not, we
-			// have to ensure if becomes a real all-in.
+			// have to ensure it becomes a real all-in.
 			if (abcInfo.state.call == abcInfo.state.allin
 				&& state.call != state.allin) {
 				state.action = egn::RAISE;
@@ -115,27 +128,28 @@ public:
 			}
 			break;
 
-		case egn::RAISE:
+		case abc::ALLIN:
+			if (state.call == state.allin)
+				state.action = egn::CALL;
 			// The abcInfo's all-in is limited to the abcInfo's static const initial
 			// stake of players, but if the chosen action is all-in, we bet all the
 			// player's stake anyway.
-			if (action == abc::ALLIN)
+			else
 				state.bet = state.allin;
-			else {
-				// We clip the bet between minRaise and allin.
-				// It might have gone out of the limits because
-				// the state in abcInfo is different from the real
-				// game state, plus the initial stakes of all players
-				// in abcInfo are set to a static const.
-				egn::chips bet = abcToRealChips(abcInfo.state.bet);
-				if (bet >= state.allin) bet = state.allin;
-				else if (bet < state.minRaise) bet = state.minRaise;
-				state.bet = bet;
-			}
 			break;
 
+		// RAISE
 		default:
-			throw std::runtime_error("Unknown action.");
+			// We clip the bet between minRaise and allin.
+			// It might have gone out of the limits because
+			// the state in abcInfo is different from the real
+			// game state, plus the initial stakes of all players
+			// in abcInfo are set to a static const.
+			egn::chips bet = abcToRealChips(abcInfo.state.bet);
+			if (bet >= state.allin || state.allin <= state.minRaise) bet = state.allin;
+			else if (bet < state.minRaise) bet = state.minRaise;
+			state.bet = bet;
+			break;
 		}
 	}
 
@@ -178,13 +192,13 @@ public:
 		// If a new round has begun, erase all alive players in abcInfo.state who
 		// went all-in so that the number of acting players in abcInfo is correct.
 		if (allinExists && abcInfo.state.round != oldRound) {
-			uint8_t i = abcInfo.state.firstAlive;
-			do {
+			for (uint8_t i = 0; i < egn::MAX_PLAYERS; ++i) {
 				if (isAllIn[i] && abcInfo.state.isAlive(i)) {
 					abcInfo.state.eraseAlive(i);
 					abcInfo.state.eraseActing(i);
 				}
-			} while (abcInfo.state.nextAlive(i) != abcInfo.state.firstAlive);
+			}
+			abcInfo.state.actingPlayer = abcInfo.state.firstActing;
 			abcInfo.nPlayers = abcInfo.state.nAlive;
 		}
 	}

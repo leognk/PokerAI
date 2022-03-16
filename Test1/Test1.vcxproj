@@ -165,6 +165,9 @@
     <ProjectReference Include="..\LossyAbstraction\LossyAbstraction.vcxproj">
       <Project>{30a7bf15-f11f-43e4-bdeb-85528f77d8f2}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\RandomAI\RandomAI.vcxproj">
+      <Project>{c493d8c9-af17-42a4-8420-e92c6c892cae}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Utils\Utils.vcxproj">
       <Project>{2b261b87-ab22-4819-a536-8f50fb66a682}</Project>
     </ProjectReference>
