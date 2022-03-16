@@ -43,6 +43,8 @@ public:
 
 	uint8_t mapActionToAbcAction(
 		const egn::GameState& state, uint8_t nRaises, Rng& rng);
+	uint8_t mapActionToFoldCall(
+		const egn::GameState& state, uint8_t nRaises, Rng& rng);
 
 	// Actions are indexed using the following order:
 	// 0: fold

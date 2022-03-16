@@ -5,18 +5,16 @@
 
 int main()
 {
-    const uint8_t maxPlayers = 3;
-
     const egn::chips ante = 0;
     const egn::chips bigBlind = 100;
 
     const uint8_t firstDealer = 0;
-    const unsigned rngSeed = 8;
+    const unsigned rngSeed = 9;
 
     const std::string separatorLine = std::string(50, '_') + "\n\n";
     
     // Stakes
-    const std::array<egn::chips, egn::MAX_PLAYERS> initialStakes = { 10000, 10000, 10000 };
+    const std::array<egn::chips, egn::MAX_PLAYERS> initialStakes = { 10000, 10000, 10000, 10000, 10000, 10000 };
 
     // Random AI
     opt::RandomAI randomAI(1.0 / 8, 6.0 / 8, rngSeed);
@@ -35,7 +33,7 @@ int main()
 
     // All players
     const std::vector<egn::Player*> uniquePlayers = { &randomAI, &blueprintAI, &user };
-    const std::vector<egn::Player*> players = { &randomAI, &blueprintAI, &randomAI };
+    const std::vector<egn::Player*> players = { &randomAI, &blueprintAI, &randomAI, &randomAI, &randomAI, &randomAI };
 
 
     // Play until only one player remains.

@@ -84,6 +84,7 @@ public:
 
 		isAllIn.fill(false);
 		allinExists = false;
+		abcAllinFlag = false;
 	}
 
 	void act(egn::GameState& state) override
@@ -153,12 +154,23 @@ public:
 
 		// No need to convert the state's chips because of different bb in abcInfo,
 		// because only the bet size is used and it is independent from the bb.
-		const uint8_t action = abcInfo.mapActionToAbcAction(state, rng);
+		uint8_t action;
+		// If a previous action was mapped to an all-in but was not one in the real
+		// state, a following action can be a raise while abcInfo only authorizes
+		// fold or call, so we map the raise to one of these two.
+		if (abcAllinFlag)
+			action = abcInfo.mapActionToFoldCall(state, rng);
+		else
+			action = abcInfo.mapActionToAbcAction(state, rng);
 		abcInfo.nextStateWithAction(action, false);
+
+		if (action == abc::ALLIN) abcAllinFlag = true;
 
 		// If the next acting player has gone all-in, we put him in a fold state
 		// so that the number of acting players in abcInfo is correct.
-		while (isAllIn[abcInfo.state.actingPlayer] && abcInfo.state.round == oldRound) {
+		while (isAllIn[abcInfo.state.actingPlayer]
+			&& abcInfo.state.round == oldRound
+			&& !abcInfo.state.finished) {
 			oldRound = abcInfo.state.round;
 			abcInfo.nextStateWithAction(abc::FOLD, false);
 		}
@@ -207,6 +219,7 @@ private:
 
 	std::array<bool, egn::MAX_PLAYERS> isAllIn;
 	bool allinExists;
+	bool abcAllinFlag;
 
 }; // BlueprintAI
 

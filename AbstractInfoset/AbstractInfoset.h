@@ -141,6 +141,12 @@ public:
 		return actionAbc.mapActionToAbcAction(state, nRaises, rng);
 	}
 
+	uint8_t mapActionToFoldCall(
+		const egn::GameState& state, ActionAbstraction::Rng& rng)
+	{
+		return actionAbc.mapActionToFoldCall(state, nRaises, rng);
+	}
+
 	// The pair composed of an abstract infoset and
 	// one of its legal action is identified by:
 	// - the current round.

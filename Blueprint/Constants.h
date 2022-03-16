@@ -125,7 +125,7 @@ static const bckSize_t N_BCK_FLOP = 5; // Pluribus: 200
 static const bckSize_t N_BCK_TURN = 5; // Pluribus: 200
 static const bckSize_t N_BCK_RIVER = 5; // Pluribus: 200
 
-static const uint8_t MAX_PLAYERS = 3; // Pluribus: 6
+static const uint8_t MAX_PLAYERS = 6; // Pluribus: 6
 
 static const egn::chips ANTE = 0; // Pluribus: 0
 static const egn::chips BIG_BLIND = 100; // Pluribus: 100
