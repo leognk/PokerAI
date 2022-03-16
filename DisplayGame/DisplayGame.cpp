@@ -9,7 +9,7 @@ int main()
     const egn::chips bigBlind = 100;
 
     const uint8_t firstDealer = 0;
-    const unsigned rngSeed = 9;
+    const unsigned rngSeed = 8;
 
     const std::string separatorLine = std::string(50, '_') + "\n\n";
     

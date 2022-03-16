@@ -180,8 +180,10 @@ public:
 		if (allinExists && abcInfo.state.round != oldRound) {
 			uint8_t i = abcInfo.state.firstAlive;
 			do {
-				if (isAllIn[i] && abcInfo.state.isAlive(i))
+				if (isAllIn[i] && abcInfo.state.isAlive(i)) {
 					abcInfo.state.eraseAlive(i);
+					abcInfo.state.eraseActing(i);
+				}
 			} while (abcInfo.state.nextAlive(i) != abcInfo.state.firstAlive);
 			abcInfo.nPlayers = abcInfo.state.nAlive;
 		}
