@@ -221,17 +221,25 @@ uint8_t ActionAbstraction::mapActionToAbcAction(
 uint8_t ActionAbstraction::mapActionToFoldCall(
 	const egn::GameState& state, uint8_t nRaises, Rng& rng)
 {
-	const float sizeX = betToBetSize(state.bet, state);
+	switch (state.action) {
 
-	if (sizeX >= allinSize) return CALL;
+	case egn::FOLD: return FOLD;
 
-	betSizesCumWeights[0] = (uint16_t)std::round(
-		actionMappingFunction(0.0f, allinSize, sizeX) * betSizeRandChoice.RANGE);
+	case egn::RAISE: return CALL;
 
-	if (betSizeRandChoice(betSizesCumWeights, rng) == 0)
-		return FOLD;
-	else
-		return CALL;
+	case egn::CALL:
+
+		const float sizeX = betToBetSize(state.bet, state);
+		const float foldSize = betToBetSize(0, state);
+
+		betSizesCumWeights[0] = (uint16_t)std::round(
+			actionMappingFunction(foldSize, 0.0f, sizeX) * betSizeRandChoice.RANGE);
+
+		if (betSizeRandChoice(betSizesCumWeights, rng) == 0)
+			return FOLD;
+		else
+			return CALL;
+	}
 }
 
 float ActionAbstraction::actionMappingFunction(const float a, const float b, const float x)

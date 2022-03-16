@@ -6,7 +6,7 @@ TEST(BlueprintAITest, test) {
 
     const unsigned rngSeed = 1;
 
-    const uint64_t endIter = 1000;
+    const uint64_t endIter = 10000;
 
     const egn::chips minAnte = 0;
     const egn::chips maxAnte = 100;
@@ -121,10 +121,25 @@ TEST(BlueprintAITest, test) {
             state.startNewHand(dealer);
             for (const auto& p : updatePlayers) p->reset(state);
             while (!state.finished) {
+
+                if (!blueprintAI.abcInfo.state.finished) {
+                    EXPECT_EQ(blueprintAI.abcInfo.state.round, state.round);
+                    EXPECT_EQ(blueprintAI.abcInfo.state.actingPlayer, state.actingPlayer);
+                }
+
                 players[state.actingPlayer]->act(state);
                 for (const auto& p : updatePlayers) p->update(state);
                 state.nextState();
             }
+
+            for (uint8_t i = 0; i < egn::MAX_PLAYERS; ++i) {
+                const auto r1 = state.reward(i);
+                const auto r2 = blueprintAI.abcInfo.state.reward(i);
+                if (r1 > 0) EXPECT_GT(r2, 0);
+                else if (r1 < 0) EXPECT_LT(r2, 0);
+                else EXPECT_EQ(r2, 0);
+            }
+
             // Eliminate players who have a stake smaller than a BB.
             for (egn::chips& x : state.stakes) {
                 if (x < bigBlind) x = 0;

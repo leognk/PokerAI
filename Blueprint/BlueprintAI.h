@@ -171,7 +171,8 @@ public:
 		uint8_t action;
 		// If a previous action was mapped to an all-in but was not one in the real
 		// state, a following action can be a raise while abcInfo only authorizes
-		// fold or call, so we map the raise to one of these two.
+		// fold or call, so we map the raise to a call. A small incomplete call
+		// will likely be mapped to fold.
 		if (abcAllinFlag)
 			action = abcInfo.mapActionToFoldCall(state, rng);
 		else
@@ -225,9 +226,11 @@ public:
 		}
 	}
 
+	abc::AbstractInfoset<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver> abcInfo;
+	bool abcAllinFlag;
+
 private:
 
-	abc::AbstractInfoset<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver> abcInfo;
 	Blueprint* blueprint;
 	abc::ActionAbstraction::Rng rng;
 
@@ -235,7 +238,6 @@ private:
 
 	std::array<bool, egn::MAX_PLAYERS> isAllIn;
 	bool allinExists;
-	bool abcAllinFlag;
 
 }; // BlueprintAI
 

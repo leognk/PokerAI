@@ -138,21 +138,41 @@ int main()
             //state.stakes = initialStakes;
             state.startNewHand(dealer);
             for (const auto& p : updatePlayers) p->reset(state);
-            //if (currIter == 2) state.printState(std::cout);
+            if (currIter == 0) state.printState(std::cout);
             while (!state.finished) {
                 //////////////////////////////////////////
-                const bool b = state.stakes[3] == 6774 && state.stakes[0] == 46054;
+                const bool b = state.stakes[1] == 150993 && state.actingPlayer == 1;
                 //////////////////////////////////////////
+
+                //////////////////////////////////////////
+                if (!blueprintAI.abcInfo.state.finished) {
+                    if (blueprintAI.abcInfo.state.round != state.round)
+                        int x = 0;
+                    if (blueprintAI.abcInfo.state.actingPlayer != state.actingPlayer)
+                        int x = 0;
+                }
+                //////////////////////////////////////////
+
                 players[state.actingPlayer]->act(state);
                 for (const auto& p : updatePlayers) p->update(state);
                 state.nextState();
-                //if (currIter == 2) state.printState(std::cout);
+                if (currIter == 0) state.printState(std::cout);
             }
-            //if (currIter == 2) state.printRewards(std::cout);
+            if (currIter == 0) state.printRewards(std::cout);
             // Eliminate players who have a stake smaller than a BB.
             for (egn::chips& x : state.stakes) {
                 if (x < bigBlind) x = 0;
             }
+
+            //////////////////////////////////////////
+            for (uint8_t i = 0; i < egn::MAX_PLAYERS; ++i) {
+                const auto r1 = state.reward(i) + (egn::dchips)ante;
+                const auto r2 = blueprintAI.abcInfo.state.reward(i);
+                if ((r1 > 0 && r2 <= 0) || (r1 < 0 && r2 >=0) || (r1 == 0 && r2 != 0))
+                    int x = 0;
+            }
+            //////////////////////////////////////////
+
             state.nextActive(dealer);
         } while (state.foundActivePlayers());
     }
