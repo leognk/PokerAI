@@ -20,8 +20,10 @@ TEST(BlueprintAITest, AbcInfoActingPlayerIsCorrect) {
     const uint8_t maxNBlueprintAI = bp::MAX_PLAYERS;
 
 
+    // Rng
     omp::XoroShiro128Plus rng(rngSeed);
 
+    // Probability distributions.
     auto anteDist = omp::FastUniformIntDistribution<egn::chips>(minAnte, maxAnte);
     auto bbDist = omp::FastUniformIntDistribution<egn::chips>(minBB, maxBB);
     auto nPlayersDist = omp::FastUniformIntDistribution<uint8_t>(2, bp::MAX_PLAYERS);
@@ -42,10 +44,16 @@ TEST(BlueprintAITest, AbcInfoActingPlayerIsCorrect) {
         bp::BP_GAME_NAMESPACE, bp::BP_BUILD_NAMESPACE, 2, &blueprint, (unsigned)rng());
 
     std::array<egn::chips, egn::MAX_PLAYERS> initialStakes;
+
     const std::vector<egn::Player*> updatePlayers = { &blueprintAI };
     std::array<egn::Player*, egn::MAX_PLAYERS> players;
+
     std::vector<uint8_t> playerPositions;
-    std::vector<opt::RandomAI> randomPlayers;
+
+    // Random AIs
+    std::vector<opt::RandomAI> randomAIs;
+    for (uint8_t i = 0; i < bp::MAX_PLAYERS; ++i)
+        randomAIs.push_back(opt::RandomAI(0.0, 1.0, (unsigned)rng()));
 
     // Simulate random games.
 
@@ -97,20 +105,14 @@ TEST(BlueprintAITest, AbcInfoActingPlayerIsCorrect) {
 
         // Build randomAIs.
         const uint8_t nRandomAI = nPlayers - nBlueprintAI;
-        randomPlayers.clear();
-        for (uint8_t i = 0; i < nRandomAI; ++i) {
-            double foldProba = (double)rng() / (std::numeric_limits<uint64_t>::max)();
-            double callProba;
-            if (foldProba == 1.0) callProba = 0.0;
-            else callProba = (double)rng() / (std::numeric_limits<uint64_t>::max)();
-            randomPlayers.push_back(opt::RandomAI(foldProba, callProba, (unsigned)rng()));
-        }
+        for (uint8_t i = 0; i < nRandomAI; ++i)
+            randomAIs[i].setRandomProbas(rng);
 
         // Put randomAI in players.
         for (uint8_t i = 0; i < nRandomAI; ++i) {
             playerPosition2Dist.init(0, (uint8_t)playerPositions.size() - 1);
             const uint8_t pos = playerPosition2Dist(rng);
-            players[playerPositions[pos]] = &randomPlayers[i];
+            players[playerPositions[pos]] = &randomAIs[i];
             playerPositions.erase(playerPositions.begin() + pos);
         }
 
@@ -132,7 +134,7 @@ TEST(BlueprintAITest, AbcInfoActingPlayerIsCorrect) {
                 state.nextState();
             }
 
-            // Eliminate players who have a stake smaller than ante + BB.
+            // Eliminate players who have a stake smaller than ante + BB + 1.
             for (egn::chips& x : state.stakes) {
                 if (x < ante + bigBlind + 1) x = 0;
             }

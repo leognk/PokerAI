@@ -6,6 +6,15 @@
 
 namespace opt {
 
+// Return a random double between 0 and 1.
+template<class Rng> inline double rand(Rng& rng)
+{
+    static_assert(
+        sizeof(typename Rng::result_type) == sizeof(uint64_t),
+        "64-bit RNG required.");
+    return (double)rng() / (std::numeric_limits<uint64_t>::max)();
+}
+
 // Generate a random index with the given
 // array of cumulated weights (uintN_t with N > tBits
 // or float with enough bits on the fractional part).

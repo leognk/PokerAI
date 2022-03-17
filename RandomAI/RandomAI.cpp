@@ -4,23 +4,25 @@
 
 namespace opt {
 
-#pragma warning(push)
-#pragma warning(disable: 4244)
 RandomAI::RandomAI(
-	double foldProba, double callProba,
-	unsigned rngSeed) :
+	double foldProba, double callProba, unsigned rngSeed) :
 
-	mFoldWeight(foldProba * mRandChoice.RANGE),
-	mCallWeight(callProba * mRandChoice.RANGE),
-	mRaiseWeight(mRandChoice.RANGE - mFoldWeight - mCallWeight),
-	actionCumWeights(buildActionCumWeights()),
 	mRng{ (!rngSeed) ? std::random_device{}() : rngSeed }
 {
-	assert(0 <= foldProba && foldProba < 1);
-	assert(0 <= callProba && callProba <= 1);
-	assert(!(foldProba == 0 && callProba == 0));
+	setProbas(foldProba, callProba);
 }
-#pragma warning(pop)
+
+void RandomAI::setProbas(double foldProba, double callProba)
+{
+	mFoldWeight = (unsigned)std::round(foldProba * mRandChoice.RANGE);
+	mCallWeight = (unsigned)std::round(callProba * mRandChoice.RANGE);
+	mRaiseWeight = (unsigned)(mRandChoice.RANGE - mFoldWeight - mCallWeight);
+	actionCumWeights = buildActionCumWeights();
+
+	assert(0.0 <= foldProba && foldProba < 1.0);
+	assert(0.0 <= callProba && callProba <= 1.0);
+	assert(!(foldProba == 0.0 && callProba == 0.0));
+}
 
 std::array<std::array<unsigned, egn::GameState::nLegalCases>,
 	egn::N_ACTIONS> RandomAI::buildActionCumWeights()

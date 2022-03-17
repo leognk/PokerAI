@@ -15,6 +15,18 @@ public:
 	RandomAI(
 		double foldProba = 1./3, double callProba = 1./3,
 		unsigned rngSeed = 0);
+
+	void setProbas(double foldProba, double callProba);
+
+	template<class Rng> void setRandomProbas(Rng& rng)
+	{
+		// 0 <= foldProba <= 0.99
+		const double foldProba = 0.99 * opt::rand(rng);
+		// 0.01 <= callProba <= 1 - foldProba
+		const double callProba = (1.0 - foldProba - 0.01) * opt::rand(rng) + 0.01;
+		setProbas(foldProba, callProba);
+	}
+
 	void act(egn::GameState& state) override;
 
 private:
@@ -28,8 +40,9 @@ private:
 	omp::FastUniformIntDistribution<egn::chips, 32> mRaiseDist;
 
 	unsigned mFoldWeight, mCallWeight, mRaiseWeight;
+
 	// Cumulated weight distributions over all actions for each legal case.
-	const std::array<std::array<unsigned, egn::GameState::nLegalCases>,
+	std::array<std::array<unsigned, egn::GameState::nLegalCases>,
 		egn::N_ACTIONS> actionCumWeights;
 
 }; // RandomAI
