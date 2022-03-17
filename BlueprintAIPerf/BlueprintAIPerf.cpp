@@ -4,8 +4,8 @@
 // Simulate random games with 1 blueprintAI vs randomAIs (randomly built).
 int main()
 {
-    const double endDuration = 3;
-    const unsigned rngSeed = 1;
+    const double endDuration = 2;
+    const unsigned rngSeed = 2;
 
 
     // Rng
@@ -43,7 +43,14 @@ int main()
     const opt::time_t startTime = opt::getTime();
     double currDuration = 0;
     uint64_t gameCount = 0;
+
+    // Stats
     double bpAIAvgGain = 0;
+    double bpAIGainStd = 0;
+    double bpAIMinGain = 0;
+    double bpAIMaxGain = 0;
+    double bpAIAccGain = 0;
+    double bpAIMinAccGain = 0;
 
     while (currDuration < endDuration) {
 
@@ -75,7 +82,17 @@ int main()
             }
             ++gameCount;
 
-            bpAIAvgGain += state.reward(bpAIPos);
+            // Calculate mean and std of blueprintAI's gain online.
+            const double r = (double)state.reward(bpAIPos);
+            const double delta = r - bpAIAvgGain;
+            bpAIAvgGain += delta / gameCount;
+            bpAIGainStd += delta * (r - bpAIAvgGain);
+
+            // Update other stats.
+            if (r < bpAIMinGain) bpAIMinGain = r;
+            if (r > bpAIMaxGain) bpAIMaxGain = r;
+            bpAIAccGain += r;
+            if (bpAIAccGain < bpAIMinAccGain) bpAIMinAccGain = bpAIAccGain;
 
             // Eliminate players who have a stake smaller than ante + BB + 1.
             for (egn::chips& x : state.stakes) {
@@ -90,13 +107,26 @@ int main()
         currDuration = opt::getDuration(startTime);
     }
 
-    bpAIAvgGain /= gameCount;
+    // Calculate mean and std of blueprintAI's gain.
     bpAIAvgGain /= bp::BIG_BLIND;
+    bpAIGainStd = std::sqrt(bpAIGainStd / (gameCount - 1));
+    bpAIGainStd /= bp::BIG_BLIND;
+
+    // Calculate other stats.
+    bpAIMinGain /= bp::BIG_BLIND;
+    bpAIMaxGain /= bp::BIG_BLIND;
+    bpAIMinAccGain /= bp::BIG_BLIND;
 
     // Print stats.
     std::cout
         << opt::prettyNumDg(currDuration, 3, true) << "s\n"
         << opt::prettyNumDg(gameCount, 3, true) << "games\n"
-        << opt::prettyNumDg(gameCount / currDuration, 3, true) << "games/s\n"
-        << opt::prettyNumDg(bpAIAvgGain, 3, true) << "BB/game\n";
+        << opt::prettyNumDg(gameCount / currDuration, 3, true) << "games/s\n\n"
+
+        << "Avg gain: " << opt::prettyNumDg(bpAIAvgGain, 3, true) << "BB/game\n"
+        << "Std gain: " << opt::prettyNumDg(bpAIGainStd, 3, true) << "BB/game\n\n"
+
+        << "Min gain: " << opt::prettyNumDg(bpAIMinGain, 3, true) << "BB\n"
+        << "Max gain: " << opt::prettyNumDg(bpAIMaxGain, 3, true) << "BB\n"
+        << "Min acc gain: " << opt::prettyNumDg(bpAIMinAccGain, 3, true) << "BB\n";
 }

@@ -44,9 +44,9 @@ inline std::string prettyNumCase(
 	return roundStr(d, precision) + (withSpace ? " " : "") + suffix;
 }
 
-// Output the double d in a string with a maximum of 4 characters if precision = 0
+// Output the positive double d in a string with a maximum of 4 characters if precision = 0
 // or 5 + precision characters using G (giga), M (mega), k (kilo), m (milli), u (micro), n (nano).
-inline std::string prettyNum(
+inline std::string prettyPosNum(
 	const double d, const unsigned precision = 0, const bool withSpace = false)
 {
 	// giga
@@ -69,6 +69,12 @@ inline std::string prettyNum(
 }
 
 inline std::string prettyNum(
+	const double d, const unsigned nDigits, const bool withSpace = false)
+{
+	return ((d < 0) ? "-" : "") + prettyPosNum((double)std::abs(d), nDigits, withSpace);
+}
+
+inline std::string prettyNum(
 	const uint64_t n, const unsigned precision = 0, const bool withSpace = false)
 {
 	return prettyNum((double)n, precision, withSpace);
@@ -83,8 +89,8 @@ inline std::string prettyNumDgCase(
 	return roundStr(d, precision) + (withSpace ? " " : "") + suffix;
 }
 
-//Same as prettyNum but with a fixed number of digits (except in the case of unity).
-inline std::string prettyNumDg(
+//Same as prettyPosNum but with a fixed number of digits (except in the case of unity).
+inline std::string prettyPosNumDg(
 	const double d, const unsigned nDigits, const bool withSpace = false)
 {
 	// giga
@@ -107,6 +113,12 @@ inline std::string prettyNumDg(
 }
 
 inline std::string prettyNumDg(
+	const double d, const unsigned nDigits, const bool withSpace = false)
+{
+	return ((d < 0) ? "-" : "") + prettyPosNumDg((double)std::abs(d), nDigits, withSpace);
+}
+
+inline std::string prettyNumDg(
 	const uint64_t n, const unsigned nDigits, const bool withSpace = false)
 {
 	return prettyNumDg((double)n, nDigits, withSpace);
@@ -115,7 +127,7 @@ inline std::string prettyNumDg(
 inline std::string prettyNumDg(
 	const int64_t n, const unsigned nDigits, const bool withSpace = false)
 {
-	return ((n < 0) ? "-" : "") + prettyNumDg((double)std::abs(n), nDigits, withSpace);
+	return prettyNumDg((double)n, nDigits, withSpace);
 }
 
 template<typename T>
