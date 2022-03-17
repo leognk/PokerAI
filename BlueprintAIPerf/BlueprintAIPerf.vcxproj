@@ -149,9 +149,6 @@
     <ProjectReference Include="..\Blueprint\Blueprint.vcxproj">
       <Project>{51da6b52-6211-4c04-9b87-071d4b3e23e3}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\RandomAI\RandomAI.vcxproj">
-      <Project>{c493d8c9-af17-42a4-8420-e92c6c892cae}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

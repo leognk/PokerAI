@@ -27,12 +27,18 @@
     <ClInclude Include="BlueprintAI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="EvalBlueprintAI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BlueprintCalculator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Blueprint.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EvalBlueprintAI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
