@@ -19,7 +19,7 @@ int main()
 {
     const unsigned rngSeed = 1;
 
-    const uint64_t endIter = 1000;
+    const uint64_t endIter = 10000;
 
     const egn::chips minAnte = 0;
     const egn::chips maxAnte = 100;
@@ -80,7 +80,7 @@ int main()
         const uint8_t nPlayers = nPlayersDist(rng);
 
         // Stakes
-        initialStakeDist.init(bigBlind, maxStake);
+        initialStakeDist.init(ante + bigBlind + 1, maxStake);
         initialStakes.fill(0);
         for (uint8_t i = 0; i < nPlayers; ++i) {
             uint8_t pos;
@@ -138,7 +138,7 @@ int main()
             //state.stakes = initialStakes;
             state.startNewHand(dealer);
             for (const auto& p : updatePlayers) p->reset(state);
-            if (currIter == 0) state.printState(std::cout);
+            if (currIter == 2899) state.printState(std::cout);
             while (!state.finished) {
                 //////////////////////////////////////////
                 const bool b = state.stakes[1] == 150993 && state.actingPlayer == 1;
@@ -156,21 +156,25 @@ int main()
                 players[state.actingPlayer]->act(state);
                 for (const auto& p : updatePlayers) p->update(state);
                 state.nextState();
-                if (currIter == 0) state.printState(std::cout);
+                if (currIter == 2899) state.printState(std::cout);
             }
-            if (currIter == 0) state.printRewards(std::cout);
+            if (currIter == 2899) state.printRewards(std::cout);
             // Eliminate players who have a stake smaller than a BB.
             for (egn::chips& x : state.stakes) {
-                if (x < bigBlind) x = 0;
+                if (x < ante + bigBlind + 1) x = 0;
             }
 
             //////////////////////////////////////////
-            for (uint8_t i = 0; i < egn::MAX_PLAYERS; ++i) {
-                const auto r1 = state.reward(i) + (egn::dchips)ante;
-                const auto r2 = blueprintAI.abcInfo.state.reward(i);
-                if ((r1 > 0 && r2 <= 0) || (r1 < 0 && r2 >=0) || (r1 == 0 && r2 != 0))
-                    int x = 0;
-            }
+            //if (blueprintAI.abcInfo.state.finished) {
+                //for (uint8_t i = 0; i < egn::MAX_PLAYERS; ++i) {
+                //    if (state.initialStakes[i] != 0) {
+                //        const auto r1 = state.reward(i) + (egn::dchips)ante;
+                //        const auto r2 = blueprintAI.abcInfo.state.reward(i);
+                //        if ((r1 > 0 && r2 <= 0) || (r1 < 0 && r2 >= 0) || (r1 == 0 && r2 != 0))
+                //            int x = 0;
+                //    }
+                //}
+            //}
             //////////////////////////////////////////
 
             state.nextActive(dealer);

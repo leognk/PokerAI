@@ -48,7 +48,7 @@ public:
 	uint8_t mapActionToAbcAction(
 		const egn::GameState& state, uint8_t nRaises, Rng& rng);
 	uint8_t mapActionToFoldCall(
-		const egn::GameState& state, uint8_t nRaises, Rng& rng);
+		const egn::GameState& state, Rng& rng);
 
 	egn::chips actionToBet(
 		uint8_t action, const egn::GameState& state, uint8_t nRaises) const;

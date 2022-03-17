@@ -2,7 +2,7 @@
 #include "../Blueprint/BlueprintAI.h"
 #include "../RandomAI/RandomAI.h"
 
-TEST(BlueprintAITest, test) {
+TEST(BlueprintAITest, AbcInfoActingPlayerIsCorrect) {
 
     const unsigned rngSeed = 1;
 
@@ -64,7 +64,7 @@ TEST(BlueprintAITest, test) {
         const uint8_t nPlayers = nPlayersDist(rng);
 
         // Stakes
-        initialStakeDist.init(bigBlind, maxStake);
+        initialStakeDist.init(ante + bigBlind + 1, maxStake);
         initialStakes.fill(0);
         for (uint8_t i = 0; i < nPlayers; ++i) {
             uint8_t pos;
@@ -132,17 +132,9 @@ TEST(BlueprintAITest, test) {
                 state.nextState();
             }
 
-            for (uint8_t i = 0; i < egn::MAX_PLAYERS; ++i) {
-                const auto r1 = state.reward(i);
-                const auto r2 = blueprintAI.abcInfo.state.reward(i);
-                if (r1 > 0) EXPECT_GT(r2, 0);
-                else if (r1 < 0) EXPECT_LT(r2, 0);
-                else EXPECT_EQ(r2, 0);
-            }
-
-            // Eliminate players who have a stake smaller than a BB.
+            // Eliminate players who have a stake smaller than ante + BB.
             for (egn::chips& x : state.stakes) {
-                if (x < bigBlind) x = 0;
+                if (x < ante + bigBlind + 1) x = 0;
             }
             state.nextActive(dealer);
         } while (state.foundActivePlayers());

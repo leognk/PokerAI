@@ -144,7 +144,7 @@ public:
 	uint8_t mapActionToFoldCall(
 		const egn::GameState& state, ActionAbstraction::Rng& rng)
 	{
-		return actionAbc.mapActionToFoldCall(state, nRaises, rng);
+		return actionAbc.mapActionToFoldCall(state, rng);
 	}
 
 	// The pair composed of an abstract infoset and
