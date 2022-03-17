@@ -2,11 +2,12 @@
 #define ABC_BLUEPRINTAI_H
 
 #include "Blueprint.h"
+#include "../AbstractInfoset/AbstractInfoset.h"
 #include "../GameEngine/Player.h"
 
 namespace bp {
 
-#define BLUEPRINT_AI_BUILDER(bpGameName, bpBuildName, bigBlind, blueprint, rngSeed) \
+#define BLUEPRINT_AI_BUILDER(bpGameName, bigBlind, blueprint, rngSeed) \
 	bp::BlueprintAI< \
 		bpGameName::bckSize_t, \
 		bpGameName::N_BCK_PREFLOP, \
@@ -227,7 +228,6 @@ public:
 	}
 
 	abc::AbstractInfoset<bckSize_t, nBckPreflop, nBckFlop, nBckTurn, nBckRiver> abcInfo;
-	bool abcAllinFlag;
 
 private:
 
@@ -238,6 +238,7 @@ private:
 
 	std::array<bool, egn::MAX_PLAYERS> isAllIn;
 	bool allinExists;
+	bool abcAllinFlag;
 
 }; // BlueprintAI
 

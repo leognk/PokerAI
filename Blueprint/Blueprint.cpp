@@ -27,7 +27,7 @@ void Blueprint::loadStrat()
 
 	// Load the strategy.
 	for (uint8_t r = 0; r < egn::N_ROUNDS; ++r)
-		opt::load2DVector(strat[r], BlueprintCalculator::stratPath(bpName, r));
+		opt::load2DVector(strat[r], bp::stratPath(bpName, r));
 }
 
 void Blueprint::loadRegrets()
@@ -43,7 +43,7 @@ void Blueprint::loadRegrets()
 	};
 
 	// Load the regrets from the checkpoint file.
-	auto file = opt::fstream(BlueprintCalculator::checkpointPath(bpName), std::ios::in | std::ios::binary);
+	auto file = opt::fstream(bp::checkpointPath(bpName), std::ios::in | std::ios::binary);
 	opt::load3DVector(regrets, file);
 	file.close();
 }

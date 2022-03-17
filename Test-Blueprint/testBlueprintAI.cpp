@@ -41,7 +41,7 @@ TEST(BlueprintAITest, AbcInfoActingPlayerIsCorrect) {
 
     // Blueprint AI
     auto blueprintAI = BLUEPRINT_AI_BUILDER(
-        bp::BP_GAME_NAMESPACE, bp::BP_BUILD_NAMESPACE, 2, &blueprint, (unsigned)rng());
+        bp::BP_GAME_NAMESPACE, 2, &blueprint, (unsigned)rng());
 
     std::array<egn::chips, egn::MAX_PLAYERS> initialStakes;
 

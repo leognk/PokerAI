@@ -24,7 +24,7 @@ void BlueprintAIEvaluator::evalBlueprintAI(
 
     // Blueprint AI
     auto blueprintAI = BLUEPRINT_AI_BUILDER(
-        bp::BP_GAME_NAMESPACE, bp::BP_BUILD_NAMESPACE, bp::BIG_BLIND, &blueprint, (unsigned)rng());
+        bp::BP_GAME_NAMESPACE, bp::BIG_BLIND, &blueprint, (unsigned)rng());
     auto bpAIPosDist = omp::FastUniformIntDistribution<uint8_t>(0, bp::MAX_PLAYERS - 1);
 
     // Random AIs
@@ -101,14 +101,15 @@ void BlueprintAIEvaluator::evalBlueprintAI(
     minAccGain /= bp::BIG_BLIND;
 }
 
-void evalBlueprintAI(
-    double& gainAvg, double& gainStd, double& minAccGain,
-    const double endDuration, const unsigned rngSeed = 0)
+void BlueprintAIEvaluator::evalBlueprintAI(
+    double& gainAvg, double& gainStd,
+    const double endDuration, const unsigned rngSeed)
 {
     double currDuration = 0;
     uint64_t gameCount = 0;
+    double minAccGain = 0;
 
-    bp::BlueprintAIEvaluator::evalBlueprintAI(
+    evalBlueprintAI(
         currDuration, gameCount,
         gainAvg, gainStd, minAccGain,
         endDuration, rngSeed);

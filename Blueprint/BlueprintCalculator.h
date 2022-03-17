@@ -2,6 +2,7 @@
 #define BP_BLUEPRINTCALCULATOR_H
 
 #include "Constants.h"
+#include "EvalBlueprintAI.h"
 #include "../AbstractInfoset/AbstractInfoset.h"
 #include "../AbstractInfoset/AbstractInfosetDebug.h"
 #include "../AbstractInfoset/GroupedActionSeqsInv.h"
@@ -14,13 +15,7 @@
 
 namespace bp {
 
-typedef int32_t regret_t;
-typedef std::vector<std::vector<std::vector<regret_t>>> regrets_t;
-typedef uint8_t strat_t;
-typedef uint32_t sumStrat_t;
 typedef abc::AbstractInfoset<bckSize_t, N_BCK_PREFLOP, N_BCK_FLOP, N_BCK_TURN, N_BCK_RIVER> abcInfo_t;
-
-static const strat_t sumStrat = (std::numeric_limits<strat_t>::max)();
 
 class BlueprintCalculator
 {
@@ -32,22 +27,6 @@ public:
 	// Conduct MCCFR and save the final strategy to the disk.
 	void buildStrategy();
 	void oneIter();
-
-	static std::string blueprintDir(const std::string& blueprintName);
-	static std::string blueprintTmpDir(const std::string& blueprintName);
-
-	static std::string snapshotPath(const std::string& blueprintName, unsigned snapshotId, uint8_t roundId);
-	static std::string checkpointPath(const std::string& blueprintName);
-	static std::string constantPath(const std::string& blueprintName);
-	static std::string stratPath(const std::string& blueprintName, uint8_t roundId);
-
-	static std::string blueprintDir();
-	static std::string blueprintTmpDir();
-
-	static std::string snapshotPath(unsigned snapshotId, uint8_t roundId);
-	static std::string checkpointPath();
-	static std::string constantPath();
-	static std::string stratPath(uint8_t roundId);
 
 	uint64_t currIter;
 
@@ -76,6 +55,7 @@ private:
 
 	void takeSnapshot();
 	void averageSnapshots();
+	void evaluateStrategy();
 
 	void writeConstants() const;
 	void verifyConstants() const;
@@ -86,6 +66,7 @@ private:
 	void loadCheckpoint(std::fstream& file);
 
 	void printProgress() const;
+	void printStratEval() const;
 	void printFinalStats() const;
 
 	bool verbose;
@@ -118,6 +99,9 @@ private:
 	uint64_t nodesCount;
 	uint64_t nodesUniqueCount;
 	const uint64_t totUniqueNodes;
+
+	std::vector<float> gainsAvg, gainsStd;
+	std::vector<uint64_t> nSnapshotsUsedForEval;
 
 	static const std::string printSep;
 

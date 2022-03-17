@@ -1,7 +1,9 @@
 #ifndef BP_BLUEPRINT_H
 #define BP_BLUEPRINT_H
 
-#include "BlueprintCalculator.h"
+#include "Constants.h"
+#include "../AbstractInfoset/ActionSeqSize.h"
+#include <random>
 
 namespace bp {
 

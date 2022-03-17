@@ -25,8 +25,7 @@ int main()
         bp::medium::BLUEPRINT_BUILD_NAME,
         rngSeed);
     blueprint.loadStrat();
-    auto blueprintAI = BLUEPRINT_AI_BUILDER(
-        bp::simple, bp::medium, bigBlind, &blueprint, rngSeed);
+    auto blueprintAI = BLUEPRINT_AI_BUILDER(bp::simple, bigBlind, &blueprint, rngSeed);
 
     // User player
     opt::UserPlayer user(separatorLine);

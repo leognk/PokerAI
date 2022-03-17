@@ -16,7 +16,7 @@ public:
         const double endDuration, const unsigned rngSeed = 0);
 
     static void evalBlueprintAI(
-        double& gainAvg, double& gainStd, double& minAccGain,
+        double& gainAvg, double& gainStd,
         const double endDuration, const unsigned rngSeed = 0);
 };
 

@@ -4,6 +4,7 @@
 #include "../GameEngine/GameState.h"
 #include "../AbstractInfoset/ActionAbstraction.h"
 #include "../LosslessAbstraction/hand_index.h"
+#include "../Utils/StringManip.h"
 
 #pragma warning(push)
 #pragma warning(disable: 4244)
@@ -18,8 +19,8 @@ namespace bp {
 //#define BP_GAME_NAMESPACE test
 
 //#define BP_BUILD_NAMESPACE original
-#define BP_BUILD_NAMESPACE medium
-//#define BP_BUILD_NAMESPACE simple
+//#define BP_BUILD_NAMESPACE medium
+#define BP_BUILD_NAMESPACE simple
 //#define BP_BUILD_NAMESPACE test
 
 
@@ -204,6 +205,7 @@ static const uint64_t nSnapshots = 54; // Pluribus: 54
 
 static const uint64_t snapshotBeginIter = 3.2e9; // Pluribus: 3.2e9 (800 min)
 static const uint64_t snapshotPeriod = 800e6; // Pluribus: 800e6 (200 min)
+static const uint64_t avgSnapshotsPeriod = 1; // Pluribus: 54
 
 static const uint64_t discountEndIter = 1.6e9; // Pluribus: 1.6e9 (400 min)
 static const uint64_t discountPeriod = 40e6; // Pluribus: 40e6 (10 min)
@@ -216,6 +218,8 @@ static const int32_t maxRegret = 100e6; // 100e6
 
 static const uint64_t checkpointPeriod = 240e6; // 240e6 (60 min)
 static const uint64_t printPeriod = 1e6; // 1e6 (15 s)
+
+static const double evalStratDuration = 5; // in seconds
 
 static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotPeriod;
 
@@ -235,6 +239,7 @@ static const uint64_t nSnapshots = 10; // Pluribus: 54
 
 static const uint64_t snapshotBeginIter = 260e3; // Pluribus: 3.2e9 (800 min)
 static const uint64_t snapshotPeriod = 388e3; // Pluribus: 800e6 (200 min)
+static const uint64_t avgSnapshotsPeriod = 1; // Pluribus: 54
 
 static const uint64_t discountEndIter = 130e3; // Pluribus: 1.6e9 (400 min)
 static const uint64_t discountPeriod = 3.3e3; // Pluribus: 40e6 (10 min)
@@ -247,6 +252,8 @@ static const int32_t maxRegret = 100e6; // 100e6
 
 static const uint64_t checkpointPeriod = 375e3; // 240e6 (60 min)
 static const uint64_t printPeriod = 10e3; // 1e6 (15 s)
+
+static const double evalStratDuration = 3; // in seconds
 
 static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotPeriod;
 
@@ -266,6 +273,7 @@ static const uint64_t nSnapshots = 3; // Pluribus: 54
 
 static const uint64_t snapshotBeginIter = 100; // Pluribus: 3.2e9 (800 min)
 static const uint64_t snapshotPeriod = 25; // Pluribus: 800e6 (200 min)
+static const uint64_t avgSnapshotsPeriod = 1; // Pluribus: 54
 
 static const uint64_t discountEndIter = 50; // Pluribus: 1.6e9 (400 min)
 static const uint64_t discountPeriod = 2; // Pluribus: 40e6 (10 min)
@@ -278,6 +286,8 @@ static const int32_t maxRegret = 100e6; // 100e6
 
 static const uint64_t checkpointPeriod = 50; // 1e8 (25 min)
 static const uint64_t printPeriod = 5; // 1e6 (15 s)
+
+static const double evalStratDuration = 2; // in seconds
 
 static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotPeriod;
 
@@ -297,6 +307,7 @@ static const uint64_t nSnapshots = 55; // 2.9e6 it -> 55 | 82e6 it -> 1637 // Pl
 
 static const uint64_t snapshotBeginIter = 200e3; // Pluribus: 3.2e9 (800 min)
 static const uint64_t snapshotPeriod = 50e3; // Pluribus: 800e6 (200 min)
+static const uint64_t avgSnapshotsPeriod = 1; // Pluribus: 54
 
 static const uint64_t discountEndIter = 100e3; // Pluribus: 1.6e9 (400 min)
 static const uint64_t discountPeriod = 2500; // Pluribus: 40e6 (10 min)
@@ -309,6 +320,8 @@ static const int32_t maxRegret = 100e6; // 100e6
 
 static const uint64_t checkpointPeriod = 1e6; // 1e8 (25 min)
 static const uint64_t printPeriod = 100e3; // 1e6 (15 s)
+
+static const double evalStratDuration = 3; // in seconds
 
 static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotPeriod;
 
@@ -347,6 +360,7 @@ static const uint64_t nSnapshots = BP_BUILD_NAMESPACE::nSnapshots;
 
 static const uint64_t snapshotBeginIter = BP_BUILD_NAMESPACE::snapshotBeginIter;
 static const uint64_t snapshotPeriod = BP_BUILD_NAMESPACE::snapshotPeriod;
+static const uint64_t avgSnapshotsPeriod = BP_BUILD_NAMESPACE::avgSnapshotsPeriod;
 
 static const uint64_t discountEndIter = BP_BUILD_NAMESPACE::discountEndIter;
 static const uint64_t discountPeriod = BP_BUILD_NAMESPACE::discountPeriod;
@@ -359,6 +373,8 @@ static const int32_t maxRegret = BP_BUILD_NAMESPACE::maxRegret;
 
 static const uint64_t checkpointPeriod = BP_BUILD_NAMESPACE::checkpointPeriod;
 static const uint64_t printPeriod = BP_BUILD_NAMESPACE::printPeriod;
+
+static const double evalStratDuration = BP_BUILD_NAMESPACE::evalStratDuration;
 
 static const uint64_t endIter = BP_BUILD_NAMESPACE::endIter;
 
@@ -377,6 +393,90 @@ static std::string blueprintName()
 {
 	return blueprintName(BLUEPRINT_GAME_NAME, BLUEPRINT_BUILD_NAME);
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// Blueprint's files paths's names
+
+static std::string blueprintDir(const std::string& blueprintName)
+{
+	return "../data/Blueprint/" + blueprintName + "/";
+}
+
+static std::string blueprintTmpDir(const std::string& blueprintName)
+{
+	return blueprintDir(blueprintName) + "tmp/";
+}
+
+static std::string snapshotPath(
+	const std::string& blueprintName, unsigned snapshotId, uint8_t roundId)
+{
+	return blueprintTmpDir(blueprintName) + "SNAPSHOT"
+		+ "_" + std::to_string(snapshotId) + "_" + opt::toUpper(egn::roundToString(roundId)) + ".bin";
+}
+
+static std::string checkpointPath(const std::string& blueprintName)
+{
+	return blueprintTmpDir(blueprintName) + "CHECKPOINT.bin";
+}
+
+static std::string constantPath(const std::string& blueprintName)
+{
+	return blueprintDir(blueprintName) + "CONSTANTS.txt";
+}
+
+static std::string stratPath(const std::string& blueprintName, uint8_t roundId)
+{
+	return blueprintDir(blueprintName) + "STRATEGY"
+		+ "_" + opt::toUpper(egn::roundToString(roundId)) + ".bin";
+}
+
+static std::string blueprintDir()
+{
+	return blueprintDir(blueprintName());
+}
+
+static std::string blueprintTmpDir()
+{
+	return blueprintTmpDir(blueprintName());
+}
+
+static std::string snapshotPath(unsigned snapshotId, uint8_t roundId)
+{
+	return snapshotPath(blueprintName(), snapshotId, roundId);
+}
+
+static std::string checkpointPath()
+{
+	return checkpointPath(blueprintName());
+}
+
+static std::string constantPath()
+{
+	return constantPath(blueprintName());
+}
+
+static std::string stratPath(uint8_t roundId)
+{
+	return stratPath(blueprintName(), roundId);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+typedef int32_t regret_t;
+typedef std::vector<std::vector<std::vector<regret_t>>> regrets_t;
+typedef uint8_t strat_t;
+typedef uint32_t sumStrat_t;
+
+static const strat_t sumStrat = (std::numeric_limits<strat_t>::max)();
 
 
 } // bp

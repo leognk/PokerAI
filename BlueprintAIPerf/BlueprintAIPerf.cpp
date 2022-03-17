@@ -2,8 +2,8 @@
 
 int main()
 {
-    const double endDuration = 2;
-    const unsigned rngSeed = 2;
+    const double endDuration = 10;
+    const unsigned rngSeed = 1;
 
     double currDuration = 0;
     uint64_t gameCount = 0;

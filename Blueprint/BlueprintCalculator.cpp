@@ -64,14 +64,7 @@ BlueprintCalculator::BlueprintCalculator(unsigned rngSeed, bool verbose) :
 void BlueprintCalculator::buildStrategy()
 {
 	startTime = opt::getTime();
-
 	while (currIter < endIter) oneIter();
-
-	// Free memory allocated for regrets.
-	opt::freeVectMem(regrets);
-	// Perform final calculations for the final strategy and save it to the disk.
-	averageSnapshots();
-
 	printFinalStats();
 }
 
@@ -89,8 +82,15 @@ void BlueprintCalculator::oneIter()
 
 	++currIter;
 
-	if (currIter >= snapshotBeginIter && (currIter - snapshotBeginIter) % snapshotPeriod == 0)
+	if (currIter >= snapshotBeginIter && (currIter - snapshotBeginIter) % snapshotPeriod == 0) {
 		takeSnapshot();
+		if (nextSnapshotId % avgSnapshotsPeriod == 0 || nextSnapshotId == nSnapshots) {
+			// Perform the calculations for the final strategy
+			// and save it to the disk.
+			averageSnapshots();
+			evaluateStrategy();
+		}
+	}
 	if (currIter % checkpointPeriod == 0 || currIter == endIter)
 		updateCheckpoint();
 	if (verbose && (currIter % printPeriod == 0 || currIter == endIter))
@@ -545,6 +545,17 @@ void BlueprintCalculator::averageSnapshots()
 	}
 }
 
+void BlueprintCalculator::evaluateStrategy()
+{
+	double gainAvg = 0;
+	double gainStd = 0;
+	BlueprintAIEvaluator::evalBlueprintAI(
+		gainAvg, gainStd, evalStratDuration, 0);
+	gainsAvg.push_back((float)gainAvg);
+	gainsStd.push_back((float)gainStd);
+	nSnapshotsUsedForEval.push_back(nextSnapshotId - 1);
+}
+
 void BlueprintCalculator::writeConstants() const
 {
 	auto file = std::ofstream(constantPath());
@@ -572,6 +583,7 @@ void BlueprintCalculator::writeConstants() const
 	file << "\n";
 	WRITE_VAR(file, snapshotBeginIter);
 	WRITE_VAR(file, snapshotPeriod);
+	WRITE_VAR(file, avgSnapshotsPeriod);
 	file << "\n";
 	WRITE_VAR(file, discountEndIter);
 	WRITE_VAR(file, discountPeriod);
@@ -583,6 +595,8 @@ void BlueprintCalculator::writeConstants() const
 	file << "\n";
 	WRITE_VAR(file, checkpointPeriod);
 	WRITE_VAR(file, printPeriod);
+	file << "\n";
+	WRITE_VAR(file, evalStratDuration);
 	file << "\n";
 	WRITE_VAR(file, endIter);
 
@@ -617,6 +631,7 @@ void BlueprintCalculator::verifyConstants() const
 	opt::skipLine(file);
 	verifyOneConstant(file, snapshotBeginIter);
 	verifyOneConstant(file, snapshotPeriod);
+	opt::skipLine(file);
 	opt::skipLine(file);
 	verifyOneConstant(file, discountEndIter);
 	verifyOneConstant(file, discountPeriod);
@@ -659,6 +674,17 @@ void BlueprintCalculator::updateCheckpoint()
 	opt::saveVar(nodesCount, file);
 	opt::saveVar(nodesUniqueCount, file);
 
+	size_t gainsAvgSize = gainsAvg.size();
+	size_t gainsStdSize = gainsStd.size();
+	size_t nSnapshotsUsedForEvalSize = nSnapshotsUsedForEval.size();
+	opt::saveVar(gainsAvgSize, file);
+	opt::saveVar(gainsStdSize, file);
+	opt::saveVar(nSnapshotsUsedForEvalSize, file);
+
+	opt::save1DVector(gainsAvg, file);
+	opt::save1DVector(gainsStd, file);
+	opt::save1DVector(nSnapshotsUsedForEval, file);
+
 	file.close();
 }
 
@@ -678,14 +704,29 @@ void BlueprintCalculator::loadCheckpoint(std::fstream& file)
 
 	opt::loadVar(nodesCount, file);
 	opt::loadVar(nodesUniqueCount, file);
+
+	size_t gainsAvgSize, gainsStdSize, nSnapshotsUsedForEvalSize;
+	opt::loadVar(gainsAvgSize, file);
+	opt::loadVar(gainsStdSize, file);
+	opt::loadVar(nSnapshotsUsedForEvalSize, file);
+
+	gainsAvg.resize(gainsAvgSize);
+	gainsStd.resize(gainsStdSize);
+	nSnapshotsUsedForEval.resize(nSnapshotsUsedForEvalSize);
+	opt::load1DVector(gainsAvg, file);
+	opt::load1DVector(gainsStd, file);
+	opt::load1DVector(nSnapshotsUsedForEval, file);
 }
 
 void BlueprintCalculator::printProgress() const
 {
-	std::cout
-		<< blueprintName() << "\n\n"
+	std::cout << blueprintName() << "\n";
 
-		<< opt::progressStr(currIter, endIter, startTime, extraDuration) << "\n\n"
+	if (!gainsAvg.empty()) std::cout << "\n";
+	printStratEval();
+
+	std::cout
+		<< "\n" << opt::progressStr(currIter, endIter, startTime, extraDuration) << "\n\n"
 
 		<< "next checkpoint: " << opt::prettyDuration(
 			opt::remainingTime(currIter, lastCheckpointIter + checkpointPeriod, startTime, extraDuration))
@@ -715,72 +756,21 @@ void BlueprintCalculator::printProgress() const
 	std::cout << printSep << "\n\n";
 }
 
+void BlueprintCalculator::printStratEval() const
+{
+	if (!gainsAvg.empty()) std::cout << "snaps | avg gain |   std\n";
+	for (uint64_t i = 0; i < gainsAvg.size(); ++i)
+		std::cout
+			<< std::setw(5) << std::right << nSnapshotsUsedForEval[i]
+			<< " | " << std::setw(8) << std::right << opt::prettyNumDg(gainsAvg[i], 3, true) + "bb"
+			<< " | " << opt::prettyNumDg(gainsStd[i], 3, true) + "bb\n";
+}
+
 void BlueprintCalculator::printFinalStats() const
 {
-	std::cout << "Duration: " << opt::prettyDuration(extraDuration + opt::getDuration(startTime)) << "\n";
-}
-
-std::string BlueprintCalculator::blueprintDir(const std::string& blueprintName)
-{
-	return "../data/Blueprint/" + blueprintName + "/";
-}
-
-std::string BlueprintCalculator::blueprintTmpDir(const std::string& blueprintName)
-{
-	return blueprintDir(blueprintName) + "tmp/";
-}
-
-std::string BlueprintCalculator::snapshotPath(
-	const std::string& blueprintName, unsigned snapshotId, uint8_t roundId)
-{
-	return blueprintTmpDir(blueprintName) + "SNAPSHOT"
-		+ "_" + std::to_string(snapshotId) + "_" + opt::toUpper(egn::roundToString(roundId)) + ".bin";
-}
-
-std::string BlueprintCalculator::checkpointPath(const std::string& blueprintName)
-{
-	return blueprintTmpDir(blueprintName) + "CHECKPOINT.bin";
-}
-
-std::string BlueprintCalculator::constantPath(const std::string& blueprintName)
-{
-	return blueprintDir(blueprintName) + "CONSTANTS.txt";
-}
-
-std::string BlueprintCalculator::stratPath(const std::string& blueprintName, uint8_t roundId)
-{
-	return blueprintDir(blueprintName) + "STRATEGY"
-		+ "_" + opt::toUpper(egn::roundToString(roundId)) + ".bin";
-}
-
-std::string BlueprintCalculator::blueprintDir()
-{
-	return blueprintDir(blueprintName());
-}
-
-std::string BlueprintCalculator::blueprintTmpDir()
-{
-	return blueprintTmpDir(blueprintName());
-}
-
-std::string BlueprintCalculator::snapshotPath(unsigned snapshotId, uint8_t roundId)
-{
-	return snapshotPath(blueprintName(), snapshotId, roundId);
-}
-
-std::string BlueprintCalculator::checkpointPath()
-{
-	return checkpointPath(blueprintName());
-}
-
-std::string BlueprintCalculator::constantPath()
-{
-	return constantPath(blueprintName());
-}
-
-std::string BlueprintCalculator::stratPath(uint8_t roundId)
-{
-	return stratPath(blueprintName(), roundId);
+	std::cout << blueprintName() << "\n\n";
+	printStratEval();
+	std::cout << "\nDuration: " << opt::prettyDuration(extraDuration + opt::getDuration(startTime)) << "\n";
 }
 
 } // bp
