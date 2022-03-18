@@ -82,9 +82,9 @@ public:
 				sum += p;
 			}
 			// Sanity check.
-			if (sum != sumStrat)
-				throw std::runtime_error("The sum of probas is not 1.");
-			const egn::chips avgBet = (egn::chips)std::round(sumBets / sumStrat);
+			//if (sum != sumStrat)
+			//	throw std::runtime_error("The sum of probas is not 1.");
+			const egn::chips avgBet = (egn::chips)std::round(sumBets / sum);
 
 			// Find the closest legal action to avgBet.
 			uint8_t closestActionId = 0;

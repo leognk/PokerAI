@@ -495,7 +495,7 @@ void BlueprintCalculator::averageSnapshots()
 			abcInfo.nBcks(egn::Round(r)), std::vector<sumStrat_t>(abcInfo.nActionSeqs(egn::Round(r))));
 
 		// Calculate the sum of the snapshots' strategies.
-		for (unsigned snapshotId = 1; snapshotId <= nSnapshots; ++snapshotId) {
+		for (unsigned snapshotId = 1; snapshotId < nextSnapshotId; ++snapshotId) {
 
 			// Open the snapshot.
 			auto snapshotFile = opt::fstream(
@@ -675,15 +675,12 @@ void BlueprintCalculator::updateCheckpoint()
 	opt::saveVar(nodesUniqueCount, file);
 
 	size_t gainsAvgSize = gainsAvg.size();
-	size_t gainsStdSize = gainsStd.size();
-	size_t nSnapshotsUsedForEvalSize = nSnapshotsUsedForEval.size();
 	opt::saveVar(gainsAvgSize, file);
-	opt::saveVar(gainsStdSize, file);
-	opt::saveVar(nSnapshotsUsedForEvalSize, file);
-
-	opt::save1DVector(gainsAvg, file);
-	opt::save1DVector(gainsStd, file);
-	opt::save1DVector(nSnapshotsUsedForEval, file);
+	if (gainsAvgSize != 0) {
+		opt::save1DVector(gainsAvg, file);
+		opt::save1DVector(gainsStd, file);
+		opt::save1DVector(nSnapshotsUsedForEval, file);
+	}
 
 	file.close();
 }
@@ -705,17 +702,16 @@ void BlueprintCalculator::loadCheckpoint(std::fstream& file)
 	opt::loadVar(nodesCount, file);
 	opt::loadVar(nodesUniqueCount, file);
 
-	size_t gainsAvgSize, gainsStdSize, nSnapshotsUsedForEvalSize;
+	size_t gainsAvgSize;
 	opt::loadVar(gainsAvgSize, file);
-	opt::loadVar(gainsStdSize, file);
-	opt::loadVar(nSnapshotsUsedForEvalSize, file);
-
-	gainsAvg.resize(gainsAvgSize);
-	gainsStd.resize(gainsStdSize);
-	nSnapshotsUsedForEval.resize(nSnapshotsUsedForEvalSize);
-	opt::load1DVector(gainsAvg, file);
-	opt::load1DVector(gainsStd, file);
-	opt::load1DVector(nSnapshotsUsedForEval, file);
+	if (gainsAvgSize != 0) {
+		gainsAvg.resize(gainsAvgSize);
+		gainsStd.resize(gainsAvgSize);
+		nSnapshotsUsedForEval.resize(gainsAvgSize);
+		opt::load1DVector(gainsAvg, file);
+		opt::load1DVector(gainsStd, file);
+		opt::load1DVector(nSnapshotsUsedForEval, file);
+	}
 }
 
 void BlueprintCalculator::printProgress() const
