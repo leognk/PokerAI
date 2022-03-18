@@ -5,10 +5,11 @@
 #include "EquityCalculator.h"
 #include "KMeans.h"
 #include "../Utils/ioContainer.h"
+#include "../Utils/Constants.h"
 
 namespace abc {
 	
-static const std::string bckLutDir = "../data/AbstractionSaves/BCK_LUT/";
+static const std::string bckLutDir = opt::dataDir + "AbstractionSaves/BCK_LUT/";
 
 // Class generating lossy information abstraction
 // with distribution-aware k-means earth mover's distance.

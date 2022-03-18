@@ -6,10 +6,11 @@
 #include <numeric>
 #include "../LosslessAbstraction/hand_index.h"
 #include "../OMPEval/omp/HandEvaluator.h"
+#include "../Utils/Constants.h"
 
 namespace abc {
 
-static const std::string hsLutDir = "../data/AbstractionSaves/HS_LUT/";
+static const std::string hsLutDir = opt::dataDir + "AbstractionSaves/HS_LUT/";
 
 static const std::string rivHSLUTPath = hsLutDir + "RIV_HS_LUT.bin";
 static const std::string turnHSLUTPath = hsLutDir + "TURN_HS_LUT.bin";

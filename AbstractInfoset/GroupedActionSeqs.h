@@ -5,7 +5,7 @@
 
 namespace abc {
 
-static const std::string groupedActionSeqsDir = "../data/ActionSequences/GroupedActionSeqs/";
+static const std::string groupedActionSeqsDir = opt::dataDir + "ActionSequences/GroupedActionSeqs/";
 
 class GroupedActionSeqs
 {

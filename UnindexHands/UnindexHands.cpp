@@ -3,6 +3,7 @@
 #include <vector>
 #include "../LosslessAbstraction/hand_index.h"
 #include "../GameEngine/Hand.h"
+#include "../Utils/Constants.h"
 
 int main()
 {
@@ -15,7 +16,7 @@ int main()
 		70000000, 80000000, 90000000, 100000000, 110000000, 120000000 };
 	const std::vector<uint32_t> lengths(startIds.size(), 3);
 
-	const std::string dir = "../data/AbstractionSaves/Tests/VisualizeOCHS/";
+	const std::string dir = opt::dataDir + "AbstractionSaves/Tests/VisualizeOCHS/";
 	const std::string fileName = "unindexed_hands.txt";
 
 	std::ofstream file(dir + fileName);

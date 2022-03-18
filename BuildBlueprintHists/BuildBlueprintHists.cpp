@@ -6,7 +6,7 @@ int main()
 {
 	const size_t nBins = 100;
 
-	const std::string histDir = "../data/Blueprint/Tests/Histograms/" + bp::blueprintName() + "/";
+	const std::string histDir = opt::dataDir + "Blueprint/Tests/Histograms/" + bp::blueprintName() + "/";
 
 	// Create histograms folder.
 	std::filesystem::create_directory(histDir);

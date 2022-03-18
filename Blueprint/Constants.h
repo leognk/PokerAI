@@ -5,6 +5,7 @@
 #include "../AbstractInfoset/ActionAbstraction.h"
 #include "../LosslessAbstraction/hand_index.h"
 #include "../Utils/StringManip.h"
+#include "../Utils/Constants.h"
 
 #pragma warning(push)
 #pragma warning(disable: 4244)
@@ -483,7 +484,7 @@ static std::string blueprintName()
 
 static std::string blueprintDir(const std::string& blueprintName)
 {
-	return "../data/Blueprint/" + blueprintName + "/";
+	return opt::dataDir + "Blueprint/" + blueprintName + "/";
 }
 
 static std::string blueprintTmpDir(const std::string& blueprintName)

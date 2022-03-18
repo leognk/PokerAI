@@ -81,6 +81,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test-Blueprint", "Test-Blue
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BlueprintAIPerf", "BlueprintAIPerf\BlueprintAIPerf.vcxproj", "{E90D2F75-5CA1-434A-A992-7D764D81CECF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BlueprintAILib", "BlueprintAILib\BlueprintAILib.vcxproj", "{D3D11E68-A91B-41B4-8FF9-B5405DC397CD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -401,6 +403,14 @@ Global
 		{E90D2F75-5CA1-434A-A992-7D764D81CECF}.Release|x64.Build.0 = Release|x64
 		{E90D2F75-5CA1-434A-A992-7D764D81CECF}.Release|x86.ActiveCfg = Release|Win32
 		{E90D2F75-5CA1-434A-A992-7D764D81CECF}.Release|x86.Build.0 = Release|Win32
+		{D3D11E68-A91B-41B4-8FF9-B5405DC397CD}.Debug|x64.ActiveCfg = Debug|x64
+		{D3D11E68-A91B-41B4-8FF9-B5405DC397CD}.Debug|x64.Build.0 = Debug|x64
+		{D3D11E68-A91B-41B4-8FF9-B5405DC397CD}.Debug|x86.ActiveCfg = Debug|Win32
+		{D3D11E68-A91B-41B4-8FF9-B5405DC397CD}.Debug|x86.Build.0 = Debug|Win32
+		{D3D11E68-A91B-41B4-8FF9-B5405DC397CD}.Release|x64.ActiveCfg = Release|x64
+		{D3D11E68-A91B-41B4-8FF9-B5405DC397CD}.Release|x64.Build.0 = Release|x64
+		{D3D11E68-A91B-41B4-8FF9-B5405DC397CD}.Release|x86.ActiveCfg = Release|Win32
+		{D3D11E68-A91B-41B4-8FF9-B5405DC397CD}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

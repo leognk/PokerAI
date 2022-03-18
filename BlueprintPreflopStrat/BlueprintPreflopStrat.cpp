@@ -109,7 +109,7 @@ int main()
 		{ abc::RAISE + 0, abc::RAISE + 2 }
 	};
 
-	static const std::string dir = "../data/Blueprint/Tests/PreflopStrat/" + bp::blueprintName() + "/";
+	static const std::string dir = opt::dataDir + "Blueprint/Tests/PreflopStrat/" + bp::blueprintName() + "/";
 	std::filesystem::create_directory(dir);
 
 	bp::Blueprint blueprint(bp::BLUEPRINT_GAME_NAME, bp::BLUEPRINT_BUILD_NAME);

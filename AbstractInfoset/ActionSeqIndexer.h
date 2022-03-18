@@ -5,11 +5,12 @@
 #include "../Utils/Hash.h"
 #include "../Utils/Hash.h"
 #include "../Utils/io.h"
+#include "../Utils/Constants.h"
 #include "../BBHash/BooPHF.h"
 
 namespace abc {
 
-static const std::string mphfDir = "../data/ActionSequences/MPHF/";
+static const std::string mphfDir = opt::dataDir + "ActionSequences/MPHF/";
 
 class ActionSeqIndexer
 {

@@ -43,7 +43,7 @@ int main()
 	static const bckSize_t nBckTurn = bp::N_BCK_TURN;
 	static const bckSize_t nBckRiver = bp::N_BCK_RIVER;
 
-	static const std::string dir = "../data/AbstractionSaves/BCK_STRENGTHS/";
+	static const std::string dir = opt::dataDir + "AbstractionSaves/BCK_STRENGTHS/";
 
 	static const std::string preflopFilePath = dir + std::format("PREFLOP_{}_BCK_STRENGTHS.bin", nBckPreflop);
 	static const std::string flopFilePath = dir + std::format("FLOP_{}_BCK_STRENGTHS.bin", nBckFlop);

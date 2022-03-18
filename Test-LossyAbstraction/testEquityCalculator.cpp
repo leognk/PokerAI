@@ -4,7 +4,7 @@
 #include "../GameEngine/Hand.h"
 #include "../Utils/ioContainer.h"
 
-static const std::string hsHistExDir = "../data/AbstractionSaves/Tests/HSHistExamples/";
+static const std::string hsHistExDir = opt::dataDir + "AbstractionSaves/Tests/HSHistExamples/";
 
 class EquityCalculatorTest : public ::testing::Test
 {
