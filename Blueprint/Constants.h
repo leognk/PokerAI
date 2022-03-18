@@ -14,13 +14,15 @@ namespace bp {
 
 
 //#define BP_GAME_NAMESPACE original
+#define BP_GAME_NAMESPACE large
 //#define BP_GAME_NAMESPACE medium
-#define BP_GAME_NAMESPACE simple
+//#define BP_GAME_NAMESPACE simple
 //#define BP_GAME_NAMESPACE test
 
 //#define BP_BUILD_NAMESPACE original
+#define BP_BUILD_NAMESPACE large
 //#define BP_BUILD_NAMESPACE medium
-#define BP_BUILD_NAMESPACE simple
+//#define BP_BUILD_NAMESPACE simple
 //#define BP_BUILD_NAMESPACE test
 
 
@@ -70,6 +72,49 @@ static const abc::betSizes_t BET_SIZES = {
 
 
 } // original
+
+
+namespace large {
+
+
+static const std::string BLUEPRINT_GAME_NAME = "LARGE_BLUEPRINT";
+
+typedef uint8_t bckSize_t;
+static const bckSize_t N_BCK_PREFLOP = abc::PREFLOP_SIZE; // Pluribus: 169
+static const bckSize_t N_BCK_FLOP = 200; // Pluribus: 200
+static const bckSize_t N_BCK_TURN = 200; // Pluribus: 200
+static const bckSize_t N_BCK_RIVER = 200; // Pluribus: 200
+
+static const uint8_t MAX_PLAYERS = 6; // Pluribus: 6
+
+static const egn::chips ANTE = 0; // Pluribus: 0
+static const egn::chips BIG_BLIND = 100; // Pluribus: 100
+static const egn::chips INITIAL_STAKE = 10000; // Pluribus: 10e3
+
+static const abc::betSizes_t BET_SIZES = {
+	{
+		{ 0.5, 0.75, 1, 1.5, 2, 4, 6, 8, 15, 25 },
+		{ 0.5, 1, 1.5, 2, 4, 8, 15, 25 },
+		{ 0.5, 1, 2 },
+		{ 1 }
+	},
+	{
+		{ 0.25, 0.5, 1, 2, 4 },
+		{ 0.5, 1, 2 },
+		{ 1 }
+	},
+	{
+		{ 0.5, 1 },
+		{ 1 }
+	},
+	{
+		{ 0.5, 1 },
+		{ 1 }
+	}
+};
+
+
+} // large
 
 
 namespace medium {
@@ -219,7 +264,7 @@ static const int32_t maxRegret = 100e6; // 100e6
 static const uint64_t checkpointPeriod = 240e6; // 240e6 (60 min)
 static const uint64_t printPeriod = 1e6; // 1e6 (15 s)
 
-static const double evalStratDuration = 5; // in seconds
+static const double evalStratDuration = 10; // in seconds
 
 static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotPeriod;
 
@@ -228,6 +273,40 @@ static_assert(discountEndIter <= snapshotBeginIter);
 
 
 } // original
+
+
+namespace large {
+
+
+static const std::string BLUEPRINT_BUILD_NAME = "LARGE_BUILD";
+
+static const uint64_t nSnapshots = 54; // Pluribus: 54
+
+static const uint64_t snapshotBeginIter = 3.2e9; // Pluribus: 3.2e9 (800 min)
+static const uint64_t snapshotPeriod = 800e6; // Pluribus: 800e6 (200 min)
+static const uint64_t avgSnapshotsPeriod = 1; // Pluribus: 54
+
+static const uint64_t discountEndIter = 1.6e9; // Pluribus: 1.6e9 (400 min)
+static const uint64_t discountPeriod = 40e6; // Pluribus: 40e6 (10 min)
+
+static const uint64_t pruneBeginIter = 800e6; // Pluribus: 800e6 (200 min)
+static const uint8_t pruneProbaPerc = 95; // Pluribus: 95
+static const int32_t pruneThreshold = -300e6; // Pluribus: -300e6
+static const int32_t minRegret = -310e6; // Pluribus: -310e6
+static const int32_t maxRegret = 100e6; // 100e6
+
+static const uint64_t checkpointPeriod = 240e6; // 240e6 (60 min)
+static const uint64_t printPeriod = 1e6; // 1e6 (15 s)
+
+static const double evalStratDuration = 10; // in seconds
+
+static const uint64_t endIter = snapshotBeginIter + (nSnapshots - 1) * snapshotPeriod;
+
+// This is needed because the snapshots are not discounted.
+static_assert(discountEndIter <= snapshotBeginIter);
+
+
+} // large
 
 
 namespace medium {
