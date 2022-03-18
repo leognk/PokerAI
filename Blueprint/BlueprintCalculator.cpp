@@ -84,7 +84,7 @@ void BlueprintCalculator::oneIter()
 
 	if (currIter >= snapshotBeginIter && (currIter - snapshotBeginIter) % snapshotPeriod == 0) {
 		takeSnapshot();
-		if (nextSnapshotId % avgSnapshotsPeriod == 0 || nextSnapshotId == nSnapshots) {
+		if ((nextSnapshotId - 1) % avgSnapshotsPeriod == 0 || (nextSnapshotId - 1) == nSnapshots) {
 			// Perform the calculations for the final strategy
 			// and save it to the disk.
 			averageSnapshots();
