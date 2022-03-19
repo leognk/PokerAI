@@ -88,7 +88,7 @@ public:
 		abcAllinFlag = false;
 	}
 
-	void act(egn::Action& action, egn::chips& bet) override
+	void act(const egn::GameState& state, egn::Action& action, egn::chips& bet)
 	{
 		// The blueprintAI can be in an all-in state in abcInfo while
 		// not in the real state if its own action was mapped to an all-in
@@ -156,7 +156,7 @@ public:
 
 	void act(egn::GameState& state) override
 	{
-		act(state.action, state.bet);
+		act(state, state.action, state.bet);
 	}
 
 	void update(const egn::GameState& state) override

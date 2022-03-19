@@ -48,16 +48,47 @@ void BlueprintAIAdvisor::updateBoardCards(const char* newCards)
 
 void BlueprintAIAdvisor::update(int action, egn::chips bet)
 {
+	// Set state's action.
 	state.action = egn::Action(action);
 	if (state.action == egn::RAISE)
 		state.bet = bet;
 
+	// BlueprintAI gives advices.
 	if (state.actingPlayer == myPosition) {
-		blueprintAI.act(aiAction, aiBet);
-		aiProbas = blueprint.calculateProbasPerc(blueprintAI.abcInfo);
-		aiActions = blueprintAI.abcInfo.actionAbc.legalActions;
+
+		blueprintAI.act(state, aiAction, aiBet);
+
+		nActions = blueprintAI.abcInfo.nActions();
+
+		const std::vector<uint8_t> probasVect =
+			blueprint.calculateProbasPerc(blueprintAI.abcInfo);
+		std::copy(probasVect.begin(), probasVect.end(), probas);
+
+		const std::vector<uint8_t> actionsVect =
+			blueprintAI.abcInfo.actionAbc.legalActions;
+		std::copy(actionsVect.begin(), actionsVect.end(), actions);
+
+		for (uint8_t i = 0; i < nActions; ++i) {
+			switch (actions[i]) {
+			case abc::FOLD:
+				bets[i] = 0;
+				break;
+			case abc::CALL:
+				bets[i] = state.call;
+				break;
+			case abc::ALLIN:
+				bets[i] = state.allin;
+				break;
+			// RAISE
+			default:
+				blueprintAI.abcInfo.setStateAction(actions[i]);
+				const egn::chips bet = blueprintAI.abcInfo.state.bet;
+				bets[i] = blueprintAI.abcToRealChips(bet);
+			}
+		}
 	}
 
+	// Update states.
 	blueprintAI.update(state);
 	state.nextState();
 }

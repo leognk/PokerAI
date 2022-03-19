@@ -71,6 +71,8 @@ static const abc::betSizes_t BET_SIZES = {
 	}
 };
 
+static const uint8_t maxNBets = 13;
+
 
 } // original
 
@@ -113,6 +115,8 @@ static const abc::betSizes_t BET_SIZES = {
 		{ 1 }
 	}
 };
+
+static const uint8_t maxNBetSizes = 10;
 
 
 } // large
@@ -157,6 +161,8 @@ static const abc::betSizes_t BET_SIZES = {
 	}
 };
 
+static const uint8_t maxNBetSizes = 8;
+
 
 } // medium
 
@@ -197,6 +203,8 @@ static const abc::betSizes_t BET_SIZES = {
 	}
 };
 
+static const uint8_t maxNBetSizes = 2;
+
 
 } // simple
 
@@ -232,6 +240,8 @@ static const abc::betSizes_t BET_SIZES = {
 		{ 1, 2, 3 }
 	}
 };
+
+static const uint8_t maxNBetSizes = 3;
 
 
 } // test
@@ -433,6 +443,8 @@ static const egn::chips INITIAL_STAKE = BP_GAME_NAMESPACE::INITIAL_STAKE;
 
 static const abc::betSizes_t BET_SIZES = BP_GAME_NAMESPACE::BET_SIZES;
 
+static const uint8_t maxNBetSizes = BP_GAME_NAMESPACE::maxNBetSizes;
+
 
 static const std::string BLUEPRINT_BUILD_NAME = BP_BUILD_NAMESPACE::BLUEPRINT_BUILD_NAME;
 
@@ -557,6 +569,8 @@ typedef uint8_t strat_t;
 typedef uint32_t sumStrat_t;
 
 static const strat_t sumStrat = (std::numeric_limits<strat_t>::max)();
+
+static const uint8_t maxNAbcActions = 3 + maxNBetSizes;
 
 
 } // bp

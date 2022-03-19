@@ -14,7 +14,6 @@ class BlueprintAIAdvisor
 {
 public:
 	BlueprintAIAdvisor(unsigned rngSeed = 0);
-
 	void startNewHand(
 		egn::chips ante, egn::chips bb,
 		const egn::chips stakes[],
@@ -26,7 +25,11 @@ public:
 
 	egn::Action aiAction;
 	egn::chips aiBet;
-	std::vector<uint8_t> aiProbas, aiActions;
+
+	uint8_t nActions;
+	uint8_t probas[maxNAbcActions];
+	uint8_t actions[maxNAbcActions];
+	egn::chips bets[maxNAbcActions];
 
 private :
 	egn::GameState state;
