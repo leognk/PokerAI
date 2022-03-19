@@ -99,6 +99,8 @@ inline std::ostream& operator<<(std::ostream& os, const Round& r)
 class GameState
 {
 public:
+	GameState();
+
 	// Set a player's stake to 0 if he is not active.
 	// Set rngSeed to 0 to set a random seed.
 	GameState(

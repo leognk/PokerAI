@@ -88,32 +88,32 @@ public:
 		abcAllinFlag = false;
 	}
 
-	void act(egn::GameState& state) override
+	void act(egn::Action& action, egn::chips& bet) override
 	{
 		// The blueprintAI can be in an all-in state in abcInfo while
 		// not in the real state if its own action was mapped to an all-in
 		// while it was not, and it can have to act again after a raise.
 		if (!abcInfo.state.isActing(state.actingPlayer)) {
 			if (state.call == state.allin)
-				state.action = egn::CALL;
+				action = egn::CALL;
 			else {
-				state.action = egn::RAISE;
-				state.bet = state.allin;
+				action = egn::RAISE;
+				bet = state.allin;
 			}
 			return;
 		}
 
 		// Choose an action.
 		abcInfo.updateStateIds();
-		const uint8_t action = abcInfo.actionAbc.legalActions[
+		const uint8_t a = abcInfo.actionAbc.legalActions[
 			blueprint->chooseAction(abcInfo)];
-		abcInfo.setStateAction(action);
-		
+		abcInfo.setStateAction(a);
+
 		// Set state's action.
 
-		state.action = abcInfo.state.action;
+		action = abcInfo.state.action;
 
-		switch (action) {
+		switch (a) {
 
 		case abc::FOLD:
 			break;
@@ -124,34 +124,39 @@ public:
 			// have to ensure it becomes a real all-in.
 			if (abcInfo.state.call == abcInfo.state.allin
 				&& state.call != state.allin) {
-				state.action = egn::RAISE;
-				state.bet = state.allin;
+				action = egn::RAISE;
+				bet = state.allin;
 			}
 			break;
 
 		case abc::ALLIN:
 			if (state.call == state.allin)
-				state.action = egn::CALL;
+				action = egn::CALL;
 			// The abcInfo's all-in is limited to the abcInfo's static const initial
 			// stake of players, but if the chosen action is all-in, we bet all the
 			// player's stake anyway.
 			else
-				state.bet = state.allin;
+				bet = state.allin;
 			break;
 
-		// RAISE
+			// RAISE
 		default:
 			// We clip the bet between minRaise and allin.
 			// It might have gone out of the limits because
 			// the state in abcInfo is different from the real
 			// game state, plus the initial stakes of all players
 			// in abcInfo are set to a static const.
-			egn::chips bet = abcToRealChips(abcInfo.state.bet);
-			if (bet >= state.allin || state.allin <= state.minRaise) bet = state.allin;
-			else if (bet < state.minRaise) bet = state.minRaise;
-			state.bet = bet;
+			egn::chips b = abcToRealChips(abcInfo.state.bet);
+			if (b >= state.allin || state.allin <= state.minRaise) b = state.allin;
+			else if (b < state.minRaise) b = state.minRaise;
+			bet = b;
 			break;
 		}
+	}
+
+	void act(egn::GameState& state) override
+	{
+		act(state.action, state.bet);
 	}
 
 	void update(const egn::GameState& state) override

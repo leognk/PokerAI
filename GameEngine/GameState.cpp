@@ -7,6 +7,10 @@ namespace egn {
 std::array<std::array<uint8_t, MAX_PLAYERS>,
     GameState::NEXT_LOOKUP_SIZE> GameState::NEXT_LOOKUP{};
 
+GameState::GameState() : mRng(0)
+{
+}
+
 #pragma warning(suppress: 26495)
 GameState::GameState(
     chips ante, chips bigBlind,

@@ -1,0 +1,44 @@
+#ifndef BP_BLUEPRINTAIADVISOR_H
+#define BP_BLUEPRINTAIADVISOR_H
+
+#include "BlueprintAI.h"
+#include "../UserPlayer/UserPlayer.h"
+
+namespace bp {
+
+typedef bp::BlueprintAI<bp::bckSize_t,
+	bp::N_BCK_PREFLOP, bp::N_BCK_FLOP,
+	bp::N_BCK_TURN, bp::N_BCK_RIVER> blueprintAI_t;
+
+class BlueprintAIAdvisor
+{
+public:
+	BlueprintAIAdvisor(unsigned rngSeed = 0);
+
+	void startNewHand(
+		egn::chips ante, egn::chips bb,
+		const egn::chips stakes[],
+		uint8_t dealer,
+		uint8_t myPosition,
+		const char* myHand);
+	void updateBoardCards(const char* newCards);
+	void update(int action, egn::chips bet);
+
+	egn::Action aiAction;
+	egn::chips aiBet;
+	std::vector<uint8_t> aiProbas, aiActions;
+
+private :
+	egn::GameState state;
+	std::string currBoardCards;
+
+	uint8_t myPosition;
+
+	Blueprint blueprint;
+	blueprintAI_t blueprintAI;
+
+}; // BlueprintAIAdvisor
+
+} // bp
+
+#endif // BP_BLUEPRINTAIADVISOR_H

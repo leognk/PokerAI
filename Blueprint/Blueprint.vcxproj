@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BlueprintAI.h" />
+    <ClInclude Include="BlueprintAIAdvisor.h" />
     <ClInclude Include="BlueprintCalculator.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Blueprint.h" />
@@ -27,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Blueprint.cpp" />
+    <ClCompile Include="BlueprintAIAdvisor.cpp" />
     <ClCompile Include="BlueprintCalculator.cpp" />
     <ClCompile Include="EvalBlueprintAI.cpp" />
   </ItemGroup>

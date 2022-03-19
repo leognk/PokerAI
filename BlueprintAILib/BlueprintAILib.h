@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Blueprint/BlueprintAI.h"
+#include "../Blueprint/BlueprintAIAdvisor.h"
 
 #ifdef BLUEPRINTAILIB_EXPORTS
 #define BLUEPRINTAILIB_API __declspec(dllexport)
@@ -8,16 +8,12 @@
 #define BLUEPRINTAILIB_API __declspec(dllimport)
 #endif
 
-typedef bp::BlueprintAI<bp::bckSize_t,
-	bp::N_BCK_PREFLOP, bp::N_BCK_FLOP,
-	bp::N_BCK_TURN, bp::N_BCK_RIVER> blueprintAI_t;
-
 extern "C" {
+	
+BLUEPRINTAILIB_API int FOLD() { return egn::FOLD; };
+BLUEPRINTAILIB_API int CALL() { return egn::CALL; };
+BLUEPRINTAILIB_API int RAISE() { return egn::RAISE; };
 
-BLUEPRINTAILIB_API bp::Blueprint* newBlueprint(int rngSeed = 0);
-BLUEPRINTAILIB_API void delBlueprint(bp::Blueprint* blueprint);
-
-BLUEPRINTAILIB_API blueprintAI_t* newBlueprintAI(bp::Blueprint* blueprint, int rngSeed = 0);
-BLUEPRINTAILIB_API void delBlueprintAI(blueprintAI_t* blueprint);
+BLUEPRINTAILIB_API int MAX_PLAYERS() { return bp::MAX_PLAYERS; };
 
 } // extern "C"
