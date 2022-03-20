@@ -1,16 +1,16 @@
 #include "pch.h"
 #include "BlueprintAILib.h"
 	
-int FOLD() { return egn::FOLD; };
-int CALL() { return egn::CALL; };
-int RAISE() { return egn::RAISE; };
+int FOLD() { return egn::FOLD; }
+int CALL() { return egn::CALL; }
+int RAISE() { return egn::RAISE; }
 
-int ABC_FOLD() { return abc::FOLD; };
-int ABC_CALL() { return abc::CALL; };
-int ABC_ALLIN() { return abc::ALLIN; };
-int ABC_RAISE() { return abc::RAISE; };
+int ABC_FOLD() { return abc::FOLD; }
+int ABC_CALL() { return abc::CALL; }
+int ABC_ALLIN() { return abc::ALLIN; }
+int ABC_RAISE() { return abc::RAISE; }
 
-int MAX_PLAYERS() { return bp::MAX_PLAYERS; };
+int MAX_PLAYERS() { return bp::MAX_PLAYERS; }
 
 bp::BlueprintAIAdvisor* newBlueprintAIAdvisor(unsigned rngSeed)
 {
@@ -48,10 +48,13 @@ void adv_getAdvices(bp::BlueprintAIAdvisor* advisor)
 	advisor->getAdvices();
 }
 
-int adv_aiAction(bp::BlueprintAIAdvisor* advisor) { return advisor->aiAction; };
-egn::chips adv_aiBet(bp::BlueprintAIAdvisor* advisor) { return advisor->aiBet; };
+uint8_t adv_nAlive(bp::BlueprintAIAdvisor* advisor) { return advisor->state.nAlive; }
+uint8_t adv_actingPlayer(bp::BlueprintAIAdvisor* advisor) { return advisor->state.actingPlayer; }
 
-uint8_t adv_nActions(bp::BlueprintAIAdvisor* advisor) { return advisor->nActions; };
-uint8_t* adv_probas(bp::BlueprintAIAdvisor* advisor) { return advisor->probas; };
-uint8_t* adv_actions(bp::BlueprintAIAdvisor* advisor) { return advisor->actions; };
-egn::chips* adv_bets(bp::BlueprintAIAdvisor* advisor) { return advisor->bets; };
+int adv_aiAction(bp::BlueprintAIAdvisor* advisor) { return advisor->aiAction; }
+egn::chips adv_aiBet(bp::BlueprintAIAdvisor* advisor) { return advisor->aiBet; }
+
+uint8_t adv_nActions(bp::BlueprintAIAdvisor* advisor) { return advisor->nActions; }
+uint8_t* adv_probas(bp::BlueprintAIAdvisor* advisor) { return advisor->probas; }
+uint8_t* adv_actions(bp::BlueprintAIAdvisor* advisor) { return advisor->actions; }
+egn::chips* adv_bets(bp::BlueprintAIAdvisor* advisor) { return advisor->bets; }

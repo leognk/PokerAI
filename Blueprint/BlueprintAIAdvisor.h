@@ -24,6 +24,8 @@ public:
 	void update(int action, egn::chips bet);
 	void getAdvices();
 
+	egn::GameState state;
+
 	egn::Action aiAction;
 	egn::chips aiBet;
 
@@ -33,7 +35,6 @@ public:
 	egn::chips bets[maxNAbcActions];
 
 private:
-	egn::GameState state;
 	std::string currBoardCards;
 
 	Blueprint blueprint;

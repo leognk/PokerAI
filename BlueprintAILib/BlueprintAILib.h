@@ -34,6 +34,9 @@ BLUEPRINTAILIB_API void adv_updateBoardCards(bp::BlueprintAIAdvisor* advisor, co
 BLUEPRINTAILIB_API void adv_update(bp::BlueprintAIAdvisor* advisor, int action, egn::chips bet);
 BLUEPRINTAILIB_API void adv_getAdvices(bp::BlueprintAIAdvisor* advisor);
 
+BLUEPRINTAILIB_API uint8_t adv_nAlive(bp::BlueprintAIAdvisor* advisor);
+BLUEPRINTAILIB_API uint8_t adv_actingPlayer(bp::BlueprintAIAdvisor* advisor);
+
 BLUEPRINTAILIB_API int adv_aiAction(bp::BlueprintAIAdvisor* advisor);
 BLUEPRINTAILIB_API egn::chips adv_aiBet(bp::BlueprintAIAdvisor* advisor);
 

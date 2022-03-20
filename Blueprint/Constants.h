@@ -15,15 +15,15 @@ namespace bp {
 
 
 //#define BP_GAME_NAMESPACE original
-//#define BP_GAME_NAMESPACE large
+#define BP_GAME_NAMESPACE large
 //#define BP_GAME_NAMESPACE medium
-#define BP_GAME_NAMESPACE simple
+//#define BP_GAME_NAMESPACE simple
 //#define BP_GAME_NAMESPACE test
 
 //#define BP_BUILD_NAMESPACE original
-//#define BP_BUILD_NAMESPACE large
+#define BP_BUILD_NAMESPACE large
 //#define BP_BUILD_NAMESPACE medium
-#define BP_BUILD_NAMESPACE simple
+//#define BP_BUILD_NAMESPACE simple
 //#define BP_BUILD_NAMESPACE test
 
 
