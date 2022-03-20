@@ -22,6 +22,7 @@ public:
 		const char* myHand);
 	void updateBoardCards(const char* newCards);
 	void update(int action, egn::chips bet);
+	void getAdvices();
 
 	egn::Action aiAction;
 	egn::chips aiBet;
@@ -31,11 +32,9 @@ public:
 	uint8_t actions[maxNAbcActions];
 	egn::chips bets[maxNAbcActions];
 
-private :
+private:
 	egn::GameState state;
 	std::string currBoardCards;
-
-	uint8_t myPosition;
 
 	Blueprint blueprint;
 	blueprintAI_t blueprintAI;
