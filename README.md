@@ -19,4 +19,5 @@ To-do:
 For the moment, I just tested the blueprint strategy against 5 random AIs. Each iteration proceeds as follows:
 - give each player 100 BB.
 - play the rounds until only one player remains.
+
 In this setting, the blueprint strategy achieves an average gain of 2.50 BB/game (1 game = 1 round) with a standard deviation of 26.6 BB/game (number of games: 84.1 million). The blueprint strategy needs to be further tested against stronger opponents.
