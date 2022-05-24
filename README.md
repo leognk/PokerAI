@@ -10,7 +10,7 @@ What has been done so far:
 - information abstraction.
 - action abstraction.
 - MCCFR for computing the blueprint strategy.
-- allowing different initial stakes, ante, big blind for actual play.
+- dealing with different initial stakes, ante, big blind for actual play.
 
 To-do:
 - Real-time search.
