@@ -1,4 +1,4 @@
-# Optimus
+# PokerAI
 
 This is an ongoing personal project that aims to develop an AI for multiplayer no-limit Texas hold'em poker based on the AI Pluribus.
 
