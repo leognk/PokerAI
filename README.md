@@ -1,23 +1,21 @@
 # PokerAI
 
-This is an ongoing personal project that aims to develop an AI for multiplayer no-limit Texas hold'em poker based on the AI Pluribus.
+This personal project aims to develop an AI for multiplayer no-limit Texas hold'em poker, inspired by Pluribus. Pluribus is the first AI to beat professional players in no-limit Texas hold'em poker with 6 players.
 
-Pluribus is the first AI that has beaten professional players in no-limit Texas hold'em poker with 6 players on the table.
-Concretely, the goal of this project is to be able to play poker against strong AIs and to get insights on what the best moves are in a given situation to try to better understand the complex game of poker.
+The project's objective is to enable gameplay against strong AIs and provide insights into near optimal strategies in various scenarios, enhancing understanding of this intricate game.
 
-What has been done so far:
-- fast poker game engine.
-- information abstraction.
-- action abstraction.
+## What Has Been Done So Far:
+- Fast poker game engine
+- Information abstraction
+- Action abstraction
 - MCCFR for computing the blueprint strategy.
-- dealing with different initial stakes, ante, big blind for actual play.
+- Dealing with different initial stakes, ante, big blind for actual play.
 
-To-do:
-- Real-time search.
-- GUI to play poker against AIs.
+## To-Do:
+- Real-time search
+- GUI for playing against AIs.
 
-For the moment, I just tested the blueprint strategy against 5 random AIs. Each iteration proceeds as follows:
-- give each player 100 BB.
-- play the rounds until only one player remains.
+## Testing and Results:
+So far, I have tested the blueprint strategy against five random AI players. Each test iteration involves giving each player 100 Big Blinds (BB) and playing rounds until only one player remains.
 
-In this setting, the blueprint strategy achieves an average gain of 2.50 BB/game (1 game = 1 round) with a standard deviation of 26.6 BB/game (number of games: 84.1 million). The blueprint strategy needs to be further tested against stronger opponents.
+In these tests, the blueprint strategy achieved an average gain of 2.50 BB/game (1 game = 1 round) with a standard deviation of 26.6 BB/game. The number of games played totaled 84.1 million. Further testing against more sophisticated opponents is required.
