@@ -18,4 +18,4 @@ The project's objective is to enable gameplay against strong AIs and provide ins
 ## Testing and Results
 So far, I have tested the blueprint strategy against five random AI players. Each test iteration involves giving each player 100 Big Blinds (BB) and playing rounds until only one player remains.
 
-In these tests, the blueprint strategy achieved an average gain of 2.50 BB/game (1 game = 1 round) with a standard deviation of 26.6 BB/game. The number of games played totaled 84.1 million. Further testing against more sophisticated opponents is required.
+In these tests, the blueprint strategy achieved an average gain of 2.50 BB/game (1 game = 1 round) with a standard deviation of 26.6 BB/game. The number of games played totaled 84.1 million. Further testing against more sophisticated opponents would be nice.
