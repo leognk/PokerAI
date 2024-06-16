@@ -8,7 +8,7 @@ The project's objective is to enable gameplay against strong AIs and provide ins
 - Fast poker game engine: Implements the game rules.
 - Information abstraction: Groups together similar poker hands to reduce the search tree.
 - Action abstraction: Groups together similar actions to reduce the search tree.
-- MCCFR for computing the blueprint strategy: An algorithm that explores the search tree and stores the regrets of each action (~opposite of rewards) in memory.
+- MCCFR for computing the blueprint strategy: An algorithm that explores the search tree and stores the regrets of each action (~opposite of rewards) in a file.
 - Handling different initial stakes, ante, and big blind for actual play.
 
 ## To-Do
