@@ -5,10 +5,10 @@ This personal project aims to develop an AI for multiplayer no-limit Texas hold'
 The project's objective is to enable gameplay against strong AIs and provide insights into near optimal strategies in various scenarios, enhancing understanding of this intricate game.
 
 ## What has been done so far
-- Fast poker game engine: Implements the game rules.
-- Information abstraction: Groups together similar poker hands to reduce the search tree.
-- Action abstraction: Groups together similar actions to reduce the search tree.
-- MCCFR for computing the blueprint strategy: An algorithm that explores the search tree and stores the regrets of each action (~opposite of rewards) in a file.
+- **Fast poker game engine**: Implements the game rules.
+- **Information abstraction**: Groups together similar poker hands to reduce the search tree.
+- **Action abstraction**: Groups together similar actions to reduce the search tree.
+- **MCCFR for computing the blueprint strategy**: An algorithm that explores the search tree and stores the regrets of each action (~opposite of rewards) in a file.
 - Handling different initial stakes, ante, and big blind for actual play.
 
 ## To-Do
